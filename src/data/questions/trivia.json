@@ -1,0 +1,365 @@
+[
+  {
+    "id": "trv_001",
+    "question": "Qual è la capitale dell'Australia?",
+    "answers": ["Sydney", "Melbourne", "Canberra", "Brisbane"],
+    "correct": 2,
+    "category": "gamenight",
+    "difficulty": "medium",
+    "topic": "geografia"
+  },
+  {
+    "id": "trv_002",
+    "question": "Quale elemento chimico ha simbolo Au?",
+    "answers": ["Argento", "Oro", "Alluminio", "Argon"],
+    "correct": 1,
+    "category": "gamenight",
+    "difficulty": "easy",
+    "topic": "scienza"
+  },
+  {
+    "id": "trv_003",
+    "question": "In che anno è finita la Seconda Guerra Mondiale?",
+    "answers": ["1942", "1945", "1948", "1950"],
+    "correct": 1,
+    "category": "gamenight",
+    "difficulty": "easy",
+    "topic": "storia"
+  },
+  {
+    "id": "trv_004",
+    "question": "Dove si sono tenute le Olimpiadi estive del 2024?",
+    "answers": ["Parigi", "Londra", "Tokyo", "Los Angeles"],
+    "correct": 0,
+    "category": "gamenight",
+    "difficulty": "easy",
+    "topic": "sport"
+  },
+  {
+    "id": "trv_005",
+    "question": "Qual è il pianeta più piccolo del Sistema Solare?",
+    "answers": ["Marte", "Mercurio", "Venere", "Plutone"],
+    "correct": 1,
+    "category": "gamenight",
+    "difficulty": "medium",
+    "topic": "scienza"
+  },
+  {
+    "id": "trv_006",
+    "question": "Chi ha dipinto la Gioconda?",
+    "answers": ["Raffaello", "Michelangelo", "Leonardo da Vinci", "Caravaggio"],
+    "correct": 2,
+    "category": "gamenight",
+    "difficulty": "easy",
+    "topic": "arte"
+  },
+  {
+    "id": "trv_007",
+    "question": "Quale fiume attraversa Roma?",
+    "answers": ["Po", "Arno", "Tevere", "Adige"],
+    "correct": 2,
+    "category": "gamenight",
+    "difficulty": "easy",
+    "topic": "geografia"
+  },
+  {
+    "id": "trv_008",
+    "question": "Quale paese ha la foglia d'acero sulla bandiera?",
+    "answers": ["Stati Uniti", "Canada", "Norvegia", "Svezia"],
+    "correct": 1,
+    "category": "gamenight",
+    "difficulty": "easy",
+    "topic": "geografia"
+  },
+  {
+    "id": "trv_009",
+    "question": "Chi ha vinto più Palloni d'Oro nella storia?",
+    "answers": ["Cristiano Ronaldo", "Lionel Messi", "Diego Maradona", "Johan Cruyff"],
+    "correct": 1,
+    "category": "gamenight",
+    "difficulty": "medium",
+    "topic": "sport"
+  },
+  {
+    "id": "trv_010",
+    "question": "In che anno è caduto il Muro di Berlino?",
+    "answers": ["1985", "1987", "1989", "1991"],
+    "correct": 2,
+    "category": "gamenight",
+    "difficulty": "medium",
+    "topic": "storia"
+  },
+
+  {
+    "id": "trv_011",
+    "question": "In quale serie TV compare Walter White?",
+    "answers": ["The Wire", "Breaking Bad", "The Sopranos", "Better Call Saul"],
+    "correct": 1,
+    "category": "bar",
+    "difficulty": "easy",
+    "topic": "serie tv"
+  },
+  {
+    "id": "trv_012",
+    "question": "Chi canta \"Bohemian Rhapsody\"?",
+    "answers": ["The Beatles", "Queen", "Led Zeppelin", "Pink Floyd"],
+    "correct": 1,
+    "category": "bar",
+    "difficulty": "easy",
+    "topic": "musica"
+  },
+  {
+    "id": "trv_013",
+    "question": "Come prende il Martini James Bond?",
+    "answers": ["Liscio", "Shakerato, non mescolato", "Con due olive", "Doppio ghiaccio"],
+    "correct": 1,
+    "category": "bar",
+    "difficulty": "medium",
+    "topic": "cinema"
+  },
+  {
+    "id": "trv_014",
+    "question": "Quante carte ha un mazzo di poker senza jolly?",
+    "answers": ["48", "50", "52", "54"],
+    "correct": 2,
+    "category": "bar",
+    "difficulty": "easy",
+    "topic": "giochi"
+  },
+  {
+    "id": "trv_015",
+    "question": "Da quale paese arriva la tequila?",
+    "answers": ["Spagna", "Messico", "Cuba", "Colombia"],
+    "correct": 1,
+    "category": "bar",
+    "difficulty": "easy",
+    "topic": "drink"
+  },
+  {
+    "id": "trv_016",
+    "question": "Chi interpreta Rachel in Friends?",
+    "answers": ["Courteney Cox", "Jennifer Aniston", "Lisa Kudrow", "Sarah Jessica Parker"],
+    "correct": 1,
+    "category": "bar",
+    "difficulty": "easy",
+    "topic": "serie tv"
+  },
+  {
+    "id": "trv_017",
+    "question": "Qual è la prima regola del Fight Club?",
+    "answers": ["Vinci sempre", "Non parlarne", "Non colpire al viso", "Solo uno alla volta"],
+    "correct": 1,
+    "category": "bar",
+    "difficulty": "easy",
+    "topic": "cinema"
+  },
+  {
+    "id": "trv_018",
+    "question": "Chi ha diretto Pulp Fiction?",
+    "answers": ["Martin Scorsese", "Quentin Tarantino", "Francis Ford Coppola", "Steven Spielberg"],
+    "correct": 1,
+    "category": "bar",
+    "difficulty": "easy",
+    "topic": "cinema"
+  },
+  {
+    "id": "trv_019",
+    "question": "Quale ingrediente NON c'è in un Negroni classico?",
+    "answers": ["Gin", "Campari", "Vermouth rosso", "Prosecco"],
+    "correct": 3,
+    "category": "bar",
+    "difficulty": "medium",
+    "topic": "drink"
+  },
+  {
+    "id": "trv_020",
+    "question": "Quale gruppo ha pubblicato \"The Dark Side of the Moon\"?",
+    "answers": ["The Doors", "Pink Floyd", "Led Zeppelin", "The Rolling Stones"],
+    "correct": 1,
+    "category": "bar",
+    "difficulty": "medium",
+    "topic": "musica"
+  },
+
+  {
+    "id": "trv_021",
+    "question": "Quale ormone è chiamato \"l'ormone dell'amore\"?",
+    "answers": ["Cortisolo", "Ossitocina", "Adrenalina", "Insulina"],
+    "correct": 1,
+    "category": "couple",
+    "difficulty": "medium",
+    "topic": "psicologia"
+  },
+  {
+    "id": "trv_022",
+    "question": "In che film c'è la scena del disegno di Rose nuda?",
+    "answers": ["Pretty Woman", "Titanic", "Notting Hill", "The Notebook"],
+    "correct": 1,
+    "category": "couple",
+    "difficulty": "easy",
+    "topic": "cinema"
+  },
+  {
+    "id": "trv_023",
+    "question": "Quando si festeggia San Valentino?",
+    "answers": ["14 gennaio", "14 febbraio", "14 marzo", "1 maggio"],
+    "correct": 1,
+    "category": "couple",
+    "difficulty": "easy",
+    "topic": "curiosità"
+  },
+  {
+    "id": "trv_024",
+    "question": "Quale NON è uno dei 5 linguaggi dell'amore secondo Chapman?",
+    "answers": ["Parole di affermazione", "Contatto fisico", "Tempo di qualità", "Profumi condivisi"],
+    "correct": 3,
+    "category": "couple",
+    "difficulty": "hard",
+    "topic": "psicologia"
+  },
+  {
+    "id": "trv_025",
+    "question": "Chi ha scritto \"Romeo e Giulietta\"?",
+    "answers": ["Dante Alighieri", "William Shakespeare", "Johann Wolfgang von Goethe", "Lord Byron"],
+    "correct": 1,
+    "category": "couple",
+    "difficulty": "easy",
+    "topic": "letteratura"
+  },
+  {
+    "id": "trv_026",
+    "question": "Quanti anni si festeggiano alle \"nozze d'argento\"?",
+    "answers": ["10", "25", "40", "50"],
+    "correct": 1,
+    "category": "couple",
+    "difficulty": "easy",
+    "topic": "curiosità"
+  },
+  {
+    "id": "trv_027",
+    "question": "Quale fiore è il simbolo classico della dichiarazione d'amore?",
+    "answers": ["Tulipano giallo", "Rosa rossa", "Margherita", "Girasole"],
+    "correct": 1,
+    "category": "couple",
+    "difficulty": "easy",
+    "topic": "curiosità"
+  },
+  {
+    "id": "trv_028",
+    "question": "In che film Tom Cruise dice \"You complete me\"?",
+    "answers": ["Top Gun", "Jerry Maguire", "Magnolia", "Vanilla Sky"],
+    "correct": 1,
+    "category": "couple",
+    "difficulty": "medium",
+    "topic": "cinema"
+  },
+  {
+    "id": "trv_029",
+    "question": "Quale autore ha scritto \"Cent'anni di solitudine\", grande romanzo d'amore?",
+    "answers": ["Pablo Neruda", "Gabriel García Márquez", "Jorge Luis Borges", "Mario Vargas Llosa"],
+    "correct": 1,
+    "category": "couple",
+    "difficulty": "medium",
+    "topic": "letteratura"
+  },
+  {
+    "id": "trv_030",
+    "question": "In che città è ambientato \"Romeo e Giulietta\"?",
+    "answers": ["Firenze", "Verona", "Venezia", "Padova"],
+    "correct": 1,
+    "category": "couple",
+    "difficulty": "easy",
+    "topic": "letteratura"
+  },
+
+  {
+    "id": "trv_031",
+    "question": "Quante ore dura il bacio più lungo della storia (record Guinness)?",
+    "answers": ["24 ore", "33 ore", "58 ore", "72 ore"],
+    "correct": 2,
+    "category": "wild",
+    "difficulty": "hard",
+    "topic": "record"
+  },
+  {
+    "id": "trv_032",
+    "question": "Qual è la fobia per le suocere?",
+    "answers": ["Pentafobia", "Pentheraphobia", "Vitricofobia", "Matrifobia"],
+    "correct": 1,
+    "category": "wild",
+    "difficulty": "hard",
+    "topic": "curiosità"
+  },
+  {
+    "id": "trv_033",
+    "question": "Chi ha vinto più Grammy Award nella storia?",
+    "answers": ["Beyoncé", "Stevie Wonder", "Michael Jackson", "Madonna"],
+    "correct": 0,
+    "category": "wild",
+    "difficulty": "medium",
+    "topic": "musica"
+  },
+  {
+    "id": "trv_034",
+    "question": "Quanti hot dog ha ingurgitato Joey Chestnut nel record del 2021 (in 10 minuti)?",
+    "answers": ["50", "76", "83", "92"],
+    "correct": 1,
+    "category": "wild",
+    "difficulty": "hard",
+    "topic": "record"
+  },
+  {
+    "id": "trv_035",
+    "question": "Quale paese è considerato la capitale mondiale del naturismo?",
+    "answers": ["Italia", "Francia", "Germania", "Brasile"],
+    "correct": 2,
+    "category": "wild",
+    "difficulty": "medium",
+    "topic": "curiosità"
+  },
+  {
+    "id": "trv_036",
+    "question": "Quante volte si è sposata Elizabeth Taylor?",
+    "answers": ["5", "6", "8", "10"],
+    "correct": 2,
+    "category": "wild",
+    "difficulty": "medium",
+    "topic": "vip"
+  },
+  {
+    "id": "trv_037",
+    "question": "Quanto è alta la persona più alta mai vissuta (Robert Wadlow)?",
+    "answers": ["2,11 m", "2,42 m", "2,72 m", "3,01 m"],
+    "correct": 2,
+    "category": "wild",
+    "difficulty": "hard",
+    "topic": "record"
+  },
+  {
+    "id": "trv_038",
+    "question": "Quale celebrità ha fatto causa al proprio assistente per aver bevuto la sua acqua \"speciale\"?",
+    "answers": ["Mariah Carey", "Madonna", "Beyoncé", "Lady Gaga"],
+    "correct": 0,
+    "category": "wild",
+    "difficulty": "hard",
+    "topic": "vip"
+  },
+  {
+    "id": "trv_039",
+    "question": "Qual è il record di velocità di nudo (streaking) ai Mondiali di calcio?",
+    "answers": ["Brasile '50", "Italia '90", "USA '94", "Russia 2018"],
+    "correct": 3,
+    "category": "wild",
+    "difficulty": "hard",
+    "topic": "sport"
+  },
+  {
+    "id": "trv_040",
+    "question": "Chi ha cantato \"WAP\" insieme a Cardi B nel 2020?",
+    "answers": ["Nicki Minaj", "Megan Thee Stallion", "Doja Cat", "Lizzo"],
+    "correct": 1,
+    "category": "wild",
+    "difficulty": "medium",
+    "topic": "musica"
+  }
+]
