@@ -89,6 +89,141 @@
     "difficulty": "medium",
     "topic": "storia"
   },
+  {
+    "id": "trv_011g",
+    "question": "Qual è il paese più grande del mondo per superficie?",
+    "answers": ["Canada", "Cina", "Russia", "USA"],
+    "correct": 2,
+    "category": "gamenight",
+    "difficulty": "easy",
+    "topic": "geografia"
+  },
+  {
+    "id": "trv_012g",
+    "question": "Quante ossa ha il corpo umano adulto?",
+    "answers": ["186", "206", "226", "246"],
+    "correct": 1,
+    "category": "gamenight",
+    "difficulty": "medium",
+    "topic": "scienza"
+  },
+  {
+    "id": "trv_013g",
+    "question": "Quale pianeta ha il maggior numero di lune nel Sistema Solare?",
+    "answers": ["Giove", "Saturno", "Urano", "Nettuno"],
+    "correct": 1,
+    "category": "gamenight",
+    "difficulty": "hard",
+    "topic": "scienza"
+  },
+  {
+    "id": "trv_014g",
+    "question": "In che anno ha debuttato il primo iPhone?",
+    "answers": ["2005", "2007", "2009", "2010"],
+    "correct": 1,
+    "category": "gamenight",
+    "difficulty": "medium",
+    "topic": "tecnologia"
+  },
+  {
+    "id": "trv_015g",
+    "question": "Quale scrittore ha creato il personaggio di Sherlock Holmes?",
+    "answers": ["Agatha Christie", "Arthur Conan Doyle", "G.K. Chesterton", "Edgar Allan Poe"],
+    "correct": 1,
+    "category": "gamenight",
+    "difficulty": "easy",
+    "topic": "letteratura"
+  },
+  {
+    "id": "trv_016g",
+    "question": "Quanti lati ha un esagono?",
+    "answers": ["5", "6", "7", "8"],
+    "correct": 1,
+    "category": "gamenight",
+    "difficulty": "easy",
+    "topic": "matematica"
+  },
+  {
+    "id": "trv_017g",
+    "question": "Chi ha composto la Quinta Sinfonia?",
+    "answers": ["Mozart", "Bach", "Beethoven", "Chopin"],
+    "correct": 2,
+    "category": "gamenight",
+    "difficulty": "easy",
+    "topic": "musica"
+  },
+  {
+    "id": "trv_018g",
+    "question": "Quale nazione ospiterà i Mondiali di calcio 2026?",
+    "answers": ["Argentina", "USA-Canada-Messico", "Brasile", "Qatar"],
+    "correct": 1,
+    "category": "gamenight",
+    "difficulty": "medium",
+    "topic": "sport"
+  },
+  {
+    "id": "trv_019g",
+    "question": "Qual è la moneta ufficiale del Giappone?",
+    "answers": ["Won", "Yuan", "Yen", "Baht"],
+    "correct": 2,
+    "category": "gamenight",
+    "difficulty": "easy",
+    "topic": "geografia"
+  },
+  {
+    "id": "trv_020g",
+    "question": "Chi ha scritto l'Odissea?",
+    "answers": ["Virgilio", "Omero", "Sofocle", "Platone"],
+    "correct": 1,
+    "category": "gamenight",
+    "difficulty": "easy",
+    "topic": "letteratura"
+  },
+  {
+    "id": "trv_021g",
+    "question": "Quanti anni dura un mandato presidenziale negli USA?",
+    "answers": ["3", "4", "5", "6"],
+    "correct": 1,
+    "category": "gamenight",
+    "difficulty": "easy",
+    "topic": "politica"
+  },
+  {
+    "id": "trv_022g",
+    "question": "Quale metallo è liquido a temperatura ambiente?",
+    "answers": ["Zinco", "Alluminio", "Mercurio", "Piombo"],
+    "correct": 2,
+    "category": "gamenight",
+    "difficulty": "medium",
+    "topic": "scienza"
+  },
+  {
+    "id": "trv_023g",
+    "question": "In quale oceano si trovano le Maldive?",
+    "answers": ["Pacifico", "Atlantico", "Indiano", "Artico"],
+    "correct": 2,
+    "category": "gamenight",
+    "difficulty": "medium",
+    "topic": "geografia"
+  },
+  {
+    "id": "trv_024g",
+    "question": "Che tipo di animale è un calamaro?",
+    "answers": ["Crostaceo", "Mollusco", "Pesce", "Anellide"],
+    "correct": 1,
+    "category": "gamenight",
+    "difficulty": "medium",
+    "topic": "natura"
+  },
+  {
+    "id": "trv_025g",
+    "question": "Quale paese ha vinto più Mondiali di calcio?",
+    "answers": ["Argentina", "Germania", "Italia", "Brasile"],
+    "correct": 3,
+    "category": "gamenight",
+    "difficulty": "easy",
+    "topic": "sport"
+  },
 
   {
     "id": "trv_011",
@@ -180,6 +315,141 @@
     "difficulty": "medium",
     "topic": "musica"
   },
+  {
+    "id": "trv_011b",
+    "question": "Quale attore interpreta Tony Stark nei film Marvel?",
+    "answers": ["Chris Evans", "Chris Hemsworth", "Robert Downey Jr.", "Mark Ruffalo"],
+    "correct": 2,
+    "category": "bar",
+    "difficulty": "easy",
+    "topic": "cinema"
+  },
+  {
+    "id": "trv_012b",
+    "question": "In quale città è ambientata la serie Narcos?",
+    "answers": ["Buenos Aires", "Lima", "Medellín", "Bogotá"],
+    "correct": 2,
+    "category": "bar",
+    "difficulty": "medium",
+    "topic": "serie tv"
+  },
+  {
+    "id": "trv_013b",
+    "question": "Quale cantante è soprannominata \"La Regina del Pop\"?",
+    "answers": ["Beyoncé", "Rihanna", "Madonna", "Britney Spears"],
+    "correct": 2,
+    "category": "bar",
+    "difficulty": "easy",
+    "topic": "musica"
+  },
+  {
+    "id": "trv_014b",
+    "question": "Qual è il cocktail composto da vodka, succo di mirtillo, succo di lime e liquore all'arancia?",
+    "answers": ["Martini", "Cosmopolitan", "Sex on the Beach", "Mojito"],
+    "correct": 1,
+    "category": "bar",
+    "difficulty": "medium",
+    "topic": "drink"
+  },
+  {
+    "id": "trv_015b",
+    "question": "In quale film c'è la famosa scena del coltello nella doccia?",
+    "answers": ["Il silenzio degli innocenti", "Psycho", "Halloween", "Scream"],
+    "correct": 1,
+    "category": "bar",
+    "difficulty": "medium",
+    "topic": "cinema"
+  },
+  {
+    "id": "trv_016b",
+    "question": "Quale band ha inciso \"Smells Like Teen Spirit\"?",
+    "answers": ["Pearl Jam", "Soundgarden", "Nirvana", "Alice in Chains"],
+    "correct": 2,
+    "category": "bar",
+    "difficulty": "easy",
+    "topic": "musica"
+  },
+  {
+    "id": "trv_017b",
+    "question": "Quante stagioni ha Game of Thrones?",
+    "answers": ["6", "7", "8", "9"],
+    "correct": 2,
+    "category": "bar",
+    "difficulty": "easy",
+    "topic": "serie tv"
+  },
+  {
+    "id": "trv_018b",
+    "question": "Quale attore ha vinto 3 premi Oscar come migliore attore?",
+    "answers": ["Al Pacino", "Jack Nicholson", "Dustin Hoffman", "Daniel Day-Lewis"],
+    "correct": 3,
+    "category": "bar",
+    "difficulty": "hard",
+    "topic": "cinema"
+  },
+  {
+    "id": "trv_019b",
+    "question": "Cosa significa la sigla IPA nel mondo della birra?",
+    "answers": ["Italian Pale Ale", "India Pale Ale", "Irish Premium Ale", "International Pale Ale"],
+    "correct": 1,
+    "category": "bar",
+    "difficulty": "medium",
+    "topic": "drink"
+  },
+  {
+    "id": "trv_020b",
+    "question": "Chi è il personaggio principale di Stranger Things?",
+    "answers": ["Mike Wheeler", "Will Byers", "Eleven", "Dustin Henderson"],
+    "correct": 2,
+    "category": "bar",
+    "difficulty": "medium",
+    "topic": "serie tv"
+  },
+  {
+    "id": "trv_021b",
+    "question": "Quale rapper ha pubblicato l'album \"The College Dropout\"?",
+    "answers": ["Jay-Z", "Kanye West", "Eminem", "Drake"],
+    "correct": 1,
+    "category": "bar",
+    "difficulty": "medium",
+    "topic": "musica"
+  },
+  {
+    "id": "trv_022b",
+    "question": "Il gin tonic si guarnisce tradizionalmente con?",
+    "answers": ["Menta fresca", "Lime o limone", "Ciliegia al maraschino", "Oliva"],
+    "correct": 1,
+    "category": "bar",
+    "difficulty": "easy",
+    "topic": "drink"
+  },
+  {
+    "id": "trv_023b",
+    "question": "Quale film ha vinto l'Oscar come miglior film nel 2020?",
+    "answers": ["1917", "Joker", "Parasite", "Ford v Ferrari"],
+    "correct": 2,
+    "category": "bar",
+    "difficulty": "medium",
+    "topic": "cinema"
+  },
+  {
+    "id": "trv_024b",
+    "question": "Da quante persone è composto un team nel gioco del bowling per punteggio perfetto?",
+    "answers": ["1", "2", "4", "5"],
+    "correct": 0,
+    "category": "bar",
+    "difficulty": "medium",
+    "topic": "giochi"
+  },
+  {
+    "id": "trv_025b",
+    "question": "Quale cantante ha pubblicato l'album \"Thriller\"?",
+    "answers": ["Prince", "Michael Jackson", "Tina Turner", "David Bowie"],
+    "correct": 1,
+    "category": "bar",
+    "difficulty": "easy",
+    "topic": "musica"
+  },
 
   {
     "id": "trv_021",
@@ -255,7 +525,7 @@
   },
   {
     "id": "trv_029",
-    "question": "Quale autore ha scritto \"Cent'anni di solitudine\", grande romanzo d'amore?",
+    "question": "Quale autore ha scritto \"Cent'anni di solitudine\"?",
     "answers": ["Pablo Neruda", "Gabriel García Márquez", "Jorge Luis Borges", "Mario Vargas Llosa"],
     "correct": 1,
     "category": "couple",
@@ -270,6 +540,51 @@
     "category": "couple",
     "difficulty": "easy",
     "topic": "letteratura"
+  },
+  {
+    "id": "trv_021c",
+    "question": "Quante settimane dura mediamente un innamoramento secondo la scienza?",
+    "answers": ["4 settimane", "3 mesi", "6 mesi", "1 anno"],
+    "correct": 1,
+    "category": "couple",
+    "difficulty": "hard",
+    "topic": "psicologia"
+  },
+  {
+    "id": "trv_022c",
+    "question": "Quale famosa coppia di Hollywood ha divorziato nel 2016 dopo 12 anni insieme?",
+    "answers": ["Brad Pitt e Jennifer Aniston", "Brad Pitt e Angelina Jolie", "Tom Hanks e Rita Wilson", "Will Smith e Jada Pinkett"],
+    "correct": 1,
+    "category": "couple",
+    "difficulty": "medium",
+    "topic": "vip"
+  },
+  {
+    "id": "trv_023c",
+    "question": "Come si chiama il fidanzato di Cenerentola nella favola Disney?",
+    "answers": ["Principe Adam", "Principe Eric", "Principe Azzurro (Cenerentola)", "Principe Filippo"],
+    "correct": 2,
+    "category": "couple",
+    "difficulty": "medium",
+    "topic": "cinema"
+  },
+  {
+    "id": "trv_024c",
+    "question": "Quale nazione ha il tasso di matrimoni più alto al mondo?",
+    "answers": ["India", "Messico", "Bahamas", "USA"],
+    "correct": 2,
+    "category": "couple",
+    "difficulty": "hard",
+    "topic": "curiosità"
+  },
+  {
+    "id": "trv_025c",
+    "question": "Da dove proviene la tradizione degli anelli nuziali?",
+    "answers": ["Grecia antica", "Egitto antico", "Roma antica", "Cinese"],
+    "correct": 1,
+    "category": "couple",
+    "difficulty": "medium",
+    "topic": "storia"
   },
 
   {
@@ -337,21 +652,21 @@
   },
   {
     "id": "trv_038",
-    "question": "Quale celebrità ha fatto causa al proprio assistente per aver bevuto la sua acqua \"speciale\"?",
-    "answers": ["Mariah Carey", "Madonna", "Beyoncé", "Lady Gaga"],
-    "correct": 0,
+    "question": "Quale canzone è stata la più scaricata illegalmente nella storia di internet?",
+    "answers": ["My Heart Will Go On", "Baby One More Time", "Lose Yourself", "One More Time"],
+    "correct": 2,
     "category": "wild",
     "difficulty": "hard",
-    "topic": "vip"
+    "topic": "musica"
   },
   {
     "id": "trv_039",
-    "question": "Qual è il record di velocità di nudo (streaking) ai Mondiali di calcio?",
-    "answers": ["Brasile '50", "Italia '90", "USA '94", "Russia 2018"],
-    "correct": 3,
+    "question": "In quale paese è legale per legge la nudità pubblica integrale?",
+    "answers": ["Olanda", "Austria", "Svizzera", "Norvegia"],
+    "correct": 2,
     "category": "wild",
     "difficulty": "hard",
-    "topic": "sport"
+    "topic": "curiosità"
   },
   {
     "id": "trv_040",
@@ -361,5 +676,50 @@
     "category": "wild",
     "difficulty": "medium",
     "topic": "musica"
+  },
+  {
+    "id": "trv_041w",
+    "question": "Qual è il nome del film vietato ai minori che ha vinto l'Oscar nel 1970?",
+    "answers": ["Midnight Cowboy", "The Wild Bunch", "Bonnie and Clyde", "Easy Rider"],
+    "correct": 0,
+    "category": "wild",
+    "difficulty": "hard",
+    "topic": "cinema"
+  },
+  {
+    "id": "trv_042w",
+    "question": "Quanti piercing aveva nel 2003 Guinness World Record di Elaine Davidson?",
+    "answers": ["192", "720", "1903", "4225"],
+    "correct": 2,
+    "category": "wild",
+    "difficulty": "hard",
+    "topic": "record"
+  },
+  {
+    "id": "trv_043w",
+    "question": "Quale film di commedia erotica italiana degli anni '70 è il più visto in assoluto?",
+    "answers": ["Amici miei", "Il secondo tragico Fantozzi", "La poliziotta", "Malizia"],
+    "correct": 3,
+    "category": "wild",
+    "difficulty": "hard",
+    "topic": "cinema"
+  },
+  {
+    "id": "trv_044w",
+    "question": "Secondo una ricerca, qual è il giorno della settimana in cui si ha più attività romantica?",
+    "answers": ["Mercoledì", "Venerdì", "Sabato", "Domenica"],
+    "correct": 2,
+    "category": "wild",
+    "difficulty": "medium",
+    "topic": "curiosità"
+  },
+  {
+    "id": "trv_045w",
+    "question": "Chi ha scritto il romanzo scandalo \"Lolita\"?",
+    "answers": ["Henry Miller", "Vladimir Nabokov", "Charles Bukowski", "D.H. Lawrence"],
+    "correct": 1,
+    "category": "wild",
+    "difficulty": "medium",
+    "topic": "letteratura"
   }
 ]

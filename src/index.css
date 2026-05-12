@@ -37,7 +37,7 @@
 html {
   height: 100%;
   overflow: hidden;
-  font-size: clamp(14px, 1.2vw + 11px, 18px);
+  font-size: clamp(13px, 1vw + 11px, 17px);
 }
 
 body {
@@ -113,13 +113,18 @@ body {
 
 /* ------------------------------------------------------------------ */
 /* Breakpoints.                                                        */
-/* Tablet/desktop: contenuto centrato a 480px con bordo laterale.      */
+/* Desktop: #root è full-width (nessun max-width globale).            */
+/* Le schermate narrow (lobby, game, join) si centrano da sole con    */
+/* .screen-narrow.                                                     */
 /* Mobile basso: shrinking di header e footer.                         */
 /* ------------------------------------------------------------------ */
+
+/* Schermate che devono restare phone-like su desktop */
 @media (min-width: 768px) {
-  #root {
-    max-width: 480px;
-    margin: 0 auto;
+  .screen-narrow {
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
     border-left: 1px solid var(--border);
     border-right: 1px solid var(--border);
   }

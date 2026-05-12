@@ -8,6 +8,7 @@ import { motion } from 'framer-motion'
 import { QRCodeSVG } from 'qrcode.react'
 import AppHeader from '../components/AppHeader'
 import ErrorBanner from '../components/ErrorBanner'
+import AgeModal from '../components/AgeModal'
 import Button from '../components/ui/Button'
 import PlayerAvatar from '../components/PlayerAvatar'
 import { useSession } from '../stores/useSession'
@@ -19,6 +20,12 @@ import questionsAll from '../data/questions/trivia.json'
 
 const NUM_QUESTIONS_OPTIONS = [5, 10, 15, 20]
 const TIMER_OPTIONS = [10, 15, 20, 30]
+const CATEGORY_OPTIONS = [
+  { id: 'gamenight', label: '🎮 Generale' },
+  { id: 'bar', label: '🍺 Bar' },
+  { id: 'couple', label: '🔥 Coppia', ageWarning: true },
+  { id: 'wild', label: '🌶️ Hot', ageWarning: true },
+]
 
 const containerVariants = {
   hidden: {},
@@ -35,6 +42,8 @@ const LobbyScreen = () => {
   const [starting, setStarting] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [showInstructions, setShowInstructions] = useState(false)
+  const [pendingCategory, setPendingCategory] = useState(null)
+  const [showAgeModal, setShowAgeModal] = useState(false)
 
   const mode = useSession((s) => s.mode)
   const isHost = useSession((s) => s.isHost)
@@ -51,7 +60,28 @@ const LobbyScreen = () => {
   const timerDuration = useSettings((s) => s.timerDuration)
   const setNumQuestions = useSettings((s) => s.setNumQuestions)
   const setTimerDuration = useSettings((s) => s.setTimerDuration)
+  const setCategory = useSettings((s) => s.setCategory)
+  const ageConfirmed = useSettings((s) => s.ageConfirmed)
+  const confirmAge = useSettings((s) => s.confirmAge)
   const copy = getCopy(category)
+
+  const handleCategorySelect = (opt) => {
+    if (opt.ageWarning && !ageConfirmed) {
+      setPendingCategory(opt)
+      setShowAgeModal(true)
+      return
+    }
+    setCategory(opt.id)
+  }
+
+  const handleAgeConfirm = () => {
+    confirmAge()
+    setShowAgeModal(false)
+    if (pendingCategory) {
+      setCategory(pendingCategory.id)
+      setPendingCategory(null)
+    }
+  }
 
   const isOnline = mode === 'online'
   const hostHasJoined = !isHost || (isHost && !!localPlayerId)
@@ -98,9 +128,12 @@ const LobbyScreen = () => {
     if (!canStart || starting) return
     setStarting(true)
 
+    // Usa le domande della categoria se ce ne sono abbastanza (≥ 2× numQuestions),
+    // altrimenti usa l'intero pool per massima varietà.
+    // Double-shuffle per maggiore entropia.
     const filtered = questionsAll.filter((q) => q.category === category)
-    const pool = filtered.length >= numQuestions ? filtered : questionsAll
-    const shuffled = shuffle([...pool])
+    const pool = filtered.length >= numQuestions * 2 ? filtered : questionsAll
+    const shuffled = shuffle(shuffle([...pool]))
     const deck = shuffled.slice(0, numQuestions).map((q) => ({
       question: q.question,
       answers: q.answers,
@@ -121,7 +154,7 @@ const LobbyScreen = () => {
 
   return (
     <motion.div
-      className="screen"
+      className="screen screen-narrow"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
@@ -276,6 +309,23 @@ const LobbyScreen = () => {
                     ))}
                   </div>
                 </div>
+                <div style={{ ...settingRowStyle, flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
+                  <span style={settingLabelStyle}>Categoria</span>
+                  <div style={{ ...chipGroupStyle, flexWrap: 'wrap' }}>
+                    {CATEGORY_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.id}
+                        onClick={() => handleCategorySelect(opt)}
+                        style={{
+                          ...chipStyle,
+                          ...(category === opt.id ? chipActiveStyle : {}),
+                        }}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </motion.div>
             )}
           </div>
@@ -324,6 +374,12 @@ const LobbyScreen = () => {
           <p style={waitingStyle}>Servono almeno 2 giocatori</p>
         )}
       </div>
+
+      <AgeModal
+        open={showAgeModal}
+        onConfirm={handleAgeConfirm}
+        onCancel={() => { setShowAgeModal(false); setPendingCategory(null) }}
+      />
     </motion.div>
   )
 }
