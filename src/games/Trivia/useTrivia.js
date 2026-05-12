@@ -7,8 +7,7 @@
 //   - scoring (+10 correct, -10 wrong, -5 timeout)
 //   - transizioni di fase (via RPCs atomiche)
 //
-// L'host è spettatore: non ha pulsanti di controllo.
-// I giocatori governano il ritmo via "Pronto" (toggle_ready).
+// Tutti (host incluso) sono giocatori: rispondono e premono "Pronto".
 
 import { useMemo, useEffect, useState, useCallback, useRef } from 'react'
 import { useSession } from '../../stores/useSession'
@@ -112,9 +111,9 @@ export const useTrivia = () => {
     )
   }, [isExpired, currentPhase, roomCode, currentRound])
 
-  // Toggle ready
+  // Toggle ready (host incluso — tutti sono giocatori)
   const toggleReady = useCallback(async () => {
-    if (!isOnline || isHost) return
+    if (!isOnline) return
     const { data, error } = await rpcToggleReady(roomCode, localPlayerId)
     if (error) {
       console.error('[useTrivia] toggleReady error:', error)
@@ -136,13 +135,12 @@ export const useTrivia = () => {
         console.error('[useTrivia] startGame error:', startErr)
       }
     }
-  }, [isOnline, isHost, roomCode, localPlayerId, category])
+  }, [isOnline, roomCode, localPlayerId, category])
 
-  // Ready counts for display
+  // Ready counts for display (tutti i giocatori, host incluso)
   const readyCounts = useMemo(() => {
-    const nonHostPlayers = players.filter((p) => !p.is_host)
-    const readyPlayers = nonHostPlayers.filter((p) => p.is_ready)
-    return { ready: readyPlayers.length, total: nonHostPlayers.length }
+    const readyPlayers = players.filter((p) => p.is_ready)
+    return { ready: readyPlayers.length, total: players.length }
   }, [players])
 
   // Has more questions?

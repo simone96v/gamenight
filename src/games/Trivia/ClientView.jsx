@@ -174,7 +174,6 @@ const ClientView = ({
   // --- FINAL PHASE ---
   if (currentPhase === 'final') {
     const sorted = [...players]
-      .filter((p) => !p.is_host)
       .sort((a, b) => b.score - a.score)
 
     const myRank = sorted.findIndex((p) => p.id === localPlayerId) + 1

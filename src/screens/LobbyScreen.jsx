@@ -53,11 +53,10 @@ const LobbyScreen = () => {
   const hostHasJoined = !isHost || (isHost && !!localPlayerId)
   const showNameInput = isHost && !localPlayerId && players.length < 8
 
-  // Ready counts
+  // Ready counts (tutti i giocatori, host incluso)
   const readyCounts = useMemo(() => {
-    const nonHost = players.filter((p) => !p.is_host)
-    const ready = nonHost.filter((p) => p.is_ready)
-    return { ready: ready.length, total: nonHost.length }
+    const ready = players.filter((p) => p.is_ready)
+    return { ready: ready.length, total: players.length }
   }, [players])
 
   // My player
@@ -104,9 +103,9 @@ const LobbyScreen = () => {
     removePlayer(id)
   }
 
-  // Toggle ready (client only)
+  // Toggle ready (tutti, host incluso)
   const handleToggleReady = useCallback(async () => {
-    if (!isOnline || isHost) return
+    if (!isOnline) return
     const { data, error } = await rpcToggleReady(roomCode, localPlayerId)
     if (error) {
       console.error('[Lobby] toggleReady error:', error)
@@ -235,7 +234,7 @@ const LobbyScreen = () => {
                 player={p}
                 showScore={false}
                 size="lg"
-                dimmed={!p.is_host && !p.is_ready}
+                dimmed={!p.is_ready}
               />
               <div
                 className="text-center font-medium"
@@ -251,7 +250,7 @@ const LobbyScreen = () => {
               >
                 {p.name}
               </div>
-              {!p.is_host && p.is_ready && (
+              {p.is_ready && (
                 <div
                   style={{
                     position: 'absolute',
@@ -272,23 +271,6 @@ const LobbyScreen = () => {
                   ✓
                 </div>
               )}
-              {p.is_host && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: -4,
-                    right: -4,
-                    background: 'var(--accent)',
-                    borderRadius: 6,
-                    padding: '1px 5px',
-                    fontSize: 9,
-                    color: 'white',
-                    fontWeight: 700,
-                  }}
-                >
-                  HOST
-                </div>
-              )}
             </motion.div>
           ))}
         </motion.div>
@@ -301,19 +283,18 @@ const LobbyScreen = () => {
       </div>
 
       <div className="screen-footer">
-        {/* Client: bottone Pronto */}
-        {isOnline && !isHost && (
+        {/* Bottone Pronto per tutti (host incluso) — visibile solo dopo aver aggiunto il nome */}
+        {isOnline && hostHasJoined && (
           <ReadyButton
             isReady={myIsReady}
             onToggle={handleToggleReady}
             label="Pronto"
+            disabled={players.length < 2}
           />
         )}
-
-        {/* Host: messaggio informativo */}
-        {isOnline && isHost && hostHasJoined && (
-          <p style={{ color: 'var(--muted)', fontSize: 'clamp(13px, 1.8dvh, 16px)', textAlign: 'center' }}>
-            La partita inizia quando tutti i giocatori sono pronti
+        {isOnline && players.length < 2 && hostHasJoined && (
+          <p style={{ color: 'var(--muted)', fontSize: 'clamp(12px, 1.5dvh, 14px)', textAlign: 'center' }}>
+            Servono almeno 2 giocatori
           </p>
         )}
       </div>

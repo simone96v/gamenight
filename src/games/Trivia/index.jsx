@@ -1,9 +1,7 @@
 // Entry point del gioco Trivia — modello "pronto democratico".
-// L'host vede la HostView (spettatore), i client la ClientView.
-// Il routing tra le fasi (question, reveal, final) è gestito internamente.
+// Tutti i giocatori (host incluso) vedono la stessa interfaccia.
 
 import { useTrivia } from './useTrivia'
-import HostView from './HostView'
 import ClientView from './ClientView'
 import Spinner from '../../components/ui/Spinner'
 
@@ -19,11 +17,7 @@ const Trivia = () => {
     )
   }
 
-  return trivia.isHost ? (
-    <HostView {...trivia} />
-  ) : (
-    <ClientView {...trivia} />
-  )
+  return <ClientView {...trivia} />
 }
 
 export default Trivia
