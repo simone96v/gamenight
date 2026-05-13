@@ -203,8 +203,8 @@ const TriviaLobbyScreen = () => {
     }
   }, [isHost, launching, questionsPerRound, categoriesPlayed, roundIdx, roomCode, timerDuration, showError])
 
-  const ENTRY_TITLES = ['🎬 Round 1', '🎯 Round 2', '🏆 Round Finale']
-  const roundTitle = ENTRY_TITLES[roundIdx] ?? `Round ${roundIdx + 1}`
+  const roundTitles = ['🎬 Round 1', '🎯 Round 2', '🏆 Round Finale']
+  const roundTitle = roundTitles[roundIdx] ?? `Round ${roundIdx + 1}`
 
   return (
     <div className="screen screen-narrow">
@@ -222,9 +222,10 @@ const TriviaLobbyScreen = () => {
 
       <div className="screen-body" style={{
         justifyContent: 'flex-start',
-        gap: 'clamp(12px, 2dvh, 18px)',
-        paddingTop: 'clamp(8px, 1.5dvh, 14px)',
+        gap: 'clamp(10px, 1.5dvh, 14px)',
+        paddingTop: 'clamp(4px, 1dvh, 10px)',
       }}>
+        {/* Title + subtitle */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -233,12 +234,27 @@ const TriviaLobbyScreen = () => {
           <GradientTitle as="h1" size="lg">{roundTitle}</GradientTitle>
           <p style={S.subtitle}>
             {categoriesPlayed.length === 0
-              ? 'La ruota decide la categoria — preparati!'
-              : `Già giocato: ${categoriesPlayed.map((id) => ALL_CATEGORIES.find((c) => c.id === id)?.emoji).join(' ')}`}
+              ? 'La ruota decide la categoria!'
+              : `Giocate: ${categoriesPlayed.map((id) => ALL_CATEGORIES.find((c) => c.id === id)?.emoji).join(' ')}`}
           </p>
         </motion.div>
 
-        {/* Settings card */}
+        {/* Players strip */}
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.03 }}
+          style={S.playersStrip}
+        >
+          {players.map((p) => (
+            <div key={p.id} style={S.playerChip}>
+              <div style={{ ...S.playerDot, backgroundColor: p.color }} />
+              <span style={S.playerName}>{p.name}</span>
+            </div>
+          ))}
+        </motion.div>
+
+        {/* Settings row compatta */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -246,7 +262,7 @@ const TriviaLobbyScreen = () => {
           style={S.settingsCard}
         >
           <div style={S.settingRow}>
-            <span style={S.settingLabel}>Domande per round</span>
+            <span style={S.settingLabel}>Domande</span>
             <Stepper
               value={questionsPerRound}
               onDecrement={() => isHost && handleQuestionsChange(questionsPerRound - 1)}
@@ -255,11 +271,6 @@ const TriviaLobbyScreen = () => {
               min={3} max={15}
             />
           </div>
-          {roundIdx > 0 && (
-            <p style={S.hint}>
-              Impostazioni fissate per questa sessione 🔒
-            </p>
-          )}
         </motion.div>
 
         {/* Wheel — sincronizzata via spinTarget */}
@@ -319,17 +330,47 @@ const S = {
     textAlign: 'center',
   },
   subtitle: {
-    margin: '6px 0 0',
+    margin: '4px 0 0',
     color: 'var(--muted)',
-    fontSize: 'clamp(13px, 1.6dvh, 15px)',
+    fontSize: 'clamp(12px, 1.5dvh, 14px)',
     fontWeight: 500,
+  },
+  playersStrip: {
+    display: 'flex',
+    justifyContent: 'center',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  playerChip: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 5,
+    background: 'var(--surface)',
+    border: '1px solid var(--border)',
+    borderRadius: 999,
+    padding: '4px 10px 4px 6px',
+  },
+  playerDot: {
+    width: 18,
+    height: 18,
+    borderRadius: '50%',
+    flexShrink: 0,
+  },
+  playerName: {
+    fontSize: 'clamp(11px, 1.3dvh, 13px)',
+    fontWeight: 700,
+    color: 'var(--text)',
+    maxWidth: 70,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
   },
   settingsCard: {
     background: 'var(--surface)',
     borderRadius: 'var(--radius-sm)',
     border: '1px solid var(--border)',
     boxShadow: 'var(--shadow-sm)',
-    padding: 'clamp(12px, 2dvh, 16px) clamp(14px, 3vw, 18px)',
+    padding: 'clamp(8px, 1.2dvh, 12px) clamp(14px, 3vw, 18px)',
   },
   settingRow: {
     display: 'flex',
@@ -342,20 +383,14 @@ const S = {
     fontWeight: 700,
     color: 'var(--text)',
   },
-  hint: {
-    margin: '8px 0 0',
-    fontSize: 'clamp(11px, 1.3dvh, 12px)',
-    color: 'var(--muted)',
-    textAlign: 'center',
-  },
   stepBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
+    width: 34,
+    height: 34,
+    borderRadius: 10,
     border: '1.5px solid var(--border-strong)',
     background: 'var(--surface)',
     color: 'var(--text)',
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: 800,
     cursor: 'pointer',
     display: 'flex',
@@ -363,9 +398,9 @@ const S = {
     justifyContent: 'center',
   },
   stepValue: {
-    minWidth: 28,
+    minWidth: 26,
     textAlign: 'center',
-    fontSize: 'clamp(16px, 2dvh, 20px)',
+    fontSize: 'clamp(15px, 1.8dvh, 19px)',
     fontWeight: 900,
     color: 'var(--accent)',
   },

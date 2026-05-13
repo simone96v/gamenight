@@ -160,7 +160,7 @@ export const useTrivia = () => {
   const hostReplay = useCallback(async () => {
     if (!isOnline || !isHost || advancing) return
     setAdvancing(true)
-    const { setAwaitingGameChange, showError } = useSession.getState()
+    const { showError } = useSession.getState()
 
     const sessionInfo = gameState?.triviaSession
     const hasMoreRounds = sessionInfo
@@ -177,8 +177,8 @@ export const useTrivia = () => {
       return
     }
 
-    // Fine sessione: reset session + torna in trivia_lobby per nuovo giro.
-    setAwaitingGameChange(true)
+    // Fine sessione: reset completo + torna in trivia_lobby per nuovo giro.
+    // NON usiamo awaitingGameChange — Realtime naviga correttamente tutti.
     const s = useSession.getState()
     const resetPlayers = (s.players || []).map((p) => ({
       ...p,
@@ -196,10 +196,11 @@ export const useTrivia = () => {
       selectedGame: 'trivia',
       selectedCategory: s.gameState?.selectedCategory ?? null,
       categoryVotes: s.gameState?.categoryVotes ?? {},
-      // triviaSession verrà reinizializzato dalla lobby
+      // null esplicito: necessario perché syncFromRemote dell'host fa
+      // { ...s.gameState, ...rest } — senza null il vecchio triviaSession sopravvive.
+      triviaSession: null,
     }
     await pushRoom(roomCode, 'trivia_lobby', newState)
-    setAwaitingGameChange(false)
     setAdvancing(false)
   }, [isOnline, isHost, advancing, roomCode, localPlayerId, gameState])
 
