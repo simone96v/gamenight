@@ -157,7 +157,7 @@ const TriviaLobbyScreen = () => {
   // Spinner clicca Spin → sceglie vincitore → pusha spinTarget su DB.
   // L'host avvierà la generazione AI in parallelo (vedi useEffect sopra).
   const handleRequestSpin = useCallback(() => {
-    if (!isSpinner || launching) return
+    if (!isSpinner || launching || spinTarget) return
     if (availableCategories.length === 0) return
 
     const winIdx = Math.floor(Math.random() * availableCategories.length)
@@ -180,7 +180,7 @@ const TriviaLobbyScreen = () => {
         ...newGameState,
       })
     }
-  }, [isSpinner, launching, availableCategories])
+  }, [isSpinner, launching, spinTarget, availableCategories])
 
   // Animazione completata — le domande sono GIA' in generazione dal click Spin.
   const handleSpinEnd = useCallback(async (category) => {
@@ -305,7 +305,7 @@ const TriviaLobbyScreen = () => {
             spinTarget={spinTarget}
             onRequestSpin={handleRequestSpin}
             onSpinEnd={handleSpinEnd}
-            disabled={launching}
+            disabled={launching || !!spinTarget}
             canSpin={isSpinner}
             spinnerName={spinnerPlayer?.name ?? ''}
           />
