@@ -6,6 +6,8 @@ import SentenzaSelectionWaiting from './components/SentenzaSelectionWaiting'
 import JudgingSetup from './components/JudgingSetup'
 import SentenzaJudging from './components/SentenzaJudging'
 import SentenzaJudgingWaiting from './components/SentenzaJudgingWaiting'
+import SentenzaReveal from './components/SentenzaReveal'
+import SentenzaFinal from './components/SentenzaFinal'
 
 const SAMPLE_PROMPT = "Il mio terapeuta ha mollato dopo che gli ho parlato di ___"
 const SAMPLE_ANSWER = "tre Spritz, due tequila e un crollo emotivo"
@@ -22,6 +24,18 @@ const MOCK_PLAYERS = [
   { id: 'p2', name: 'Marco', color: '#3B82F6' },
   { id: 'p3', name: 'Luca', color: '#22C55E' },
   { id: 'p4', name: 'Sara', color: '#F59E0B' },
+]
+
+const MOCK_SCORED = [
+  { id: 'p1', name: 'Giulia', color: '#EC4899', score: 4, roundsWon: 4 },
+  { id: 'p2', name: 'Marco', color: '#3B82F6', score: 2, roundsWon: 2 },
+  { id: 'p3', name: 'Luca', color: '#22C55E', score: 3, roundsWon: 3 },
+  { id: 'p4', name: 'Sara', color: '#F59E0B', score: 1, roundsWon: 1 },
+]
+
+const MOCK_OTHER_PROOFS = [
+  { id: 'op1', answer: 'la mia ex che ora è su Tinder', playerName: 'Luca' },
+  { id: 'op2', answer: 'un piatto di carbonara fatta con la panna', playerName: 'Sara' },
 ]
 
 const MOCK_PROOFS = [
@@ -173,20 +187,26 @@ const SentenzaTest = () => {
           />
         )}
 
-        {!['promptcard', 'selection', 'selection_judge', 'judging_setup', 'judging', 'judging_wait'].includes(phase) && (
-          <div style={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'var(--surface)',
-            borderRadius: 'var(--radius)',
-            border: '1px solid var(--border)',
-          }}>
-            <p style={{ color: 'var(--muted)', fontWeight: 600 }}>
-              Phase: <strong style={{ color: '#6366F1' }}>{phase}</strong> — in arrivo
-            </p>
-          </div>
+        {phase === 'reveal' && (
+          <SentenzaReveal
+            prompt={SAMPLE_PROMPT}
+            winnerAnswer={SAMPLE_ANSWER}
+            winnerName="Giulia"
+            winnerColor="#EC4899"
+            otherProofs={MOCK_OTHER_PROOFS}
+            isHost
+            onNext={() => console.log('next round')}
+          />
+        )}
+
+        {phase === 'final' && (
+          <SentenzaFinal
+            players={MOCK_SCORED}
+            localPlayerId="p1"
+            isHost
+            onReplay={() => console.log('replay')}
+            onChangeGame={() => console.log('change game')}
+          />
         )}
       </div>
     </div>
