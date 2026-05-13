@@ -76,6 +76,21 @@ const MappaLobbyScreen = () => {
           setLaunching(false)
           return
         }
+        useSession.setState({
+          players: fullState.players,
+          gameState: {
+            deck,
+            current_round: 0,
+            current_question: deck[0],
+            pins: {},
+            timer_duration: 30,
+            mappaRounds: rounds,
+          },
+          currentPhase: 'mappa_countdown',
+          questionStartedAt: now,
+          activeGame: 'mappa',
+        })
+        navigate('/game/mappa', { replace: true })
       } else {
         useSession.setState({
           players: fullState.players,

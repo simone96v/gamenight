@@ -7,9 +7,11 @@ import CountdownOverlay from '../../components/CountdownOverlay'
 import Spinner from '../../components/ui/Spinner'
 import questions from './data/mappa.json'
 
-const MappaQuestion = lazy(() => import('./components/MappaQuestion'))
-const MappaReveal = lazy(() => import('./components/MappaReveal'))
-const MappaFinal = lazy(() => import('./components/MappaFinal'))
+const retryImport = (fn) => fn().catch(() => new Promise((r) => setTimeout(r, 1500)).then(fn))
+
+const MappaQuestion = lazy(() => retryImport(() => import('./components/MappaQuestion')))
+const MappaReveal = lazy(() => retryImport(() => import('./components/MappaReveal')))
+const MappaFinal = lazy(() => retryImport(() => import('./components/MappaFinal')))
 
 const Loading = () => (
   <div className="flex items-center justify-center" style={{ flex: 1 }}>

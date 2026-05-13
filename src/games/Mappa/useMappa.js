@@ -165,14 +165,19 @@ export const useMappa = () => {
     const dk = s.gameState?.deck ?? []
     const rd = s.gameState?.current_round ?? 0
 
-    if (answer) {
-      s.players.forEach((p) => {
-        const pin = allPins[p.id]
-        if (!pin) return
-        const dist = haversine(pin.lat, pin.lng, answer.lat, answer.lng)
-        const pts = calcScore(dist)
-        if (pts > 0) useSession.getState().addScore(p.id, pts)
-      })
+    try {
+      if (answer && typeof answer.lat === 'number' && typeof answer.lng === 'number') {
+        s.players.forEach((p) => {
+          const pin = allPins[p.id]
+          if (!pin || typeof pin.lat !== 'number' || typeof pin.lng !== 'number') return
+          const dist = haversine(pin.lat, pin.lng, answer.lat, answer.lng)
+          if (!isFinite(dist)) return
+          const pts = calcScore(dist)
+          if (pts > 0) useSession.getState().addScore(p.id, pts)
+        })
+      }
+    } catch (e) {
+      console.error('[mappa] scoring error:', e)
     }
 
     const nextRound = rd + 1
