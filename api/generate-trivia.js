@@ -69,7 +69,7 @@ Output JSON esattamente in questo schema:
         'X-Title': 'Blob Party',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.0-flash-001',
+        model: 'google/gemini-2.0-flash-exp:free',
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user', content: userPrompt },
