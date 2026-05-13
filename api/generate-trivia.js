@@ -9,16 +9,18 @@
 // Senza la env var ritorna { questions: [], error: 'no_api_key' } e il client
 // fa fallback al pool locale.
 
-const SYSTEM_PROMPT = `Sei un game designer di trivia alcolico in italiano per amici a una serata di bevute.
-Regole:
+const SYSTEM_PROMPT = `Sei il game master di un trivia alcolico EPICO tra amici a una serata di bevute.
+Il tuo obiettivo: generare domande ORIGINALI, DIVERTENTI e MAI BANALI ogni volta.
+
+Regole ferree:
 - Ogni domanda ha esattamente 4 risposte, con UNA SOLA risposta corretta
-- Le risposte sbagliate sono plausibili ma chiaramente errate (no trick obvious)
-- Tono: brillante, divertente, da serata tra amici con drink in mano
-- Aggiungi un tocco di umorismo e ironia nel testo (battutine, emoji singolare)
-- Il tema è ALCOLICO: le domande devono ruotare attorno al mondo del bere, feste, locali, cultura etilica
-- Difficoltà variata (mix easy/medium/hard, indicato nel campo)
-- Topic specifico per ogni domanda (es: cocktail, birra, vino, storia, cinema)
-- Output: SOLO JSON valido, niente markdown, niente fences \`\`\`, niente preambolo`
+- Le risposte sbagliate devono essere plausibili E divertenti (no risposte ovviamente assurde)
+- Tono: brillante, scanzonato, da serata con amici e drink in mano
+- Metti creatività nelle domande: situazioni assurde, curiosità pazzesche, fatti incredibili ma veri
+- Mescola domande di cultura generale a tema alcolico con chicche poco conosciute
+- NON ripetere mai le solite domande classiche da quiz — inventa, sorprendi, fai ridere
+- Difficoltà variata: ~30% easy, ~50% medium, ~20% hard
+- Output: SOLO JSON valido, niente markdown, niente fences, niente preambolo`
 
 const CATEGORY_DESCRIPTIONS = {
   cocktail: 'cocktail e mixology: ricette classiche (Negroni, Mojito, Spritz, Margarita...), ingredienti, tecniche di preparazione, storia dei cocktail, barman famosi, liquori e amari',
@@ -49,15 +51,21 @@ export default async function handler(req, res) {
     return
   }
 
-  const userPrompt = `Genera ${count} domande nuove di trivia per la categoria "${category}" (${CATEGORY_DESCRIPTIONS[category]}).
+  // Seed random per forzare l'AI a generare domande diverse ogni volta
+  const seed = Math.random().toString(36).slice(2, 8)
+
+  const userPrompt = `[seed:${seed}] Genera ${count} domande ORIGINALI e FRESCHE di trivia per la categoria "${category}" (${CATEGORY_DESCRIPTIONS[category]}).
+
+IMPORTANTE: queste domande devono essere UNICHE e MAI viste prima. Inventa domande creative, curiosità sorprendenti, fatti poco conosciuti. Sorprendi i giocatori!
+
 Output JSON esattamente in questo schema:
 {"questions":[{"question":"...","answers":["...","...","...","..."],"correct":0,"difficulty":"easy","topic":"..."}]}
 
-- "correct" è l'indice 0-3 della risposta giusta
-- "difficulty" può essere "easy", "medium" o "hard"
-- "topic" è una singola parola (es: "cinema", "musica", "geografia")
-- Varia i topic per dare ricchezza
-- Le domande devono essere DIVERSE dalle classiche (no "capitale Australia")`
+- "correct" è l'indice 0-3 della risposta giusta (VARIA la posizione della risposta corretta, non metterla sempre in 0!)
+- "difficulty": mix di "easy", "medium", "hard"
+- "topic": una parola che descrive il sotto-tema
+- Mescola la posizione della risposta corretta (a volte 0, a volte 1, 2, 3)
+- Rendi le domande divertenti e coinvolgenti per un gruppo di amici`
 
   try {
     const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
