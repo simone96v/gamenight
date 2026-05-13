@@ -1,10 +1,10 @@
-// Vercel serverless function: genera N domande di trivia in italiano via Groq.
+// Vercel serverless function: genera N domande di trivia in italiano via OpenRouter.
 //
 // Setup:
-//   1. Iscriviti gratis a console.groq.com
-//   2. Genera una API key
+//   1. Iscriviti su openrouter.ai
+//   2. Genera una API key (Keys → Create Key)
 //   3. Vercel dashboard → blob-party project → Settings → Environment Variables:
-//      - GROQ_API_KEY = "gsk_xxxxxx..." (Production)
+//      - OPENROUTER_API_KEY = "sk-or-v1-xxxxxx..." (tutti gli environment)
 //
 // Senza la env var ritorna { questions: [], error: 'no_api_key' } e il client
 // fa fallback al pool locale.
@@ -38,7 +38,7 @@ export default async function handler(req, res) {
   }
 
   const { category, count = 10 } = req.body || {}
-  const apiKey = process.env.GROQ_API_KEY
+  const apiKey = process.env.OPENROUTER_API_KEY
 
   if (!CATEGORY_DESCRIPTIONS[category]) {
     res.status(400).json({ error: 'invalid_category' })
@@ -60,14 +60,16 @@ Output JSON esattamente in questo schema:
 - Le domande devono essere DIVERSE dalle classiche (no "capitale Australia")`
 
   try {
-    const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://blob-party-app.vercel.app',
+        'X-Title': 'Blob Party',
       },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
+        model: 'google/gemini-2.0-flash-001',
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user', content: userPrompt },
@@ -81,7 +83,7 @@ Output JSON esattamente in questo schema:
     if (!resp.ok) {
       const errText = await resp.text().catch(() => '')
       // eslint-disable-next-line no-console
-      console.error('[groq]', resp.status, errText.slice(0, 200))
+      console.error('[openrouter]', resp.status, errText.slice(0, 200))
       res.status(200).json({ questions: [], error: `ai_status_${resp.status}` })
       return
     }
@@ -126,7 +128,7 @@ Output JSON esattamente in questo schema:
     res.status(200).json({ questions })
   } catch (err) {
     // eslint-disable-next-line no-console
-    console.error('[api/generate-trivia]', err)
+    console.error('[openrouter]', err)
     res.status(200).json({ questions: [], error: 'exception' })
   }
 }
