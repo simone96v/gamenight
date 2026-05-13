@@ -6,8 +6,8 @@
 //   realAnswer: { lat, lng, name } — pin risposta reale (solo in reveal)
 //   disabled: bool — blocca interazione
 
-import { Component } from 'react'
-import { MapContainer, TileLayer, Marker, Polyline, useMapEvents } from 'react-leaflet'
+import { Component, useEffect } from 'react'
+import { MapContainer, TileLayer, Marker, Polyline, useMapEvents, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
@@ -68,6 +68,22 @@ const createAutoIcon = () => L.divIcon({
   html: pinSvg('#9CA3AF'),
 })
 
+const MapReady = ({ pins, realAnswer }) => {
+  const map = useMap()
+  useEffect(() => {
+    const t = setTimeout(() => {
+      map.invalidateSize()
+      const points = [...pins.map((p) => [p.lat, p.lng])]
+      if (realAnswer) points.push([realAnswer.lat, realAnswer.lng])
+      if (points.length >= 2) {
+        map.fitBounds(points, { padding: [30, 30], maxZoom: 9 })
+      }
+    }, 150)
+    return () => clearTimeout(t)
+  }, [map, pins, realAnswer])
+  return null
+}
+
 const ClickHandler = ({ onPinDrop, disabled }) => {
   useMapEvents({
     click: (e) => {
@@ -108,6 +124,8 @@ const MapView = ({
         url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
       />
+
+      {revealMode && <MapReady pins={safePins} realAnswer={safeAnswer} />}
 
       {!revealMode && onPinDrop && (
         <ClickHandler onPinDrop={onPinDrop} disabled={disabled} />
