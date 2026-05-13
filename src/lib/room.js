@@ -245,6 +245,18 @@ export const rpcPlayerUpdate = async (roomCode, playerId, patch) => {
   return { data, error: null }
 }
 
+// Voto atomico: mergia il voto nel campo JSONB senza sovrascrivere gli altri.
+// Risolve la race-condition fra voti simultanei di client diversi.
+export const rpcCastVote = async (roomCode, field, playerId, value) => {
+  const { error } = await supabase.rpc('cast_vote', {
+    p_code: roomCode,
+    p_field: field,
+    p_player_id: playerId,
+    p_value: value,
+  })
+  return { error }
+}
+
 // Elimina la stanza. Chiamato su "Nuova serata" dallo scoreboard (host).
 export const deleteRoom = async (code) => {
   const { error } = await supabase.from('rooms').delete().eq('code', code)

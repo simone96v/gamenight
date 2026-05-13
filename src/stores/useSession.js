@@ -8,7 +8,7 @@
 
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import { pushRoom } from '../lib/room'
+import { pushRoom, rpcCastVote } from '../lib/room'
 import { useSettings } from './useSettings'
 import { pickColor } from '../utils/colors'
 
@@ -211,17 +211,17 @@ export const useSession = create(
 
       // ---- voting (multi) ----
       // Invia il voto del local player per un campo (categoryVotes | gameVotes).
-      // Eccezione alla regola "solo host pusha": ogni client deve poter votare.
+      // Usa RPC atomico server-side per evitare race-condition fra voti simultanei.
       castVote: async (field, value) => {
         const s = get()
         if (s.mode !== 'online' || !s.roomCode || !s.localPlayerId) return
+        // Aggiorna localmente per UI istantanea (verrà confermato via Realtime).
         const current = s.gameState?.[field] || {}
         const updated = { ...current, [s.localPlayerId]: value }
         const newGameState = { ...s.gameState, [field]: updated }
-        // Aggiorna anche localmente per UI istantanea (verrà confermato via Realtime).
         set({ gameState: newGameState })
-        const fullState = buildState({ ...s, gameState: newGameState })
-        await pushRoom(s.roomCode, s.currentPhase, fullState)
+        // RPC atomico: mergia il voto nel JSONB senza sovrascrivere gli altri.
+        await rpcCastVote(s.roomCode, field, s.localPlayerId, value)
       },
 
       // L'host chiude la votazione, calcola il winner e avanza fase.
