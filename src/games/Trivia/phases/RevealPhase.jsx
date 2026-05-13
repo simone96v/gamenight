@@ -1,6 +1,7 @@
-// Fase reveal: header + HUD + question card compatta + grid risposte con esito +
-// score popup + voters distribution + footer host-only (Avanti / Chi ha vinto).
+// Fase reveal: category chip + header + HUD + question card compatta + grid risposte
+// con esito + score popup + voters distribution + footer host-only (Avanti / Chi ha vinto).
 
+import { motion } from 'framer-motion'
 import AppHeader from '../../../components/AppHeader'
 import GameHUD from '../../../components/GameHUD'
 import IconButton from '../../../components/ui/IconButton'
@@ -22,6 +23,7 @@ const RevealPhase = ({
   isHost,
   hasMoreQuestions,
   advancing,
+  category,
   onAdvance,
   onExit,
 }) => {
@@ -62,7 +64,10 @@ const RevealPhase = ({
       />
 
       <div style={bodyStyle}>
-        <QuestionCard question={currentQuestion} compact />
+        {/* Category chip */}
+        {category && <CategoryChip category={category} />}
+
+        <QuestionCard question={currentQuestion} />
 
         <div style={gridStyle}>
           {currentQuestion?.answers.map((ans, i) => (
@@ -99,6 +104,37 @@ const RevealPhase = ({
   )
 }
 
+const CategoryChip = ({ category }) => (
+  <motion.div
+    initial={{ opacity: 0, y: -6 }}
+    animate={{ opacity: 1, y: 0 }}
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      flexShrink: 0,
+    }}
+  >
+    <span style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: 6,
+      background: category.color,
+      color: '#fff',
+      padding: '5px 14px',
+      borderRadius: 999,
+      fontSize: 'clamp(12px, 1.5dvh, 14px)',
+      fontWeight: 800,
+      letterSpacing: '0.02em',
+      boxShadow: `0 2px 10px ${category.color}44`,
+    }}>
+      <span style={{ fontSize: 'clamp(14px, 1.8dvh, 18px)' }}>{category.emoji}</span>
+      {category.label}
+    </span>
+  </motion.div>
+)
+
 const RoundBadge = ({ n, total }) => (
   <div style={{
     background: 'var(--bg2)',
@@ -128,8 +164,9 @@ const bodyStyle = {
   display: 'flex',
   flexDirection: 'column',
   flex: 1,
+  justifyContent: 'center',
   padding: 'clamp(10px, 1.8dvh, 18px) clamp(14px, 3vw, 22px)',
-  gap: 'clamp(10px, 1.6dvh, 16px)',
+  gap: 'clamp(8px, 1.2dvh, 12px)',
   overflow: 'hidden',
 }
 

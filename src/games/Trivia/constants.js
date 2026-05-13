@@ -1,6 +1,21 @@
 // Costanti condivise del gioco Trivia: colori, label, config scoring.
 // Centralizzate qui per evitare duplicazioni tra phase components.
 
+// 8 categorie tematiche — trivia alcolico tra amici 🍻
+export const TRIVIA_CATEGORIES = [
+  { id: 'cocktail',  label: 'Cocktail',   emoji: '🍹', color: '#7C3AED' },
+  { id: 'sbronze',   label: 'Sbronze',    emoji: '🥴', color: '#F59E0B' },
+  { id: 'birra',     label: 'Birra&Vino', emoji: '🍺', color: '#16A34A' },
+  { id: 'giochi',    label: 'Giochi',     emoji: '🎲', color: '#EF4444' },
+  { id: 'vip',       label: 'VIP',        emoji: '⭐', color: '#EC4899' },
+  { id: 'musica',    label: 'Musica',     emoji: '🎵', color: '#3B82F6' },
+  { id: 'cinema',    label: 'Cinema',     emoji: '🎬', color: '#F97316' },
+  { id: 'hot',       label: 'Hot',        emoji: '🌶️', color: '#06B6D4' },
+]
+
+export const getCategoryById = (id) =>
+  TRIVIA_CATEGORIES.find((c) => c.id === id) ?? null
+
 export const ANSWER_LABELS = ['A', 'B', 'C', 'D']
 
 // Palette dei 4 tile risposta. Distintivi anche per chi è daltonico (label + posizione).

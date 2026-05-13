@@ -1,26 +1,82 @@
-// Wheel delle categorie. SVG con segmenti colorati, pointer fisso in alto,
-// animazione di rotazione che termina su una categoria casuale (esclusione
-// di categorie già giocate gestita lato chiamante via prop `categories`).
+// Wheel delle categorie — sincronizzata tra host e client.
+//
+// Flusso:
+//   1. Host clicca Spin → chiama onRequestSpin()
+//   2. Il parent sceglie il vincitore e lo pusha su DB come spinTarget
+//   3. TUTTI i client ricevono spinTarget via Realtime
+//   4. La wheel anima verso quella categoria (~4s + 2s celebrazione)
+//   5. Al termine chiama onSpinEnd(category) — solo l'host lo gestisce
 //
 // Props:
-//   - categories: array di { id, label, emoji, color } da mostrare
-//   - onSpinEnd(category): callback al termine dell'animazione (~4s)
-//   - disabled: bool — disabilita il bottone
+//   - categories: array di { id, label, emoji, color }
+//   - spinTarget: category ID da raggiungere (null = idle)
+//   - onRequestSpin(): host chiede di spinnare
+//   - onSpinEnd(category): dopo animazione + celebrazione
+//   - disabled: disabilita il bottone
+//   - isHost: mostra/nasconde il bottone
 
-import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { useState, useEffect, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const WHEEL_SIZE = 280
 const CX = WHEEL_SIZE / 2
 const CY = WHEEL_SIZE / 2
 const R = (WHEEL_SIZE / 2) - 4
 
-const CategoryWheel = ({ categories = [], onSpinEnd, disabled = false }) => {
+const CategoryWheel = ({
+  categories = [],
+  spinTarget = null,
+  onRequestSpin,
+  onSpinEnd,
+  disabled = false,
+  isHost = false,
+}) => {
   const [rotation, setRotation] = useState(0)
   const [spinning, setSpinning] = useState(false)
   const [landed, setLanded] = useState(null)
+  const [celebrating, setCelebrating] = useState(false)
+  const processedTarget = useRef(null)
 
   const segCount = categories.length
+  const segAngle = segCount > 0 ? 360 / segCount : 0
+
+  // Quando spinTarget cambia (arriva dal DB), avvia l'animazione
+  useEffect(() => {
+    if (!spinTarget) return
+    if (spinTarget === processedTarget.current) return
+    if (segCount === 0) return
+
+    const winIdx = categories.findIndex((c) => c.id === spinTarget)
+    if (winIdx === -1) return
+
+    processedTarget.current = spinTarget
+    setSpinning(true)
+    setLanded(null)
+    setCelebrating(false)
+
+    const segCenter = winIdx * segAngle + segAngle / 2
+    const offset = ((360 - segCenter) % 360 + 360) % 360
+    const total = 360 * 6 + offset
+
+    setRotation((prev) => prev + total)
+
+    // Wheel stops ~4.2s → celebration ~2.2s → onSpinEnd
+    const spinTimer = setTimeout(() => {
+      setSpinning(false)
+      setLanded(categories[winIdx])
+      setCelebrating(true)
+
+      const celebTimer = setTimeout(() => {
+        setCelebrating(false)
+        onSpinEnd?.(categories[winIdx])
+      }, 2200)
+
+      return () => clearTimeout(celebTimer)
+    }, 4200)
+
+    return () => clearTimeout(spinTimer)
+  }, [spinTarget, categories, segCount, segAngle, onSpinEnd])
+
   if (segCount === 0) {
     return (
       <div style={{ textAlign: 'center', color: 'var(--muted)', padding: 24 }}>
@@ -28,39 +84,64 @@ const CategoryWheel = ({ categories = [], onSpinEnd, disabled = false }) => {
       </div>
     )
   }
-  const segAngle = 360 / segCount
 
-  const spin = () => {
-    if (spinning || disabled) return
-    setSpinning(true)
-    setLanded(null)
-
-    // Indice vincente
-    const winIdx = Math.floor(Math.random() * segCount)
-
-    // Centro del segmento vincente nel sistema "0deg in alto, CW positive".
-    // I segmenti sono disegnati partendo da -90 (top) e andando in senso orario.
-    const segCenter = winIdx * segAngle + segAngle / 2
-
-    // Rotazione: 6 giri pieni + offset per portare segCenter al pointer (top, 0deg).
-    // Visto che il wheel ruota mentre i segmenti seguono, l'angolo finale =
-    // -segCenter (mod 360) per allineare il centro del segmento con il pointer.
-    const offset = ((360 - segCenter) % 360 + 360) % 360
-    const total = 360 * 6 + offset
-
-    setRotation((prev) => prev + total)
-
-    setTimeout(() => {
-      setSpinning(false)
-      setLanded(categories[winIdx])
-      onSpinEnd?.(categories[winIdx])
-    }, 4200)
-  }
+  const isBusy = spinning || celebrating
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, position: 'relative' }}>
+      {/* Celebration overlay */}
+      <AnimatePresence>
+        {celebrating && landed && (
+          <motion.div
+            key="celebration"
+            initial={{ opacity: 0, scale: 0.6 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+            style={celebrationOverlayStyle}
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1, rotate: [0, -8, 8, -4, 0] }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
+              style={{ fontSize: 'clamp(64px, 14vw, 88px)', lineHeight: 1, filter: 'drop-shadow(0 6px 18px rgba(0,0,0,0.3))' }}
+            >
+              {landed.emoji}
+            </motion.div>
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              style={{
+                margin: 0,
+                fontSize: 'clamp(24px, 5vw, 34px)',
+                fontWeight: 900,
+                color: '#fff',
+                letterSpacing: '-0.01em',
+                textShadow: '0 2px 8px rgba(0,0,0,0.3)',
+              }}
+            >
+              {landed.label}
+            </motion.p>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.8 }}
+              transition={{ delay: 0.4 }}
+              style={{
+                margin: 0,
+                fontSize: 'clamp(13px, 1.6dvh, 16px)',
+                fontWeight: 600,
+                color: 'rgba(255,255,255,0.85)',
+              }}
+            >
+              Preparati... si parte! 🚀
+            </motion.p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div style={{ position: 'relative', width: WHEEL_SIZE, height: WHEEL_SIZE + 24 }}>
-        {/* Pointer (triangolo in alto) */}
+        {/* Pointer */}
         <div style={{
           position: 'absolute',
           top: 0,
@@ -97,12 +178,10 @@ const CategoryWheel = ({ categories = [], onSpinEnd, disabled = false }) => {
             const largeArc = segAngle > 180 ? 1 : 0
             const path = `M ${CX} ${CY} L ${x1} ${y1} A ${R} ${R} 0 ${largeArc} 1 ${x2} ${y2} Z`
 
-            // Label angle (centro del segmento)
             const labelAngle = (i * segAngle + segAngle / 2 - 90) * Math.PI / 180
             const lr = R * (segCount > 6 ? 0.62 : 0.6)
             const lx = CX + lr * Math.cos(labelAngle)
             const ly = CY + lr * Math.sin(labelAngle)
-            // Rotazione del testo per seguire la sezione (perpendicolare al raggio)
             const textRotation = i * segAngle + segAngle / 2
 
             return (
@@ -132,42 +211,72 @@ const CategoryWheel = ({ categories = [], onSpinEnd, disabled = false }) => {
               </g>
             )
           })}
-          {/* Center hub */}
           <circle cx={CX} cy={CY} r={20} fill="#fff" stroke="#1F2937" strokeWidth={3} />
           <circle cx={CX} cy={CY} r={8} fill="#1F2937" />
         </motion.svg>
       </div>
 
-      <button
-        type="button"
-        onClick={spin}
-        disabled={spinning || disabled || segCount === 0}
-        style={{
-          background: spinning
-            ? 'var(--surface2)'
-            : 'linear-gradient(135deg, #7C3AED 0%, #EC4899 100%)',
-          color: spinning ? 'var(--muted)' : '#fff',
-          border: 'none',
-          padding: '14px 32px',
-          borderRadius: 16,
-          fontSize: 'clamp(14px, 1.8dvh, 17px)',
-          fontWeight: 900,
-          letterSpacing: '0.01em',
-          cursor: (spinning || disabled) ? 'default' : 'pointer',
-          opacity: disabled ? 0.55 : 1,
-          boxShadow: spinning ? 'none' : '0 8px 20px rgba(124, 58, 237, 0.35)',
-          transition: 'all 0.2s',
-          minWidth: 200,
-        }}
-      >
-        {spinning
-          ? '🌀 Sto spinnando...'
-          : landed
-            ? `🎯 ${landed.emoji} ${landed.label}!`
-            : '🎡 SPIN per scoprire la categoria!'}
-      </button>
+      {/* Spin button (host only) / status text (client) */}
+      {isHost ? (
+        <button
+          type="button"
+          onClick={onRequestSpin}
+          disabled={isBusy || disabled || segCount === 0}
+          style={{
+            background: isBusy
+              ? 'var(--surface2)'
+              : 'linear-gradient(135deg, #7C3AED 0%, #EC4899 100%)',
+            color: isBusy ? 'var(--muted)' : '#fff',
+            border: 'none',
+            padding: '14px 32px',
+            borderRadius: 16,
+            fontSize: 'clamp(14px, 1.8dvh, 17px)',
+            fontWeight: 900,
+            letterSpacing: '0.01em',
+            cursor: (isBusy || disabled) ? 'default' : 'pointer',
+            opacity: disabled ? 0.55 : 1,
+            boxShadow: isBusy ? 'none' : '0 8px 20px rgba(124, 58, 237, 0.35)',
+            transition: 'all 0.2s',
+            minWidth: 200,
+          }}
+        >
+          {spinning
+            ? '🌀 Sto spinnando...'
+            : celebrating
+              ? '🎯 Caricamento...'
+              : '🎡 SPIN!'}
+        </button>
+      ) : (
+        <p style={{
+          margin: 0,
+          textAlign: 'center',
+          color: 'var(--muted)',
+          fontSize: 'clamp(13px, 1.6dvh, 15px)',
+          fontWeight: 600,
+          minHeight: 48,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          {isBusy ? '🌀 La ruota gira...' : '👑 Aspettando che l\'host spinni...'}
+        </p>
+      )}
     </div>
   )
+}
+
+const celebrationOverlayStyle = {
+  position: 'absolute',
+  inset: 0,
+  zIndex: 10,
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 'clamp(10px, 2dvh, 18px)',
+  background: 'radial-gradient(ellipse at center, rgba(124,58,237,0.92) 0%, rgba(31,41,55,0.95) 100%)',
+  borderRadius: 20,
+  backdropFilter: 'blur(12px)',
 }
 
 export default CategoryWheel

@@ -73,6 +73,7 @@ const Trivia = () => {
         isExpired={trivia.isExpired}
         submitting={trivia.submitting}
         isHost={trivia.isHost}
+        category={trivia.currentCategory}
         onAnswer={trivia.submitAnswer}
         onExit={handleChangeGame}
       />
@@ -94,6 +95,7 @@ const Trivia = () => {
         isHost={trivia.isHost}
         hasMoreQuestions={trivia.hasMoreQuestions}
         advancing={trivia.advancing}
+        category={trivia.currentCategory}
         onAdvance={trivia.hostAdvance}
         onExit={handleChangeGame}
       />

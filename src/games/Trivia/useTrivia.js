@@ -18,6 +18,7 @@ import {
   rpcHostAdvance,
   pushRoom,
 } from '../../lib/room'
+import { getCategoryById } from './constants'
 
 export const useTrivia = () => {
   const players = useSession((s) => s.players)
@@ -63,6 +64,13 @@ export const useTrivia = () => {
   const roundResults = gameState?.round_results ?? null
   const totalQuestions = gameState?.deck?.length ?? numQuestions
   const questionNumber = currentRound + 1
+
+  // Current category (from session state)
+  const currentCategoryId = gameState?.triviaSession?.currentCategory ?? null
+  const currentCategory = useMemo(
+    () => getCategoryById(currentCategoryId),
+    [currentCategoryId],
+  )
 
   // My player object
   const myPlayer = useMemo(
@@ -217,6 +225,7 @@ export const useTrivia = () => {
     localAnswer,
     submitting,
     advancing,
+    currentCategory,
 
     // Timer
     timeLeft,

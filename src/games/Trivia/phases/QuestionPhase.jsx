@@ -1,4 +1,4 @@
-// Fase question: header standard + HUD + question card + grid risposte + status bar.
+// Fase question: category chip + header + HUD + question card + grid risposte + status bar.
 
 import { AnimatePresence, motion } from 'framer-motion'
 import AppHeader from '../../../components/AppHeader'
@@ -19,6 +19,7 @@ const QuestionPhase = ({
   isExpired,
   submitting,
   isHost,
+  category,
   onAnswer,
   onExit,
 }) => {
@@ -41,6 +42,9 @@ const QuestionPhase = ({
       />
 
       <div style={bodyStyle}>
+        {/* Category chip */}
+        {category && <CategoryChip category={category} />}
+
         <QuestionCard question={currentQuestion} />
 
         <div style={gridStyle}>
@@ -88,6 +92,37 @@ const QuestionPhase = ({
   )
 }
 
+const CategoryChip = ({ category }) => (
+  <motion.div
+    initial={{ opacity: 0, y: -6 }}
+    animate={{ opacity: 1, y: 0 }}
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      flexShrink: 0,
+    }}
+  >
+    <span style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: 6,
+      background: category.color,
+      color: '#fff',
+      padding: '5px 14px',
+      borderRadius: 999,
+      fontSize: 'clamp(12px, 1.5dvh, 14px)',
+      fontWeight: 800,
+      letterSpacing: '0.02em',
+      boxShadow: `0 2px 10px ${category.color}44`,
+    }}>
+      <span style={{ fontSize: 'clamp(14px, 1.8dvh, 18px)' }}>{category.emoji}</span>
+      {category.label}
+    </span>
+  </motion.div>
+)
+
 const RoundBadge = ({ n, total }) => (
   <div style={{
     background: 'var(--bg2)',
@@ -117,8 +152,9 @@ const bodyStyle = {
   display: 'flex',
   flexDirection: 'column',
   flex: 1,
+  justifyContent: 'center',
   padding: 'clamp(10px, 1.8dvh, 18px) clamp(14px, 3vw, 22px)',
-  gap: 'clamp(10px, 1.6dvh, 16px)',
+  gap: 'clamp(8px, 1.2dvh, 12px)',
   overflow: 'hidden',
 }
 

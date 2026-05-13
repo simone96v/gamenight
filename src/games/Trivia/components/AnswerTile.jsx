@@ -144,9 +144,10 @@ const tileBase = {
   borderRadius: 'var(--radius-sm)',
   padding: 'clamp(10px, 1.5dvh, 14px) clamp(12px, 2vw, 16px)',
   gap: 10,
-  minHeight: 'clamp(56px, 8dvh, 72px)',
+  height: 'clamp(56px, 8dvh, 72px)',
   border: '3px solid transparent',
   outline: 'none',
+  boxSizing: 'border-box',
 }
 
 const textStyle = {

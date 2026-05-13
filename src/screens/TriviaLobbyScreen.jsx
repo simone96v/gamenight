@@ -1,18 +1,15 @@
 // Lobby di gioco Trivia (session-mode).
 // Mostra:
 //   - settings: numero domande per round + numero round (host only edit)
-//   - wheel categorie con bottone "Spin!"
-//   - score cumulativo della sessione (dal round 2 in poi)
+//   - wheel categorie SINCRONIZZATA tra host e tutti i client
 //
 // Flow:
 //   1. Host configura settings (sync via gameState)
-//   2. Host preme Spin → wheel anima → estrae categoria
-//   3. Al termine animazione, host chiama startTriviaGame con AI deck
-//   4. Tutti i client navigano su /game/trivia via room sync (phase=countdown)
-//
-// I client NON-host vedono settings disabilitate e bottone disabilitato (solo host spinna).
+//   2. Host preme Spin → sceglie vincitore → pusha spinTarget su DB
+//   3. TUTTI i client (host incluso) vedono la wheel animare via Realtime
+//   4. Al termine animazione, host genera deck via AI e lancia il game
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import AppHeader from '../components/AppHeader'
@@ -24,18 +21,9 @@ import { useSession } from '../stores/useSession'
 import { useSettings } from '../stores/useSettings'
 import { pushRoom, rpcStartGame } from '../lib/room'
 import { generateDeck, prefetchCategory, clearAiCache } from '../lib/aiQuestions'
+import { TRIVIA_CATEGORIES } from '../games/Trivia/constants'
 
-// 8 categorie tematiche — trivia alcolico tra amici 🍻
-const ALL_CATEGORIES = [
-  { id: 'cocktail',  label: 'Cocktail',   emoji: '🍹', color: '#7C3AED' },
-  { id: 'sbronze',   label: 'Sbronze',    emoji: '🥴', color: '#F59E0B' },
-  { id: 'birra',     label: 'Birra&Vino', emoji: '🍺', color: '#16A34A' },
-  { id: 'giochi',    label: 'Giochi',     emoji: '🎲', color: '#EF4444' },
-  { id: 'vip',       label: 'VIP',        emoji: '⭐', color: '#EC4899' },
-  { id: 'musica',    label: 'Musica',     emoji: '🎵', color: '#3B82F6' },
-  { id: 'cinema',    label: 'Cinema',     emoji: '🎬', color: '#F97316' },
-  { id: 'hot',       label: 'Hot',        emoji: '🌶️', color: '#06B6D4' },
-]
+const ALL_CATEGORIES = TRIVIA_CATEGORIES
 
 const TriviaLobbyScreen = () => {
   const navigate = useNavigate()
@@ -60,8 +48,10 @@ const TriviaLobbyScreen = () => {
   const questionsPerRound = session?.questionsPerRound ?? triviaQuestionsLocal
   const categoriesPlayed  = session?.categoriesPlayed ?? []
 
+  // spinTarget arriva dal DB — tutti i client lo vedono via Realtime
+  const spinTarget = session?.spinTarget ?? null
+
   const [launching, setLaunching] = useState(false)
-  const [spinResult, setSpinResult] = useState(null)
 
   // Categorie ancora "spinnabili" (escluse quelle già giocate).
   const availableCategories = useMemo(
@@ -81,7 +71,8 @@ const TriviaLobbyScreen = () => {
         totalRounds: triviaSessionRoundsLocal,
         questionsPerRound: triviaQuestionsLocal,
         categoriesPlayed: [],
-        cumulativeScores: {}, // playerId → total
+        cumulativeScores: {},
+        spinTarget: null,
       },
     }
     useSession.setState({ gameState: newGameState })
@@ -94,19 +85,17 @@ const TriviaLobbyScreen = () => {
         ...newGameState,
       })
     }
-    // All'inizio della sessione, pulisci cache AI così le partite di stasera
-    // sono diverse da quelle di ieri.
     if (roundIdx === 0) clearAiCache()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isHost])
 
-  // Pre-fetch: appena la lobby è pronta, scalda la cache AI in background.
+  // Pre-fetch AI in background.
   useEffect(() => {
     if (!isHost) return
     availableCategories.forEach((c) => prefetchCategory(c.id, questionsPerRound + 3))
   }, [isHost, availableCategories, questionsPerRound])
 
-  // Update settings on session: host modifica e si propaga ai client.
+  // Update settings on session.
   const updateSessionSetting = (patch) => {
     if (!isHost) return
     const s = useSession.getState()
@@ -129,7 +118,7 @@ const TriviaLobbyScreen = () => {
     updateSessionSetting({ questionsPerRound: n })
   }
 
-  // Host esce: torna a /games e resetta sessione trivia.
+  // Host esce.
   const handleExit = async () => {
     setAwaitingGC(true)
     navigate('/games', { replace: true })
@@ -148,24 +137,50 @@ const TriviaLobbyScreen = () => {
     setAwaitingGC(false)
   }
 
-  // Wheel spinned: estrae categoria → host chiama startGame
-  const handleSpinEnd = async (category) => {
+  // Host clicca Spin → sceglie vincitore → pusha spinTarget su DB.
+  // Tutti i client (host incluso) vedranno lo spin via Realtime.
+  const handleRequestSpin = useCallback(() => {
     if (!isHost || launching) return
-    setSpinResult(category)
+    if (availableCategories.length === 0) return
+
+    // Scegli categoria vincente
+    const winIdx = Math.floor(Math.random() * availableCategories.length)
+    const winner = availableCategories[winIdx]
+
+    // Push spinTarget su DB → Realtime lo propaga a tutti
+    const s = useSession.getState()
+    const newSession = {
+      ...(s.gameState?.triviaSession ?? {}),
+      spinTarget: winner.id,
+    }
+    const newGameState = { ...s.gameState, triviaSession: newSession }
+    useSession.setState({ gameState: newGameState })
+    if (s.mode === 'online' && s.roomCode) {
+      pushRoom(s.roomCode, s.currentPhase, {
+        players: s.players,
+        currentIdx: s.currentIdx,
+        round: s.round,
+        activeGame: s.activeGame,
+        ...newGameState,
+      })
+    }
+  }, [isHost, launching, availableCategories])
+
+  // Animazione completata — solo l'host genera deck e lancia il game.
+  const handleSpinEnd = useCallback(async (category) => {
+    if (!isHost || launching) return
     setLaunching(true)
     try {
-      // Genera deck via AI (con fallback locale)
       const deck = await generateDeck(category.id, questionsPerRound)
-      // Aggiorna session state PRIMA di lanciare il game
       const s = useSession.getState()
       const newSession = {
         ...(s.gameState?.triviaSession ?? {}),
         categoriesPlayed: [...categoriesPlayed, category.id],
         currentCategory: category.id,
+        spinTarget: null, // Reset per il prossimo round
       }
       const newGameState = { ...s.gameState, triviaSession: newSession }
       useSession.setState({ gameState: newGameState })
-      // Push state aggiornato così tutti i client sanno la categoria
       await pushRoom(s.roomCode, s.currentPhase, {
         players: s.players,
         currentIdx: s.currentIdx,
@@ -174,23 +189,19 @@ const TriviaLobbyScreen = () => {
         ...newGameState,
       })
 
-      // Lancia il game: round > 0 = non resetta scores
       const resetScores = roundIdx === 0
       const { error } = await rpcStartGame(roomCode, deck, timerDuration, resetScores)
       if (error) {
         console.error('[trivia-lobby] startGame:', error)
         showError('generic')
         setLaunching(false)
-        setSpinResult(null)
       }
-      // Su successo, room phase diventa 'countdown' e tutti vanno su /game/trivia
     } catch (err) {
       console.error('[trivia-lobby] handleSpinEnd:', err)
       showError('generic')
       setLaunching(false)
-      setSpinResult(null)
     }
-  }
+  }, [isHost, launching, questionsPerRound, categoriesPlayed, roundIdx, roomCode, timerDuration, showError])
 
   const ENTRY_TITLES = ['🎬 Round 1', '🎯 Round 2', '🏆 Round Finale']
   const roundTitle = ENTRY_TITLES[roundIdx] ?? `Round ${roundIdx + 1}`
@@ -240,11 +251,10 @@ const TriviaLobbyScreen = () => {
               value={questionsPerRound}
               onDecrement={() => isHost && handleQuestionsChange(questionsPerRound - 1)}
               onIncrement={() => isHost && handleQuestionsChange(questionsPerRound + 1)}
-              disabled={!isHost || launching || roundIdx > 0}
+              disabled={!isHost || launching || !!spinTarget || roundIdx > 0}
               min={3} max={15}
             />
           </div>
-          {/* Disabilitato se round già iniziato — non si può cambiare a metà sessione */}
           {roundIdx > 0 && (
             <p style={S.hint}>
               Impostazioni fissate per questa sessione 🔒
@@ -252,7 +262,7 @@ const TriviaLobbyScreen = () => {
           )}
         </motion.div>
 
-        {/* Wheel */}
+        {/* Wheel — sincronizzata via spinTarget */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -261,17 +271,13 @@ const TriviaLobbyScreen = () => {
         >
           <CategoryWheel
             categories={availableCategories}
+            spinTarget={spinTarget}
+            onRequestSpin={handleRequestSpin}
             onSpinEnd={handleSpinEnd}
-            disabled={!isHost || launching}
+            disabled={launching}
+            isHost={isHost}
           />
         </motion.div>
-
-        {/* Non-host wait message */}
-        {!isHost && (
-          <p style={S.waitText}>
-            👑 L'host sta scegliendo la categoria...
-          </p>
-        )}
       </div>
     </div>
   )
@@ -362,13 +368,6 @@ const S = {
     fontSize: 'clamp(16px, 2dvh, 20px)',
     fontWeight: 900,
     color: 'var(--accent)',
-  },
-  waitText: {
-    margin: 0,
-    textAlign: 'center',
-    color: 'var(--muted)',
-    fontSize: 'clamp(13px, 1.6dvh, 15px)',
-    fontWeight: 600,
   },
 }
 
