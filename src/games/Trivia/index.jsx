@@ -47,7 +47,15 @@ const Trivia = () => {
 
   // Countdown overlay full-screen
   if (trivia.currentPhase === 'countdown') {
-    return <CountdownOverlay questionStartedAt={trivia.questionStartedAt} />
+    return (
+      <CountdownOverlay
+        questionStartedAt={trivia.questionStartedAt}
+        players={trivia.players}
+        localPlayerId={trivia.localPlayerId}
+        category={trivia.currentCategory}
+        accentColor="#7C3AED"
+      />
+    )
   }
 
   // Initial sync loading

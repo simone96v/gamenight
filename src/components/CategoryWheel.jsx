@@ -87,7 +87,7 @@ const CategoryWheel = ({
       celebTimer = setTimeout(() => {
         setCelebrating(false)
         onSpinEndRef.current?.(cats[winIdx])
-      }, 2200)
+      }, 1500)
     }, 4200)
 
     return () => {

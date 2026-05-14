@@ -184,6 +184,7 @@ const TriviaLobbyScreen = () => {
   }, [isSpinner, launching, spinTarget, availableCategories])
 
   // Animazione completata — le domande sono GIA' in generazione dal click Spin.
+  // Ottimizzato: pushRoom e rpcStartGame in parallelo per dimezzare la latenza.
   const handleSpinEnd = useCallback(async (category) => {
     if (!isHost || launching) return
     setLaunching(true)
@@ -193,27 +194,33 @@ const TriviaLobbyScreen = () => {
         ? await deckPromiseRef.current
         : await generateDeck(category.id, questionsPerRound)
       deckPromiseRef.current = null
+
       const s = useSession.getState()
       const newSession = {
         ...(s.gameState?.triviaSession ?? {}),
         categoriesPlayed: [...categoriesPlayed, category.id],
         currentCategory: category.id,
-        spinTarget: null, // Reset per il prossimo round
+        spinTarget: null,
       }
       const newGameState = { ...s.gameState, triviaSession: newSession }
       useSession.setState({ gameState: newGameState })
-      await pushRoom(s.roomCode, s.currentPhase, {
-        players: s.players,
-        currentIdx: s.currentIdx,
-        round: s.round,
-        activeGame: s.activeGame,
-        ...newGameState,
-      })
 
       const resetScores = roundIdx === 0
-      const { error } = await rpcStartGame(roomCode, deck, timerDuration, resetScores)
-      if (error) {
-        console.error('[trivia-lobby] startGame:', error)
+
+      // Lancia pushRoom + rpcStartGame in parallelo — dimezza latenza
+      const [, startResult] = await Promise.all([
+        pushRoom(s.roomCode, s.currentPhase, {
+          players: s.players,
+          currentIdx: s.currentIdx,
+          round: s.round,
+          activeGame: s.activeGame,
+          ...newGameState,
+        }),
+        rpcStartGame(roomCode, deck, timerDuration, resetScores),
+      ])
+
+      if (startResult.error) {
+        console.error('[trivia-lobby] startGame:', startResult.error)
         showError('generic')
         setLaunching(false)
       }
