@@ -9,28 +9,33 @@
 // Senza la env var ritorna { questions: [], error: 'no_api_key' } e il client
 // fa fallback al pool locale.
 
-const SYSTEM_PROMPT = `Sei il game master di un trivia alcolico tra amici.
+const SYSTEM_PROMPT = `Sei un autore di quiz per un gioco trivia generalista sull'Italia.
 
 REGOLE FONDAMENTALI:
-- Domande CORTE: massimo 10 parole per domanda
-- Risposte CORTE: massimo 4-5 parole per risposta
+- Domande in ITALIANO, chiare e dirette
+- Massimo 15 parole per domanda
 - 4 risposte per domanda, UNA SOLA corretta
-- Le domande devono riguardare FATTI REALI: persone vere, brand veri, meme veri, eventi veri
-- Risposte sbagliate plausibili ma errate
-- Varia la posizione della risposta corretta (0,1,2,3)
-- Difficoltà mista: easy, medium, hard
-- Tono divertente da serata tra amici
+- Risposte brevi: massimo 5-6 parole ciascuna
+- Le domande devono riguardare FATTI REALI e VERIFICABILI
+- NON inventare fatti, persone o eventi
+- Risposte sbagliate plausibili ma chiaramente errate per chi sa la risposta
+- Varia la posizione della risposta corretta (0,1,2,3) in modo uniforme
+- NO domande troppo di nicchia: devono essere accessibili a un pubblico generale
+- 3 livelli di difficoltà: easy (cultura generale base), medium (conoscenza discreta), hard (fatti specifici ma non oscuri)
+- topic: sottocategoria specifica (es. "calcio", "regioni", "pittura")
 - Output: SOLO JSON valido, niente altro`
 
 const CATEGORY_DESCRIPTIONS = {
-  cocktail: 'cocktail e mixology: ricette classiche (Negroni, Mojito, Spritz, Margarita...), ingredienti, tecniche di preparazione, storia dei cocktail, barman famosi, liquori e amari',
-  sbronze: 'sbronze epiche e cultura del bere: record mondiali alcolici, storie assurde legate all\'alcol, effetti dell\'alcol sul corpo, rimedi per la sbornia, tradizioni di bevuta nel mondo, leggi assurde sull\'alcol',
-  birra: 'birra e vino: marchi famosi (Peroni, Heineken, Moretti...), stili di birra (IPA, lager, stout...), vitigni, regioni vinicole, abbinamenti cibo-vino, processo di produzione, curiosità su birrifici e cantine',
-  giochi: 'giochi alcolici e drinking games: regole di giochi come beer pong, king\'s cup, flip cup, centurion, Never Have I Ever, tradizioni di brindisi, sfide alcoliche, giochi da tavolo con penalità alcoliche',
-  vip: 'VIP e scandali alcolici: celebrità famose per le loro sbronze, scandali etilici di star e politici, feste leggendarie, rockstar e i loro eccessi, storie di VIP italiani e internazionali legate all\'alcol',
-  musica: 'musica e feste: canzoni iconiche da festa e da discoteca, artisti famosi per il party lifestyle, hit estive, club e locali leggendari, festival musicali, canzoni che parlano di alcol e feste',
-  cinema: 'film e serie TV con scene alcoliche: film cult con scene di bevute (Hangover, Beerfest, Cocktail...), personaggi iconici bevitori, serie TV con temi alcolici, citazioni famose sul bere, scene di festa al cinema',
-  hot: 'domande piccanti e imbarazzanti: situazioni da serata alcolica, flirt e approcci da ubriachi, storie di dating, confessioni da festa, domande su relazioni e situazioni imbarazzanti legate all\'alcol',
+  geografia: 'geografia italiana: regioni, città, fiumi, laghi, montagne, isole, confini, capoluoghi, province, parchi naturali, paesaggi iconici, turismo',
+  storia: 'storia d\'Italia: dall\'Impero Romano al Risorgimento, le due Guerre Mondiali, la Repubblica, figure storiche italiane, eventi chiave, date importanti',
+  sport: 'sport italiano: Serie A, Nazionale di calcio, campioni olimpici, Formula 1, ciclismo, tennis, nuoto, pallavolo, atleti famosi italiani, vittorie e record',
+  musica: 'musica italiana: Sanremo, cantautori, pop italiano, rap italiano, Eurovision, canzoni iconiche, band famose, musica classica italiana, opera',
+  cinema: 'cinema e TV italiana: film cult, registi famosi, attori italiani, Oscar, serie TV italiane, programmi TV popolari, conduttori famosi, Cinecittà',
+  cucina: 'cucina italiana: piatti regionali, ingredienti DOP/IGP, ricette tradizionali, vini, formaggi, salumi, dolci tipici, pizza, pasta, caffè',
+  scienza: 'scienza e tecnologia italiana: scienziati italiani, invenzioni, scoperte scientifiche, università storiche, innovazione, spazio, medicina, Nobel italiani',
+  arte: 'arte e cultura italiana: pittori, scultori, architetti, musei, monumenti, UNESCO, letteratura italiana, teatro, opera, design',
+  attualita: 'attualità e società italiana: politica, economia, moda, brand italiani, social media, personaggi pubblici, tendenze, costume e società',
+  curiosita: 'curiosità e fatti sorprendenti sull\'Italia: record italiani, tradizioni locali, primati mondiali, etimologie, superstizioni, dialetti, feste tradizionali',
 }
 
 export default async function handler(req, res) {
@@ -56,10 +61,11 @@ export default async function handler(req, res) {
   const userPrompt = `[seed:${seed}] Genera ${count} domande per "${category}" (${CATEGORY_DESCRIPTIONS[category]}).
 
 REQUISITI:
-- Domande CORTE (max 10 parole). Esempio: "Chi ha inventato il Negroni?"
-- Risposte CORTE (max 5 parole). Esempio: "Conte Camillo Negroni"
-- USA fatti reali: persone famose, brand, meme, eventi, canzoni, film VERI
-- Mai domande generiche o inventate
+- Domande CORTE (max 15 parole). Esempio: "Qual è il capoluogo della Toscana?"
+- Risposte CORTE (max 5-6 parole). Esempio: "Firenze"
+- USA fatti REALI e VERIFICABILI sull'Italia
+- Mai domande inventate o troppo di nicchia
+- Mix di difficoltà: ~35% easy, ~40% medium, ~25% hard
 
 JSON:
 {"questions":[{"question":"...","answers":["...","...","...","..."],"correct":0,"difficulty":"easy","topic":"..."}]}`
@@ -70,7 +76,7 @@ JSON:
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://blob-party-app.vercel.app',
+        'HTTP-Referer': 'https://blobpartygames.vercel.app',
         'X-Title': 'Blob Party',
       },
       body: JSON.stringify({

@@ -1,11 +1,11 @@
 // Generazione domande via AI — ogni round chiama OpenRouter per domande fresche.
 // Il pool locale è SOLO fallback di emergenza se l'API è completamente down.
 
-import questionsAll from '../data/questions/trivia.json'
 import { shuffle } from '../utils/deck'
 
 // Fallback emergenza: usato solo se l'API non risponde.
-const fallbackFromLocal = (category, count) => {
+const fallbackFromLocal = async (category, count) => {
+  const questionsAll = (await import('../data/questions/trivia.json')).default
   const filtered = questionsAll.filter((q) => q.category === category)
   const pool = filtered.length >= count ? filtered : questionsAll
   return shuffle(shuffle([...pool])).slice(0, count)
@@ -38,7 +38,7 @@ export const generateDeck = async (category, count = 10) => {
       // AI ha risposto ma con poche domande — integra con quelle che ha dato
       if (qs.length > 0) {
         const aiPart = qs.map((q) => normalize(q, category))
-        const localPart = fallbackFromLocal(category, count - qs.length)
+        const localPart = (await fallbackFromLocal(category, count - qs.length))
           .map((q) => normalize(q, category))
         return [...aiPart, ...localPart]
       }
@@ -49,7 +49,7 @@ export const generateDeck = async (category, count = 10) => {
   }
 
   // Fallback emergenza
-  return fallbackFromLocal(category, count).map((q) => normalize(q, category))
+  return (await fallbackFromLocal(category, count)).map((q) => normalize(q, category))
 }
 
 // No-op: la cache non esiste più, ma l'interfaccia resta per compatibilità.

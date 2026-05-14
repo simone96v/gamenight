@@ -5,14 +5,22 @@
 
 import { rpcStartGame } from './room'
 import { shuffle } from '../utils/deck'
-import questionsAll from '../data/questions/trivia.json'
+
+let _questionsCache = null
+const loadQuestions = async () => {
+  if (!_questionsCache) {
+    const mod = await import('../data/questions/trivia.json')
+    _questionsCache = mod.default
+  }
+  return _questionsCache
+}
 
 // Una chiave per categoria così cambiando categoria non si perde la storia.
 const SEEN_KEY = (cat) => `gn:trivia:seen:${cat ?? 'all'}`
 
 // Quante domande "viste" ricordare al massimo. Tenuto a ~75% del pool per
 // categoria così resta sempre un margine fresco prima del reset.
-const SEEN_CAP = 60
+const SEEN_CAP = 75
 
 const loadSeen = (cat) => {
   try {
@@ -51,7 +59,8 @@ export const resetTriviaSeen = (cat) => {
 //  4. double-shuffle + slice N
 //  5. propaga difficulty + topic per scoring e UI
 //  6. marca le domande del deck come viste prima di restituirlo
-export const buildTriviaDeck = (category, numQuestions) => {
+export const buildTriviaDeck = async (category, numQuestions) => {
+  const questionsAll = await loadQuestions()
   const filtered = questionsAll.filter((q) => q.category === category)
   const basePool = filtered.length >= numQuestions * 2 ? filtered : questionsAll
 
@@ -87,6 +96,6 @@ export const buildTriviaDeck = (category, numQuestions) => {
 // `timerDuration` viene salvata in state per essere riletta dal server
 // in submit_answer/do_reveal per il calcolo dello speed bonus.
 export const startTriviaGame = async ({ roomCode, category, numQuestions, timerDuration = 15 }) => {
-  const deck = buildTriviaDeck(category, numQuestions)
+  const deck = await buildTriviaDeck(category, numQuestions)
   return rpcStartGame(roomCode, deck, timerDuration)
 }
