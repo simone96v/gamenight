@@ -140,7 +140,24 @@ export class GameEngine {
   update(dt) {
     const blob = this.blob
 
-    blob.vx = this.input.getVelocityX()
+    // Update input smooth states (keyboard ramp, tilt filter)
+    this.input.update(dt)
+
+    // Direction-based movement with acceleration + friction
+    const dir = this.input.getDirection()
+    const maxSpeed = PHYSICS.MOVE_SPEED
+    const accel = PHYSICS.MOVE_ACCEL
+    const friction = PHYSICS.MOVE_FRICTION
+
+    if (Math.abs(dir) > 0.01) {
+      // Accelerate toward target velocity
+      const targetVx = dir * maxSpeed
+      blob.vx += (targetVx - blob.vx) * Math.min(1, accel * dt)
+    } else {
+      // Apply friction to decelerate
+      blob.vx *= Math.pow(friction, dt * 60)
+      if (Math.abs(blob.vx) < 2) blob.vx = 0
+    }
 
     blob.vy += PHYSICS.GRAVITY * dt
     blob.y += blob.vy * dt

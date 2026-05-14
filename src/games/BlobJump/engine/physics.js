@@ -5,8 +5,9 @@ export const PHYSICS = {
   GRAVITY: 1500,
   JUMP_VELOCITY: -620,
   SPRING_VELOCITY: -1050,
-  MOVE_SPEED: 320,
-  TILT_SENSITIVITY: 420,
+  MOVE_SPEED: 380,        // max horizontal speed (px/s)
+  MOVE_ACCEL: 12,         // acceleration toward target (higher = snappier)
+  MOVE_FRICTION: 0.88,    // per-frame friction when no input (0 = instant stop, 1 = no friction)
   BLOB_RADIUS: 18,
   PIXELS_PER_METER: 10,
 }
