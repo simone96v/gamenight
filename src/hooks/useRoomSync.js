@@ -31,6 +31,7 @@ const phaseToPath = (phase) => {
     case 'mappa_question':    return '/game/mappa'
     case 'mappa_reveal':      return '/game/mappa'
     case 'mappa_final':       return '/game/mappa'
+    case 'sentenza_lobby':          return '/sentenza-lobby'
     case 'sentenza_countdown':      return '/game/sentenza'
     case 'sentenza_judging_setup':  return '/game/sentenza'
     case 'sentenza_selection':      return '/game/sentenza'

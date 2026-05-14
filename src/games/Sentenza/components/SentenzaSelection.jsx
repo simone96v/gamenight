@@ -1,17 +1,30 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import AppHeader from '../../../components/AppHeader'
+import GameHUD from '../../../components/GameHUD'
+import IconButton from '../../../components/ui/IconButton'
+import Button from '../../../components/ui/Button'
 import PromptCard from './PromptCard'
 import AnswerCard from './AnswerCard'
-import Button from '../../../components/ui/Button'
-import TimerRing from './TimerRing'
+import JudgeBanner from './JudgeBanner'
 import { haptic } from '../../../utils/haptic'
+
+const ACCENT = '#6366F1'
 
 const SentenzaSelection = ({
   prompt,
   answers,
   timeLeft,
   total,
+  currentRound,
+  totalRounds,
+  players,
+  localPlayerId,
+  isHost,
+  judgeName,
+  judgeColor,
   onSubmit,
+  onExit,
 }) => {
   const [selectedId, setSelectedId] = useState(null)
   const [submitted, setSubmitted] = useState(false)
@@ -23,83 +36,131 @@ const SentenzaSelection = ({
     onSubmit?.(selectedId)
   }
 
-  if (submitted) {
-    return (
-      <div style={S.container}>
-        <PromptCard text={prompt} compact />
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          style={S.waitingBox}
-        >
-          <motion.span
-            style={{ fontSize: 40 }}
-            animate={{ rotate: [0, -15, 15, -15, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            ⚖️
-          </motion.span>
-          <p style={S.waitingTitle}>Prova presentata!</p>
-          <p style={S.waitingSub}>In attesa del verdetto...</p>
-        </motion.div>
-      </div>
-    )
-  }
-
   return (
     <div style={S.container}>
-      <div style={S.topRow}>
-        <div style={{ flex: 1 }}>
-          <PromptCard text={prompt} compact />
-        </div>
-        <TimerRing timeLeft={timeLeft} total={total} />
-      </div>
+      <AppHeader
+        leading={isHost && <IconButton ariaLabel="Esci" onClick={onExit}>←</IconButton>}
+        actions={<RoundBadge n={currentRound} total={totalRounds} />}
+      />
+      <GameHUD
+        questionNumber={currentRound}
+        totalQuestions={totalRounds}
+        timeLeft={timeLeft}
+        total={total}
+        players={players}
+        localPlayerId={localPlayerId}
+        phase="question"
+        accentColor={ACCENT}
+        scoreSuffix="⚖️"
+      />
 
-      <div style={S.grid}>
-        {answers.map((a, i) => (
-          <AnswerCard
-            key={a.id}
-            index={i}
-            text={a.text}
-            selected={selectedId === a.id}
-            onClick={() => setSelectedId(a.id)}
-          />
-        ))}
-      </div>
+      <div style={S.body}>
+        <JudgeBanner judgeName={judgeName} judgeColor={judgeColor} />
 
-      <AnimatePresence>
-        {selectedId && (
+        <PromptCard text={prompt} compact />
+
+        {submitted ? (
           <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 12 }}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            style={S.waitingBox}
           >
-            <Button variant="primary" width="full" onClick={handleSubmit}>
-              Presenta la prova ⚖️
-            </Button>
+            <motion.span
+              style={{ fontSize: 'clamp(36px, 5dvh, 48px)' }}
+              animate={{ rotate: [0, -15, 15, -15, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              ⚖️
+            </motion.span>
+            <p style={S.waitingTitle}>Prova presentata!</p>
+            <p style={S.waitingSub}>In attesa del verdetto...</p>
           </motion.div>
+        ) : (
+          <>
+            <div style={S.grid}>
+              {answers.map((a, i) => (
+                <AnswerCard
+                  key={a.id}
+                  index={i}
+                  text={a.text}
+                  selected={selectedId === a.id}
+                  onClick={() => setSelectedId(a.id)}
+                />
+              ))}
+            </div>
+
+            <div style={S.footer}>
+              <AnimatePresence>
+                {selectedId && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 12 }}
+                  >
+                    <Button
+                      variant="primary"
+                      width="full"
+                      onClick={handleSubmit}
+                      style={{
+                        background: 'linear-gradient(135deg, #6366F1 0%, #818CF8 100%)',
+                        boxShadow: '0 6px 18px rgba(99, 102, 241, 0.35)',
+                      }}
+                    >
+                      Presenta la prova ⚖️
+                    </Button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </>
         )}
-      </AnimatePresence>
+      </div>
     </div>
   )
 }
+
+const RoundBadge = ({ n, total }) => (
+  <div style={{
+    background: 'var(--bg2)',
+    color: ACCENT,
+    fontWeight: 800,
+    fontSize: 'clamp(11px, 1.4dvh, 13px)',
+    padding: '5px 12px',
+    borderRadius: 999,
+    border: `1.5px solid ${ACCENT}33`,
+    letterSpacing: '0.05em',
+    minWidth: 44,
+    textAlign: 'center',
+  }}>
+    {n}/{total}
+  </div>
+)
 
 const S = {
   container: {
     display: 'flex',
     flexDirection: 'column',
-    gap: 'clamp(10px, 1.5dvh, 16px)',
     flex: 1,
+    overflow: 'hidden',
+    position: 'relative',
   },
-  topRow: {
+  body: {
     display: 'flex',
-    alignItems: 'flex-start',
-    gap: 10,
+    flexDirection: 'column',
+    flex: 1,
+    padding: 'clamp(10px, 1.8dvh, 18px) clamp(14px, 3vw, 22px)',
+    gap: 'clamp(10px, 1.5dvh, 16px)',
+    overflow: 'auto',
   },
   grid: {
     display: 'flex',
     flexDirection: 'column',
     gap: 'clamp(6px, 1dvh, 10px)',
+  },
+  footer: {
+    marginTop: 'auto',
+    flexShrink: 0,
+    paddingTop: 8,
   },
   waitingBox: {
     flex: 1,

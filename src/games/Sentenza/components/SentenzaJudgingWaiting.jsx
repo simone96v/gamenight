@@ -1,47 +1,91 @@
 import { motion } from 'framer-motion'
+import AppHeader from '../../../components/AppHeader'
+import GameHUD from '../../../components/GameHUD'
+import IconButton from '../../../components/ui/IconButton'
 import PromptCard from './PromptCard'
 import ProofCard from './ProofCard'
-import TimerRing from './TimerRing'
+import JudgeBanner from './JudgeBanner'
+
+const ACCENT = '#6366F1'
 
 const SentenzaJudgingWaiting = ({
   prompt,
   myAnswer,
   judgeName,
+  judgeColor,
   timeLeft,
   total,
+  currentRound,
+  totalRounds,
+  players,
+  localPlayerId,
+  isHost,
+  onExit,
 }) => (
   <div style={S.container}>
-    <div style={S.topRow}>
-      <div style={{ flex: 1 }}>
-        <PromptCard text={prompt} compact />
-      </div>
-      <TimerRing timeLeft={timeLeft} total={total} />
-    </div>
-
-    <ProofCard
-      index={0}
-      promptText={prompt}
-      answerText={myAnswer}
-      label="La tua prova"
-      disabled
+    <AppHeader
+      leading={isHost && <IconButton ariaLabel="Esci" onClick={onExit}>←</IconButton>}
+      actions={<RoundBadge n={currentRound} total={totalRounds} />}
+    />
+    <GameHUD
+      questionNumber={currentRound}
+      totalQuestions={totalRounds}
+      timeLeft={timeLeft}
+      total={total}
+      players={players}
+      localPlayerId={localPlayerId}
+      phase="question"
+      accentColor={ACCENT}
+      scoreSuffix="⚖️"
     />
 
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.2 }}
-      style={S.waitingBox}
-    >
-      <motion.span
-        style={{ fontSize: 36 }}
-        animate={{ scale: [1, 1.15, 1] }}
-        transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+    <div style={S.body}>
+      <JudgeBanner judgeName={judgeName} judgeColor={judgeColor} />
+
+      <PromptCard text={prompt} compact />
+
+      <ProofCard
+        index={0}
+        promptText={prompt}
+        answerText={myAnswer}
+        label="La tua prova"
+        disabled
+      />
+
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        style={S.waitingBox}
       >
-        ⚖️
-      </motion.span>
-      <p style={S.title}>{judgeName} sta deliberando...</p>
-      <p style={S.sub}>Chi vincerà il round?</p>
-    </motion.div>
+        <motion.span
+          style={{ fontSize: 'clamp(36px, 5dvh, 48px)' }}
+          animate={{ scale: [1, 1.15, 1] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+        >
+          ⚖️
+        </motion.span>
+        <p style={S.title}>{judgeName} sta deliberando...</p>
+        <p style={S.sub}>Chi vincerà il round?</p>
+      </motion.div>
+    </div>
+  </div>
+)
+
+const RoundBadge = ({ n, total }) => (
+  <div style={{
+    background: 'var(--bg2)',
+    color: ACCENT,
+    fontWeight: 800,
+    fontSize: 'clamp(11px, 1.4dvh, 13px)',
+    padding: '5px 12px',
+    borderRadius: 999,
+    border: `1.5px solid ${ACCENT}33`,
+    letterSpacing: '0.05em',
+    minWidth: 44,
+    textAlign: 'center',
+  }}>
+    {n}/{total}
   </div>
 )
 
@@ -49,13 +93,17 @@ const S = {
   container: {
     display: 'flex',
     flexDirection: 'column',
-    gap: 'clamp(10px, 1.5dvh, 16px)',
     flex: 1,
+    overflow: 'hidden',
+    position: 'relative',
   },
-  topRow: {
+  body: {
     display: 'flex',
-    alignItems: 'flex-start',
-    gap: 10,
+    flexDirection: 'column',
+    flex: 1,
+    padding: 'clamp(10px, 1.8dvh, 18px) clamp(14px, 3vw, 22px)',
+    gap: 'clamp(10px, 1.5dvh, 16px)',
+    overflow: 'auto',
   },
   waitingBox: {
     flex: 1,

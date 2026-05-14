@@ -1,47 +1,82 @@
 import { motion } from 'framer-motion'
+import AppHeader from '../../../components/AppHeader'
+import GameHUD from '../../../components/GameHUD'
+import IconButton from '../../../components/ui/IconButton'
 import PromptCard from './PromptCard'
 
-const JudgingSetup = ({ judgeName, judgeColor, round, prompt }) => (
+const ACCENT = '#6366F1'
+
+const JudgingSetup = ({
+  judgeName,
+  judgeColor,
+  round,
+  prompt,
+  totalRounds,
+  players,
+  localPlayerId,
+  isHost,
+  onExit,
+}) => (
   <div style={S.container}>
-    <motion.div
-      initial={{ scale: 0, rotate: -20 }}
-      animate={{ scale: 1, rotate: 0 }}
-      transition={{ type: 'spring', stiffness: 200, damping: 14 }}
-      style={S.emojiWrap}
-    >
-      <motion.span
-        style={{ fontSize: 56 }}
-        animate={{ rotate: [0, -18, 18, -10, 0] }}
-        transition={{ delay: 0.4, duration: 0.8, ease: 'easeOut' }}
+    <AppHeader
+      leading={isHost && <IconButton ariaLabel="Esci" onClick={onExit}>←</IconButton>}
+      actions={<RoundBadge n={round} total={totalRounds} />}
+    />
+    <GameHUD
+      questionNumber={round}
+      totalQuestions={totalRounds}
+      timeLeft={0}
+      total={1}
+      players={players}
+      localPlayerId={localPlayerId}
+      phase="setup"
+      accentColor={ACCENT}
+      showTimer={false}
+      scoreSuffix="⚖️"
+    />
+
+    <div style={S.body}>
+      <motion.div
+        initial={{ scale: 0, rotate: -20 }}
+        animate={{ scale: 1, rotate: 0 }}
+        transition={{ type: 'spring', stiffness: 200, damping: 14 }}
+        style={S.emojiWrap}
       >
-        ⚖️
-      </motion.span>
-    </motion.div>
+        <motion.span
+          style={{ fontSize: 'clamp(56px, 9dvh, 80px)' }}
+          animate={{ rotate: [0, -18, 18, -10, 0] }}
+          transition={{ delay: 0.4, duration: 0.8, ease: 'easeOut' }}
+        >
+          ⚖️
+        </motion.span>
+      </motion.div>
 
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.2 }}
-      style={S.avatarRow}
-    >
-      <div style={{ ...S.avatar, backgroundColor: judgeColor }}>
-        {initialsOf(judgeName)}
-      </div>
-      <div>
-        <p style={S.title}>
-          {judgeName} è il Giudice
-        </p>
-        <p style={S.round}>Round {round}</p>
-      </div>
-    </motion.div>
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        style={S.avatarRow}
+      >
+        <div style={{ ...S.avatar, backgroundColor: judgeColor }}>
+          {initialsOf(judgeName)}
+        </div>
+        <div>
+          <p style={S.title}>
+            {judgeName} è il Giudice
+          </p>
+          <p style={S.round}>Round {round}</p>
+        </div>
+      </motion.div>
 
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.5 }}
-    >
-      <PromptCard text={prompt} />
-    </motion.div>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+        style={{ width: '100%' }}
+      >
+        <PromptCard text={prompt} />
+      </motion.div>
+    </div>
   </div>
 )
 
@@ -52,14 +87,39 @@ const initialsOf = (name) => {
   return (parts[0][0] + parts[1][0]).toUpperCase()
 }
 
+const RoundBadge = ({ n, total }) => (
+  <div style={{
+    background: 'var(--bg2)',
+    color: ACCENT,
+    fontWeight: 800,
+    fontSize: 'clamp(11px, 1.4dvh, 13px)',
+    padding: '5px 12px',
+    borderRadius: 999,
+    border: `1.5px solid ${ACCENT}33`,
+    letterSpacing: '0.05em',
+    minWidth: 44,
+    textAlign: 'center',
+  }}>
+    {n}/{total}
+  </div>
+)
+
 const S = {
   container: {
     display: 'flex',
     flexDirection: 'column',
+    flex: 1,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  body: {
+    display: 'flex',
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 'clamp(16px, 2.5dvh, 24px)',
     flex: 1,
+    padding: 'clamp(10px, 1.8dvh, 18px) clamp(14px, 3vw, 22px)',
+    gap: 'clamp(16px, 2.5dvh, 24px)',
   },
   emojiWrap: {
     display: 'flex',

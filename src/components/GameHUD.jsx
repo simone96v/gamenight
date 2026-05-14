@@ -3,13 +3,25 @@
 
 import { motion } from 'framer-motion'
 
-const GameHUD = ({ questionNumber, totalQuestions, timeLeft, total, players, localPlayerId, phase }) => {
-  const showTimer = phase === 'question'
+const GameHUD = ({
+  questionNumber,
+  totalQuestions,
+  timeLeft,
+  total,
+  players,
+  localPlayerId,
+  phase,
+  accentColor,
+  showTimer: showTimerProp,
+  scoreSuffix = '',
+}) => {
+  const showTimer = showTimerProp ?? (phase === 'question')
   const timerFraction = showTimer ? timeLeft / total : 0
   const urgent = showTimer && timeLeft <= 5
+  const accent = accentColor || 'var(--accent)'
 
   // Sort players by score descending for display
-  const sorted = [...players].sort((a, b) => b.score - a.score)
+  const sorted = [...(players ?? [])].sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
 
   return (
     <div style={S.container}>
@@ -20,7 +32,7 @@ const GameHUD = ({ questionNumber, totalQuestions, timeLeft, total, players, loc
         </span>
         <div style={S.progressBar}>
           <motion.div
-            style={S.progressFill}
+            style={{ ...S.progressFill, background: accent }}
             animate={{ width: `${(questionNumber / totalQuestions) * 100}%` }}
             transition={{ duration: 0.4 }}
           />
@@ -35,7 +47,7 @@ const GameHUD = ({ questionNumber, totalQuestions, timeLeft, total, players, loc
             <motion.circle
               cx="22" cy="22" r="18"
               fill="none"
-              stroke={urgent ? 'var(--danger)' : 'var(--accent)'}
+              stroke={urgent ? 'var(--danger)' : accent}
               strokeWidth="3"
               strokeLinecap="round"
               strokeDasharray={2 * Math.PI * 18}
@@ -66,13 +78,13 @@ const GameHUD = ({ questionNumber, totalQuestions, timeLeft, total, players, loc
             key={p.id}
             style={{
               ...S.playerChip,
-              borderColor: p.id === localPlayerId ? 'var(--accent)' : 'transparent',
+              borderColor: p.id === localPlayerId ? accent : 'transparent',
             }}
           >
             <div style={{ ...S.chipAvatar, backgroundColor: p.color }}>
               {p.name?.slice(0, 1).toUpperCase()}
             </div>
-            <span style={S.chipScore}>{p.score}</span>
+            <span style={S.chipScore}>{p.score}{scoreSuffix}</span>
           </div>
         ))}
       </div>

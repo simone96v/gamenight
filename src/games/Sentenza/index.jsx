@@ -13,6 +13,9 @@ import SentenzaJudgingWaiting from './components/SentenzaJudgingWaiting'
 import SentenzaReveal from './components/SentenzaReveal'
 import SentenzaFinal from './components/SentenzaFinal'
 
+const SELECTION_TIMER = 30
+const JUDGING_TIMER = 30
+
 const Loading = () => (
   <div className="flex items-center justify-center" style={{ flex: 1 }}>
     <Spinner size="lg" />
@@ -40,7 +43,16 @@ const Sentenza = () => {
       gameVotes: {},
       selectedGame: null,
     }
-    await pushRoom(s.roomCode, 'game_voting', fullState)
+    if (s.mode === 'online' && s.roomCode) {
+      await pushRoom(s.roomCode, 'game_voting', fullState)
+    } else {
+      useSession.setState({
+        players: resetPlayers,
+        gameState: { selectedCategory: s.gameState?.selectedCategory ?? null },
+        currentPhase: 'game_voting',
+        activeGame: null,
+      })
+    }
     setAwaitingGameChange(false)
   }
 
@@ -49,7 +61,8 @@ const Sentenza = () => {
     setReplaying(true)
     const s = useSession.getState()
     const resetPlayers = (s.players || []).map((p) => ({ ...p, score: 0 }))
-    const sentenzaState = initSentenzaState(resetPlayers, s.gameState?.totalRounds ?? 8)
+    const rounds = s.gameState?.sentenzaRounds ?? s.gameState?.totalRounds ?? 8
+    const sentenzaState = initSentenzaState(resetPlayers, rounds)
     const now = new Date().toISOString()
 
     if (s.mode === 'online' && s.roomCode) {
@@ -58,18 +71,29 @@ const Sentenza = () => {
         currentIdx: 0,
         round: 0,
         activeGame: 'sentenza',
+        sentenzaRounds: rounds,
         ...sentenzaState,
       }
       await pushRoom(s.roomCode, 'sentenza_countdown', fullState, now)
     } else {
       useSession.setState({
         players: resetPlayers,
-        gameState: sentenzaState,
+        gameState: { ...sentenzaState, sentenzaRounds: rounds },
         currentPhase: 'sentenza_countdown',
         questionStartedAt: now,
       })
     }
     setReplaying(false)
+  }
+
+  // Props comuni passati a tutte le fasi di gioco
+  const commonProps = {
+    currentRound: g.currentRound + 1,
+    totalRounds: g.totalRounds,
+    players: g.players,
+    localPlayerId: g.localPlayerId,
+    isHost: g.isHost,
+    onExit: handleChangeGame,
   }
 
   if (g.currentPhase === 'sentenza_countdown') {
@@ -78,106 +102,91 @@ const Sentenza = () => {
 
   if (g.currentPhase === 'sentenza_judging_setup') {
     return (
-      <div className="screen screen-narrow">
-        <div className="screen-body">
-          <JudgingSetup
-            judgeName={g.judge?.name}
-            judgeColor={g.judge?.color}
-            round={g.currentRound + 1}
-            prompt={g.currentPrompt?.text}
-          />
-        </div>
-      </div>
+      <JudgingSetup
+        {...commonProps}
+        judgeName={g.judge?.name}
+        judgeColor={g.judge?.color}
+        round={g.currentRound + 1}
+        prompt={g.currentPrompt?.text}
+      />
     )
   }
 
   if (g.currentPhase === 'sentenza_selection') {
-    return (
-      <div className="screen screen-narrow">
-        <div className="screen-body" style={{ overflowY: 'auto', scrollbarWidth: 'none' }}>
-          {g.isJudge ? (
-            <SentenzaSelectionWaiting
-              prompt={g.currentPrompt?.text}
-              players={g.challengers}
-              submittedIds={g.submittedIds}
-              timeLeft={g.timeLeft}
-              total={30}
-            />
-          ) : (
-            <SentenzaSelection
-              key={g.currentRound}
-              prompt={g.currentPrompt?.text}
-              answers={g.myHand}
-              timeLeft={g.timeLeft}
-              total={30}
-              onSubmit={g.submitProof}
-            />
-          )}
-        </div>
-      </div>
+    return g.isJudge ? (
+      <SentenzaSelectionWaiting
+        {...commonProps}
+        prompt={g.currentPrompt?.text}
+        challengers={g.challengers}
+        submittedIds={g.submittedIds}
+        timeLeft={g.timeLeft}
+        total={SELECTION_TIMER}
+      />
+    ) : (
+      <SentenzaSelection
+        {...commonProps}
+        key={g.currentRound}
+        prompt={g.currentPrompt?.text}
+        answers={g.myHand}
+        timeLeft={g.timeLeft}
+        total={SELECTION_TIMER}
+        judgeName={g.judge?.name}
+        judgeColor={g.judge?.color}
+        onSubmit={g.submitProof}
+      />
     )
   }
 
   if (g.currentPhase === 'sentenza_judging') {
-    return (
-      <div className="screen screen-narrow">
-        <div className="screen-body" style={{ overflowY: 'auto', scrollbarWidth: 'none' }}>
-          {g.isJudge ? (
-            <SentenzaJudging
-              key={g.currentRound}
-              prompt={g.currentPrompt?.text}
-              proofs={g.proofs}
-              timeLeft={g.timeLeft}
-              total={30}
-              onVerdict={g.emitVerdict}
-            />
-          ) : (
-            <SentenzaJudgingWaiting
-              prompt={g.currentPrompt?.text}
-              myAnswer={g.myAnswer}
-              judgeName={g.judge?.name}
-              timeLeft={g.timeLeft}
-              total={30}
-            />
-          )}
-        </div>
-      </div>
+    return g.isJudge ? (
+      <SentenzaJudging
+        {...commonProps}
+        key={g.currentRound}
+        prompt={g.currentPrompt?.text}
+        proofs={g.proofs}
+        timeLeft={g.timeLeft}
+        total={JUDGING_TIMER}
+        onVerdict={g.emitVerdict}
+      />
+    ) : (
+      <SentenzaJudgingWaiting
+        {...commonProps}
+        prompt={g.currentPrompt?.text}
+        myAnswer={g.myAnswer}
+        judgeName={g.judge?.name}
+        judgeColor={g.judge?.color}
+        timeLeft={g.timeLeft}
+        total={JUDGING_TIMER}
+      />
     )
   }
 
   if (g.currentPhase === 'sentenza_reveal') {
     return (
-      <div className="screen screen-narrow">
-        <div className="screen-body" style={{ overflowY: 'auto', scrollbarWidth: 'none' }}>
-          <SentenzaReveal
-            prompt={g.currentPrompt?.text}
-            winnerAnswer={g.winnerProof?.text}
-            winnerName={g.winnerPlayer?.name}
-            winnerColor={g.winnerPlayer?.color}
-            otherProofs={g.otherProofs}
-            isHost={g.isHost}
-            advancing={g.advancing}
-            onNext={g.hostAdvance}
-          />
-        </div>
-      </div>
+      <SentenzaReveal
+        {...commonProps}
+        prompt={g.currentPrompt?.text}
+        winnerAnswer={g.winnerProof?.text}
+        winnerName={g.winnerPlayer?.name}
+        winnerColor={g.winnerPlayer?.color}
+        otherProofs={g.otherProofs}
+        advancing={g.advancing}
+        hasMoreRounds={g.hasMoreRounds}
+        onNext={g.hostAdvance}
+      />
     )
   }
 
   if (g.currentPhase === 'sentenza_final') {
     return (
-      <div className="screen screen-narrow">
-        <div className="screen-body">
-          <SentenzaFinal
-            players={g.players}
-            localPlayerId={g.localPlayerId}
-            isHost={g.isHost}
-            advancing={replaying}
-            onReplay={handleReplay}
-            onChangeGame={handleChangeGame}
-          />
-        </div>
-      </div>
+      <SentenzaFinal
+        players={g.players}
+        localPlayerId={g.localPlayerId}
+        isHost={g.isHost}
+        advancing={replaying}
+        onReplay={handleReplay}
+        onChangeGame={handleChangeGame}
+      />
     )
   }
 

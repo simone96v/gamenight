@@ -283,11 +283,14 @@ export const useSentenza = () => {
     roundsWon: roundsWon[p.id] ?? 0,
   }))
 
+  const hasMoreRounds = currentRound + 1 < totalRounds
+
   return {
     currentPhase,
     questionStartedAt,
     currentRound,
     totalRounds,
+    hasMoreRounds,
     judge,
     isJudge,
     currentPrompt,
