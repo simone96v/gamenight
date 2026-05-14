@@ -3,9 +3,12 @@ import { motion } from 'framer-motion'
 import AppHeader from '../../../components/AppHeader'
 import IconButton from '../../../components/ui/IconButton'
 import Button from '../../../components/ui/Button'
+import RoundBadge from '../../../components/ui/RoundBadge'
+import GameSection from '../../../components/ui/GameSection'
 import MapView from './MapView'
 import { haversine, calcScore } from '../geo'
 import { haptic } from '../../../utils/haptic'
+import { accentBtnStyle } from '../../../theme/gameColors'
 
 const MappaReveal = ({
   question,
@@ -61,28 +64,26 @@ const MappaReveal = ({
       <AppHeader
         accentColor="#059669"
         leading={isHost && <IconButton ariaLabel="Esci" onClick={onExit}>←</IconButton>}
-        actions={<RoundBadge n={questionNumber} total={totalQuestions} />}
+        actions={<RoundBadge n={questionNumber} total={totalQuestions} game="mappa" />}
       />
 
-      <div style={S.mapSection}>
-        <MapView
-          pins={mapPins}
-          revealMode
-          realAnswer={answer}
-          disabled
-          rounded={false}
-        />
-      </div>
+      <div style={S.body}>
+        <GameSection emoji="🗺️" title={question.question} delay={0}>
+          <div style={S.answerRow}>
+            <span style={S.answerPin}>📍</span>
+            <span style={S.answerName}>{answer?.name ?? 'Posizione sconosciuta'}</span>
+          </div>
+        </GameSection>
 
-      <div style={S.panel}>
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          style={S.answerBar}
-        >
-          <span style={S.answerEmoji}>📍</span>
-          <span style={S.answerName}>{answer?.name ?? 'Posizione sconosciuta'}</span>
-        </motion.div>
+        <GameSection noPad delay={0.1} style={{ flex: 1, minHeight: 'clamp(140px, 25dvh, 220px)' }}>
+          <MapView
+            pins={mapPins}
+            revealMode
+            realAnswer={answer}
+            disabled
+            rounded={false}
+          />
+        </GameSection>
 
         {myResult && (
           <motion.div
@@ -112,39 +113,48 @@ const MappaReveal = ({
           </motion.div>
         )}
 
-        <div style={S.leaderboard}>
-          {results.map((r, i) => (
-            <motion.div
-              key={r.id}
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 + i * 0.08 }}
-              style={{
-                ...S.lbRow,
-                borderColor: r.id === localPlayerId ? 'var(--accent)' : 'transparent',
-              }}
-            >
-              <span style={S.lbRank}>{i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`}</span>
-              <div style={{ ...S.lbDot, backgroundColor: r.color }} />
-              <span style={S.lbName}>{r.name}</span>
-              <span style={S.lbFill} />
-              {r.hasPin ? (
-                <>
-                  <span style={S.lbDist}>{r.distance.toFixed(0)} km</span>
-                  <span style={S.lbScore}>+{r.roundScore}</span>
-                </>
-              ) : (
-                <span style={{ ...S.lbDist, color: 'var(--muted)' }}>
-                  {r.auto ? '⏰' : '—'}
-                </span>
-              )}
-            </motion.div>
-          ))}
-        </div>
+        <GameSection emoji="🏆" title="Classifica" delay={0.2} style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          <div style={S.leaderboard}>
+            {results.map((r, i) => (
+              <motion.div
+                key={r.id}
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.25 + i * 0.06 }}
+                style={{
+                  ...S.lbRow,
+                  borderColor: r.id === localPlayerId ? '#059669' : 'transparent',
+                  background: r.id === localPlayerId ? 'rgba(5, 150, 105, 0.08)' : 'var(--bg)',
+                }}
+              >
+                <span style={S.lbRank}>{i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`}</span>
+                <div style={{ ...S.lbDot, backgroundColor: r.color }} />
+                <span style={S.lbName}>{r.name}</span>
+                <span style={S.lbFill} />
+                {r.hasPin ? (
+                  <>
+                    <span style={S.lbDist}>{r.distance.toFixed(0)} km</span>
+                    <span style={S.lbScore}>+{r.roundScore}</span>
+                  </>
+                ) : (
+                  <span style={{ ...S.lbDist, color: 'var(--muted)' }}>
+                    {r.auto ? '⏰' : '—'}
+                  </span>
+                )}
+              </motion.div>
+            ))}
+          </div>
+        </GameSection>
 
         <div style={S.footer}>
           {isHost ? (
-            <Button variant="primary" width="full" onClick={onAdvance} disabled={advancing}>
+            <Button
+              variant="primary"
+              width="full"
+              onClick={onAdvance}
+              disabled={advancing}
+              style={accentBtnStyle('mappa')}
+            >
               {advancing
                 ? '...'
                 : hasMoreQuestions
@@ -160,23 +170,6 @@ const MappaReveal = ({
   )
 }
 
-const RoundBadge = ({ n, total }) => (
-  <div style={{
-    background: 'var(--bg2)',
-    color: '#059669',
-    fontWeight: 800,
-    fontSize: 'clamp(11px, 1.4dvh, 13px)',
-    padding: '5px 12px',
-    borderRadius: 999,
-    border: '1.5px solid rgba(5, 150, 105, 0.18)',
-    letterSpacing: '0.05em',
-    minWidth: 44,
-    textAlign: 'center',
-  }}>
-    {n}/{total}
-  </div>
-)
-
 const S = {
   container: {
     display: 'flex',
@@ -186,36 +179,29 @@ const S = {
     position: 'relative',
     height: '100dvh',
   },
-  mapSection: {
-    height: '38%',
-    flexShrink: 0,
-    position: 'relative',
-  },
-  panel: {
+  body: {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
     overflow: 'auto',
+    padding: 'clamp(8px, 1.2dvh, 12px) clamp(10px, 2.5vw, 16px)',
+    gap: 'clamp(6px, 1dvh, 10px)',
     background: 'var(--bg)',
-    borderTop: '1px solid var(--border)',
   },
-  answerBar: {
+  answerRow: {
     display: 'flex',
     alignItems: 'center',
     gap: 8,
-    padding: 'clamp(10px, 1.5dvh, 14px) clamp(14px, 3vw, 20px)',
-    background: 'var(--surface)',
-    borderBottom: '1px solid var(--border)',
-    flexShrink: 0,
+    marginTop: 4,
   },
-  answerEmoji: {
-    fontSize: 'clamp(18px, 2.5dvh, 24px)',
+  answerPin: {
+    fontSize: 'clamp(16px, 2dvh, 20px)',
     flexShrink: 0,
   },
   answerName: {
     fontWeight: 800,
-    fontSize: 'clamp(15px, 2dvh, 19px)',
-    color: 'var(--text)',
+    fontSize: 'clamp(14px, 1.8dvh, 17px)',
+    color: '#059669',
   },
   myScoreCard: {
     display: 'flex',
@@ -224,7 +210,8 @@ const S = {
     gap: 12,
     padding: 'clamp(10px, 1.5dvh, 14px) clamp(14px, 3vw, 20px)',
     background: 'var(--surface)',
-    borderBottom: '1px solid var(--border)',
+    borderRadius: 'var(--radius)',
+    border: '1px solid var(--border)',
     flexShrink: 0,
   },
   myDistance: {
@@ -237,20 +224,19 @@ const S = {
     fontWeight: 800,
   },
   leaderboard: {
-    flex: 1,
-    padding: 'clamp(8px, 1.2dvh, 12px) clamp(14px, 3vw, 20px)',
     display: 'flex',
     flexDirection: 'column',
-    gap: 'clamp(4px, 0.6dvh, 6px)',
+    gap: 'clamp(3px, 0.5dvh, 5px)',
     overflow: 'auto',
+    flex: 1,
     minHeight: 0,
+    scrollbarWidth: 'none',
   },
   lbRow: {
     display: 'flex',
     alignItems: 'center',
     gap: 8,
     padding: 'clamp(6px, 1dvh, 10px) clamp(8px, 1.5vw, 12px)',
-    background: 'var(--surface)',
     borderRadius: 'var(--radius-sm)',
     border: '1.5px solid transparent',
     flexShrink: 0,
@@ -287,9 +273,6 @@ const S = {
     textAlign: 'right',
   },
   footer: {
-    padding: 'clamp(8px, 1.2dvh, 12px) clamp(14px, 3vw, 20px)',
-    background: 'var(--surface)',
-    borderTop: '1px solid var(--border)',
     flexShrink: 0,
   },
   waitText: {

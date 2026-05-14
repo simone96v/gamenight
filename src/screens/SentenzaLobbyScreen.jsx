@@ -8,6 +8,9 @@ import GradientTitle from '../components/ui/GradientTitle'
 import { useSession } from '../stores/useSession'
 import { pushRoom } from '../lib/room'
 import { initSentenzaState } from '../games/Sentenza/useSentenza'
+import { GAME_COLORS, accentBtnStyle } from '../theme/gameColors'
+
+const C = GAME_COLORS.sentenza
 
 const ROUND_OPTIONS = [5, 8, 12]
 
@@ -209,14 +212,7 @@ const SentenzaLobbyScreen = () => {
               width="full"
               onClick={handleStart}
               disabled={launching || tooFew}
-              style={{
-                background: tooFew
-                  ? undefined
-                  : 'linear-gradient(135deg, #6366F1 0%, #818CF8 100%)',
-                boxShadow: tooFew
-                  ? undefined
-                  : '0 6px 18px rgba(99, 102, 241, 0.35)',
-              }}
+              style={tooFew ? undefined : accentBtnStyle('sentenza')}
             >
               {launching ? '⏳ Caricamento...' : '⚖️ Inizia!'}
             </Button>

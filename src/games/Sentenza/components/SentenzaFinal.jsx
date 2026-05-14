@@ -3,8 +3,10 @@ import AppHeader from '../../../components/AppHeader'
 import GradientTitle from '../../../components/ui/GradientTitle'
 import Button from '../../../components/ui/Button'
 import PlayerAvatar from '../../../components/PlayerAvatar'
+import GameSection from '../../../components/ui/GameSection'
+import { GAME_COLORS, accentBtnStyle } from '../../../theme/gameColors'
 
-const ACCENT = '#6366F1'
+const ACCENT = GAME_COLORS.sentenza.accent
 const PODIUM_EMOJIS = ['🥇', '🥈', '🥉']
 
 const SentenzaFinal = ({
@@ -30,7 +32,7 @@ const SentenzaFinal = ({
           <GradientTitle
             as="h2"
             size="lg"
-            gradient="linear-gradient(135deg, #818CF8 0%, #6366F1 50%, #4F46E5 100%)"
+            gradient={GAME_COLORS.sentenza.gradient}
           >
             ⚖️ Giudice Supremo
           </GradientTitle>
@@ -63,27 +65,29 @@ const SentenzaFinal = ({
           </div>
         )}
 
-        <div style={S.leaderboard}>
-          {sorted.map((p, i) => (
-            <motion.div
-              key={p.id}
-              initial={{ opacity: 0, x: -16 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 + i * 0.05 }}
-              style={{
-                ...S.row,
-                border: p.id === localPlayerId ? `1.5px solid ${ACCENT}` : '1.5px solid transparent',
-                background: p.id === localPlayerId ? `${ACCENT}1a` : 'var(--surface)',
-              }}
-            >
-              <span style={S.rank}>#{i + 1}</span>
-              <div style={{ ...S.dot, backgroundColor: p.color }} />
-              <span style={S.name}>{p.name}</span>
-              <span style={S.rounds}>{p.roundsWon ?? 0}⚖️</span>
-              <span style={S.score}>{p.score ?? 0}</span>
-            </motion.div>
-          ))}
-        </div>
+        <GameSection emoji="📊" title="Classifica" delay={0.3} style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          <div style={S.leaderboard}>
+            {sorted.map((p, i) => (
+              <motion.div
+                key={p.id}
+                initial={{ opacity: 0, x: -16 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 + i * 0.05 }}
+                style={{
+                  ...S.row,
+                  border: p.id === localPlayerId ? `1.5px solid ${ACCENT}` : '1.5px solid transparent',
+                  background: p.id === localPlayerId ? `${ACCENT}1a` : 'var(--bg)',
+                }}
+              >
+                <span style={S.rank}>#{i + 1}</span>
+                <div style={{ ...S.dot, backgroundColor: p.color }} />
+                <span style={S.name}>{p.name}</span>
+                <span style={S.rounds}>{p.roundsWon ?? 0}⚖️</span>
+                <span style={S.score}>{p.score ?? 0}</span>
+              </motion.div>
+            ))}
+          </div>
+        </GameSection>
 
         <div style={S.footer}>
           {isHost ? (
@@ -96,7 +100,7 @@ const SentenzaFinal = ({
                 width="full"
                 onClick={onReplay}
                 disabled={advancing}
-                style={{ background: 'linear-gradient(135deg, #6366F1 0%, #818CF8 100%)' }}
+                style={accentBtnStyle('sentenza')}
               >
                 {advancing ? '...' : '🔄 Rigioca'}
               </Button>

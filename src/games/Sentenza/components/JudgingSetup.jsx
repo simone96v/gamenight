@@ -2,9 +2,11 @@ import { motion } from 'framer-motion'
 import AppHeader from '../../../components/AppHeader'
 import GameHUD from '../../../components/GameHUD'
 import IconButton from '../../../components/ui/IconButton'
+import RoundBadge from '../../../components/ui/RoundBadge'
 import PromptCard from './PromptCard'
+import { GAME_COLORS } from '../../../theme/gameColors'
 
-const ACCENT = '#6366F1'
+const ACCENT = GAME_COLORS.sentenza.accent
 
 const JudgingSetup = ({
   judgeName,
@@ -21,7 +23,7 @@ const JudgingSetup = ({
     <AppHeader
       accentColor="#6366F1"
       leading={isHost && <IconButton ariaLabel="Esci" onClick={onExit}>←</IconButton>}
-      actions={<RoundBadge n={round} total={totalRounds} />}
+      actions={<RoundBadge n={round} total={totalRounds} game="sentenza" />}
     />
     <GameHUD
       questionNumber={round}
@@ -87,23 +89,6 @@ const initialsOf = (name) => {
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
   return (parts[0][0] + parts[1][0]).toUpperCase()
 }
-
-const RoundBadge = ({ n, total }) => (
-  <div style={{
-    background: 'var(--bg2)',
-    color: ACCENT,
-    fontWeight: 800,
-    fontSize: 'clamp(11px, 1.4dvh, 13px)',
-    padding: '5px 12px',
-    borderRadius: 999,
-    border: `1.5px solid ${ACCENT}33`,
-    letterSpacing: '0.05em',
-    minWidth: 44,
-    textAlign: 'center',
-  }}>
-    {n}/{total}
-  </div>
-)
 
 const S = {
   container: {

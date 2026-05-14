@@ -3,7 +3,9 @@ import AppHeader from '../../../components/AppHeader'
 import GameHUD from '../../../components/GameHUD'
 import IconButton from '../../../components/ui/IconButton'
 import Button from '../../../components/ui/Button'
+import RoundBadge from '../../../components/ui/RoundBadge'
 import MapView from './MapView'
+import { accentBtnStyle } from '../../../theme/gameColors'
 
 const MappaQuestion = ({
   question,
@@ -36,7 +38,7 @@ const MappaQuestion = ({
       <AppHeader
         accentColor="#059669"
         leading={isHost && <IconButton ariaLabel="Esci" onClick={onExit}>←</IconButton>}
-        actions={<RoundBadge n={questionNumber} total={totalQuestions} />}
+        actions={<RoundBadge n={questionNumber} total={totalQuestions} game="mappa" />}
       />
 
       <GameHUD
@@ -127,14 +129,7 @@ const MappaQuestion = ({
           width="full"
           disabled={!canConfirm}
           onClick={onConfirm}
-          style={{
-            background: canConfirm
-              ? 'linear-gradient(135deg, #059669 0%, #34D399 100%)'
-              : undefined,
-            boxShadow: canConfirm
-              ? '0 6px 18px rgba(5, 150, 105, 0.35)'
-              : 'none',
-          }}
+          style={canConfirm ? accentBtnStyle('mappa') : undefined}
         >
           {confirmed ? '✅ Confermato' : 'Conferma 📍'}
         </Button>
@@ -142,23 +137,6 @@ const MappaQuestion = ({
     </div>
   )
 }
-
-const RoundBadge = ({ n, total }) => (
-  <div style={{
-    background: 'var(--bg2)',
-    color: '#059669',
-    fontWeight: 800,
-    fontSize: 'clamp(11px, 1.4dvh, 13px)',
-    padding: '5px 12px',
-    borderRadius: 999,
-    border: '1.5px solid rgba(5, 150, 105, 0.18)',
-    letterSpacing: '0.05em',
-    minWidth: 44,
-    textAlign: 'center',
-  }}>
-    {n}/{total}
-  </div>
-)
 
 const S = {
   container: {

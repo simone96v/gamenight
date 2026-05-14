@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import GradientTitle from '../../../components/ui/GradientTitle'
 import Button from '../../../components/ui/Button'
 import PlayerAvatar from '../../../components/PlayerAvatar'
+import GameSection from '../../../components/ui/GameSection'
 import MvpAwards from '../components/MvpAwards'
 import { PODIUM_EMOJIS } from '../constants'
 
@@ -92,44 +93,45 @@ const FinalPhase = ({
           </div>
         )}
 
-        {/* Leaderboard */}
-        <div style={leaderboardStyle}>
-          {sorted.map((p, i) => (
-            <motion.div
-              key={p.id}
-              initial={{ opacity: 0, x: -16 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 + i * 0.05 }}
-              style={{
-                ...leaderRowStyle,
-                border: p.id === localPlayerId ? '1.5px solid var(--accent)' : '1.5px solid transparent',
-                background: p.id === localPlayerId ? 'rgba(124, 58, 237, 0.10)' : 'var(--surface)',
-              }}
-            >
-              <span style={rankStyle}>#{i + 1}</span>
-              <div style={{ ...chipDotStyle, backgroundColor: p.color }} />
-              <span style={{ flex: 1, fontWeight: 600, fontSize: 'clamp(13px, 1.6dvh, 16px)' }}>
-                {p.name}
-              </span>
-              <span style={{
-                fontSize: 'clamp(10px, 1.2dvh, 12px)',
-                color: 'var(--muted)',
-                fontWeight: 700,
-              }}>
-                {p.correct_count ?? 0}✓
-              </span>
-              <span style={{
-                fontWeight: 800,
-                color: 'var(--accent)',
-                fontSize: 'clamp(15px, 1.8dvh, 19px)',
-                minWidth: 40,
-                textAlign: 'right',
-              }}>
-                {p.score ?? 0}
-              </span>
-            </motion.div>
-          ))}
-        </div>
+        <GameSection emoji="📊" title="Classifica" delay={0.3} style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          <div style={leaderboardStyle}>
+            {sorted.map((p, i) => (
+              <motion.div
+                key={p.id}
+                initial={{ opacity: 0, x: -16 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 + i * 0.05 }}
+                style={{
+                  ...leaderRowStyle,
+                  border: p.id === localPlayerId ? '1.5px solid var(--accent)' : '1.5px solid transparent',
+                  background: p.id === localPlayerId ? 'rgba(124, 58, 237, 0.10)' : 'var(--bg)',
+                }}
+              >
+                <span style={rankStyle}>#{i + 1}</span>
+                <div style={{ ...chipDotStyle, backgroundColor: p.color }} />
+                <span style={{ flex: 1, fontWeight: 600, fontSize: 'clamp(13px, 1.6dvh, 16px)' }}>
+                  {p.name}
+                </span>
+                <span style={{
+                  fontSize: 'clamp(10px, 1.2dvh, 12px)',
+                  color: 'var(--muted)',
+                  fontWeight: 700,
+                }}>
+                  {p.correct_count ?? 0}✓
+                </span>
+                <span style={{
+                  fontWeight: 800,
+                  color: 'var(--accent)',
+                  fontSize: 'clamp(15px, 1.8dvh, 19px)',
+                  minWidth: 40,
+                  textAlign: 'right',
+                }}>
+                  {p.score ?? 0}
+                </span>
+              </motion.div>
+            ))}
+          </div>
+        </GameSection>
 
         {/* MVP Awards */}
         <MvpAwards players={players} />

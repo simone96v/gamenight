@@ -2,11 +2,14 @@ import { motion } from 'framer-motion'
 import AppHeader from '../../../components/AppHeader'
 import GameHUD from '../../../components/GameHUD'
 import IconButton from '../../../components/ui/IconButton'
+import RoundBadge from '../../../components/ui/RoundBadge'
+import GameSection from '../../../components/ui/GameSection'
 import PromptCard from './PromptCard'
 import ProofCard from './ProofCard'
 import Button from '../../../components/ui/Button'
+import { GAME_COLORS, accentBtnStyle } from '../../../theme/gameColors'
 
-const ACCENT = '#6366F1'
+const ACCENT = GAME_COLORS.sentenza.accent
 
 const SentenzaReveal = ({
   prompt,
@@ -31,7 +34,7 @@ const SentenzaReveal = ({
       <AppHeader
         accentColor="#6366F1"
         leading={isHost && <IconButton ariaLabel="Esci" onClick={onExit}>←</IconButton>}
-        actions={<RoundBadge n={currentRound} total={totalRounds} />}
+        actions={<RoundBadge n={currentRound} total={totalRounds} game="sentenza" />}
       />
       <GameHUD
         questionNumber={currentRound}
@@ -88,25 +91,26 @@ const SentenzaReveal = ({
         )}
 
         {otherProofs?.length > 0 && (
-          <div style={S.others}>
-            <p style={S.othersTitle}>Le altre prove:</p>
-            {otherProofs.map((p, i) => (
-              <motion.div
-                key={p.id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7 + i * 0.1 }}
-              >
-                <ProofCard
-                  index={i}
-                  promptText={prompt}
-                  answerText={p.answer}
-                  label={p.playerName}
-                  disabled
-                />
-              </motion.div>
-            ))}
-          </div>
+          <GameSection emoji="📜" title="Le altre prove" delay={0.6}>
+            <div style={S.others}>
+              {otherProofs.map((p, i) => (
+                <motion.div
+                  key={p.id}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.7 + i * 0.1 }}
+                >
+                  <ProofCard
+                    index={i}
+                    promptText={prompt}
+                    answerText={p.answer}
+                    label={p.playerName}
+                    disabled
+                  />
+                </motion.div>
+              ))}
+            </div>
+          </GameSection>
         )}
 
         <div style={S.footer}>
@@ -116,10 +120,7 @@ const SentenzaReveal = ({
               width="full"
               onClick={onNext}
               disabled={advancing}
-              style={{
-                background: 'linear-gradient(135deg, #6366F1 0%, #818CF8 100%)',
-                boxShadow: '0 6px 18px rgba(99, 102, 241, 0.35)',
-              }}
+              style={accentBtnStyle('sentenza')}
             >
               {advancing
                 ? '...'
@@ -142,23 +143,6 @@ const initialsOf = (name) => {
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
   return (parts[0][0] + parts[1][0]).toUpperCase()
 }
-
-const RoundBadge = ({ n, total }) => (
-  <div style={{
-    background: 'var(--bg2)',
-    color: ACCENT,
-    fontWeight: 800,
-    fontSize: 'clamp(11px, 1.4dvh, 13px)',
-    padding: '5px 12px',
-    borderRadius: 999,
-    border: `1.5px solid ${ACCENT}33`,
-    letterSpacing: '0.05em',
-    minWidth: 44,
-    textAlign: 'center',
-  }}>
-    {n}/{total}
-  </div>
-)
 
 const S = {
   container: {
@@ -214,12 +198,6 @@ const S = {
     display: 'flex',
     flexDirection: 'column',
     gap: 'clamp(4px, 0.7dvh, 8px)',
-  },
-  othersTitle: {
-    fontSize: 'clamp(12px, 1.5dvh, 14px)',
-    fontWeight: 700,
-    color: 'var(--muted)',
-    margin: 0,
   },
   footer: {
     marginTop: 'auto',

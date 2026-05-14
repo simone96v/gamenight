@@ -3,8 +3,11 @@ import AppHeader from '../../../components/AppHeader'
 import GradientTitle from '../../../components/ui/GradientTitle'
 import Button from '../../../components/ui/Button'
 import PlayerAvatar from '../../../components/PlayerAvatar'
+import GameSection from '../../../components/ui/GameSection'
+import { GAME_COLORS, accentBtnStyle } from '../../../theme/gameColors'
 
 const PODIUM_EMOJIS = ['🥇', '🥈', '🥉']
+const C = GAME_COLORS.mappa
 
 const MappaFinal = ({
   players,
@@ -19,14 +22,14 @@ const MappaFinal = ({
 
   return (
     <div style={S.container}>
-      <AppHeader accentColor="#059669" />
+      <AppHeader accentColor={C.accent} />
       <div style={S.body}>
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           style={{ textAlign: 'center' }}
         >
-          <GradientTitle as="h2" size="lg">
+          <GradientTitle as="h2" size="lg" gradient={C.gradient}>
             🏆 Classifica Finale
           </GradientTitle>
           <p style={S.subtitle}>{totalQuestions} domande completate</p>
@@ -52,33 +55,35 @@ const MappaFinal = ({
                   <span style={{ fontSize: isFirst ? 32 : 24 }}>{PODIUM_EMOJIS[rank]}</span>
                   <PlayerAvatar player={p} showScore={false} size={isFirst ? 'lg' : 'md'} />
                   <span style={S.podiumName}>{p.name}</span>
-                  <span style={S.podiumScore}>{p.score ?? 0}</span>
+                  <span style={{ ...S.podiumScore, color: C.accent }}>{p.score ?? 0}</span>
                 </motion.div>
               )
             })}
           </div>
         )}
 
-        <div style={S.leaderboard}>
-          {sorted.map((p, i) => (
-            <motion.div
-              key={p.id}
-              initial={{ opacity: 0, x: -16 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 + i * 0.05 }}
-              style={{
-                ...S.lbRow,
-                border: p.id === localPlayerId ? '1.5px solid #059669' : '1.5px solid transparent',
-                background: p.id === localPlayerId ? 'rgba(5, 150, 105, 0.10)' : 'var(--surface)',
-              }}
-            >
-              <span style={S.lbRank}>#{i + 1}</span>
-              <div style={{ ...S.lbDot, backgroundColor: p.color }} />
-              <span style={S.lbName}>{p.name}</span>
-              <span style={S.lbScore}>{p.score ?? 0}</span>
-            </motion.div>
-          ))}
-        </div>
+        <GameSection emoji="📊" title="Tutti i risultati" delay={0.3}>
+          <div style={S.leaderboard}>
+            {sorted.map((p, i) => (
+              <motion.div
+                key={p.id}
+                initial={{ opacity: 0, x: -16 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 + i * 0.05 }}
+                style={{
+                  ...S.lbRow,
+                  border: p.id === localPlayerId ? `1.5px solid ${C.accent}` : '1.5px solid transparent',
+                  background: p.id === localPlayerId ? `${C.accent}1a` : 'var(--bg)',
+                }}
+              >
+                <span style={{ ...S.lbRank, color: C.accent }}>#{i + 1}</span>
+                <div style={{ ...S.lbDot, backgroundColor: p.color }} />
+                <span style={S.lbName}>{p.name}</span>
+                <span style={{ ...S.lbScore, color: C.accent }}>{p.score ?? 0}</span>
+              </motion.div>
+            ))}
+          </div>
+        </GameSection>
 
         <div style={S.footer}>
           {isHost ? (
@@ -86,7 +91,7 @@ const MappaFinal = ({
               <Button variant="secondary" width="full" onClick={onChangeGame} disabled={advancing}>
                 🎮 Cambia gioco
               </Button>
-              <Button variant="primary" width="full" onClick={onReplay} disabled={advancing}>
+              <Button variant="primary" width="full" onClick={onReplay} disabled={advancing} style={accentBtnStyle('mappa')}>
                 {advancing ? '...' : '🔄 Gioca ancora'}
               </Button>
             </div>
@@ -150,7 +155,6 @@ const S = {
   podiumScore: {
     fontSize: 'clamp(14px, 1.8dvh, 18px)',
     fontWeight: 800,
-    color: '#059669',
   },
   leaderboard: {
     display: 'flex',
@@ -166,13 +170,11 @@ const S = {
     alignItems: 'center',
     gap: 'clamp(8px, 1.5vw, 12px)',
     padding: 'clamp(8px, 1.2dvh, 12px) clamp(10px, 2vw, 16px)',
-    background: 'var(--surface)',
     borderRadius: 'var(--radius-sm)',
   },
   lbRank: {
     fontSize: 'clamp(13px, 1.6dvh, 16px)',
     fontWeight: 800,
-    color: '#059669',
     minWidth: 28,
     textAlign: 'center',
   },
@@ -189,7 +191,6 @@ const S = {
   },
   lbScore: {
     fontWeight: 800,
-    color: '#059669',
     fontSize: 'clamp(15px, 1.8dvh, 19px)',
     minWidth: 40,
     textAlign: 'right',

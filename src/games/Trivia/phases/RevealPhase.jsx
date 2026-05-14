@@ -6,6 +6,7 @@ import AppHeader from '../../../components/AppHeader'
 import GameHUD from '../../../components/GameHUD'
 import IconButton from '../../../components/ui/IconButton'
 import Button from '../../../components/ui/Button'
+import RoundBadge from '../../../components/ui/RoundBadge'
 import QuestionCard from '../components/QuestionCard'
 import AnswerTile from '../components/AnswerTile'
 import ScorePopup from '../components/ScorePopup'
@@ -51,7 +52,7 @@ const RevealPhase = ({
     <div style={containerStyle}>
       <AppHeader
         leading={isHost && <IconButton ariaLabel="Esci" onClick={onExit}>←</IconButton>}
-        actions={<RoundBadge n={questionNumber} total={totalQuestions} />}
+        actions={<RoundBadge n={questionNumber} total={totalQuestions} game="trivia" />}
       />
       <GameHUD
         questionNumber={questionNumber}
@@ -133,23 +134,6 @@ const CategoryChip = ({ category }) => (
       {category.label}
     </span>
   </motion.div>
-)
-
-const RoundBadge = ({ n, total }) => (
-  <div style={{
-    background: 'var(--bg2)',
-    color: 'var(--accent)',
-    fontWeight: 800,
-    fontSize: 'clamp(11px, 1.4dvh, 13px)',
-    padding: '5px 12px',
-    borderRadius: 999,
-    border: '1.5px solid rgba(124,58,237,0.18)',
-    letterSpacing: '0.05em',
-    minWidth: 44,
-    textAlign: 'center',
-  }}>
-    {n}/{total}
-  </div>
 )
 
 const containerStyle = {

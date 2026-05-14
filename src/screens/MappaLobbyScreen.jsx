@@ -7,6 +7,9 @@ import Button from '../components/ui/Button'
 import GradientTitle from '../components/ui/GradientTitle'
 import { useSession } from '../stores/useSession'
 import { pushRoom } from '../lib/room'
+import { GAME_COLORS, accentBtnStyle } from '../theme/gameColors'
+
+const C = GAME_COLORS.mappa
 
 const ROUND_OPTIONS = [5, 10, 25, 50]
 
@@ -228,10 +231,7 @@ const MappaLobbyScreen = () => {
               width="full"
               onClick={handleStart}
               disabled={launching}
-              style={{
-                background: 'linear-gradient(135deg, #059669 0%, #34D399 100%)',
-                boxShadow: '0 6px 18px rgba(5, 150, 105, 0.35)',
-              }}
+              style={accentBtnStyle('mappa')}
             >
               {launching ? '⏳ Caricamento...' : '🗺️ Inizia!'}
             </Button>

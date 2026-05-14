@@ -3,12 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion'
 import AppHeader from '../../../components/AppHeader'
 import GameHUD from '../../../components/GameHUD'
 import IconButton from '../../../components/ui/IconButton'
+import RoundBadge from '../../../components/ui/RoundBadge'
 import PromptCard from './PromptCard'
 import ProofCard from './ProofCard'
 import Button from '../../../components/ui/Button'
 import { haptic } from '../../../utils/haptic'
+import { GAME_COLORS, accentBtnStyle } from '../../../theme/gameColors'
 
-const ACCENT = '#6366F1'
+const ACCENT = GAME_COLORS.sentenza.accent
 
 const SentenzaJudging = ({
   prompt,
@@ -38,7 +40,7 @@ const SentenzaJudging = ({
       <AppHeader
         accentColor="#6366F1"
         leading={isHost && <IconButton ariaLabel="Esci" onClick={onExit}>←</IconButton>}
-        actions={<RoundBadge n={currentRound} total={totalRounds} />}
+        actions={<RoundBadge n={currentRound} total={totalRounds} game="sentenza" />}
       />
       <GameHUD
         questionNumber={currentRound}
@@ -83,10 +85,7 @@ const SentenzaJudging = ({
                   variant="primary"
                   width="full"
                   onClick={handleVerdict}
-                  style={{
-                    background: 'linear-gradient(135deg, #6366F1 0%, #818CF8 100%)',
-                    boxShadow: '0 6px 18px rgba(99, 102, 241, 0.35)',
-                  }}
+                  style={accentBtnStyle('sentenza')}
                 >
                   Emetti la Sentenza! 👑
                 </Button>
@@ -98,23 +97,6 @@ const SentenzaJudging = ({
     </div>
   )
 }
-
-const RoundBadge = ({ n, total }) => (
-  <div style={{
-    background: 'var(--bg2)',
-    color: ACCENT,
-    fontWeight: 800,
-    fontSize: 'clamp(11px, 1.4dvh, 13px)',
-    padding: '5px 12px',
-    borderRadius: 999,
-    border: `1.5px solid ${ACCENT}33`,
-    letterSpacing: '0.05em',
-    minWidth: 44,
-    textAlign: 'center',
-  }}>
-    {n}/{total}
-  </div>
-)
 
 const S = {
   container: {
