@@ -44,8 +44,11 @@ export default async function handler(req, res) {
     return
   }
 
-  const { categories = [], countPerCategory = 10 } = req.body || {}
+  const { categories = [], countPerCategory: rawCount = 5 } = req.body || {}
   const apiKey = process.env.OPENROUTER_API_KEY
+
+  // Clamp: max 10 per categoria per tenere il prompt snello e veloce
+  const countPerCategory = Math.min(Math.max(rawCount, 3), 10)
 
   // Filtra solo categorie valide
   const validCats = categories.filter((c) => CATEGORY_DESCRIPTIONS[c])

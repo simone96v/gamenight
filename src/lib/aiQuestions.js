@@ -78,11 +78,14 @@ export const generateDeck = async (category, count = 10) => {
   return deck
 }
 
-// ── Prefetch tutte le categorie con UNA SOLA chiamata batch ─────────
-// Chiamato dalla LobbyScreen quando l'host entra.
-// Una sola richiesta a /api/generate-trivia-batch → 1 cold start, 1 LLM call.
-// Fallback: se il batch fallisce, genera categoria per categoria.
-const PREFETCH_COUNT = 10
+// ── Prefetch tutte le categorie ─────────────────────────────────────
+// Strategia: batch endpoint (1 sola chiamata DeepSeek per tutte le categorie)
+// con timeout di 15s. Se il batch non risponde in tempo, fallback a chiamate
+// individuali parallele. Il progress si aggiorna man mano.
+// 5 domande per categoria = 50 totali → prompt snello, risposta in ~3-5s.
+// Se il setting viene alzato in TriviaLobby, generateDeck() copre la differenza.
+const PREFETCH_COUNT = 5
+const BATCH_TIMEOUT_MS = 20000
 
 export const prefetchAllCategories = (onProgress) => {
   if (_prefetchRunning) return
@@ -91,7 +94,6 @@ export const prefetchAllCategories = (onProgress) => {
   const categories = TRIVIA_CATEGORIES
   const total = categories.length
 
-  // Categorie non ancora in cache
   const missing = categories.filter(
     (c) => !_cache.has(c.id) || _cache.get(c.id).length < PREFETCH_COUNT,
   )
@@ -101,12 +103,10 @@ export const prefetchAllCategories = (onProgress) => {
   if (missing.length === 0) {
     _prefetchRunning = false
     onProgress?.(total, total)
-    console.log('[ai] prefetch skipped — all categories already cached')
     return
   }
 
-  // Tenta batch endpoint (1 sola chiamata)
-  _doBatchPrefetch(missing, PREFETCH_COUNT, alreadyCached, total, onProgress)
+  _runPrefetch(missing, PREFETCH_COUNT, alreadyCached, total, onProgress)
     .then(() => {
       _prefetchRunning = false
       console.log('[ai] prefetch complete — all', total, 'categories cached')
@@ -116,61 +116,67 @@ export const prefetchAllCategories = (onProgress) => {
     })
 }
 
-const _doBatchPrefetch = async (missing, count, baseReady, total, onProgress) => {
-  const catIds = missing.map((c) => c.id)
+const _runPrefetch = async (missing, count, baseReady, total, onProgress) => {
   let ready = baseReady
+  const catIds = missing.map((c) => c.id)
 
+  // ── Tenta batch con timeout ──
   try {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), BATCH_TIMEOUT_MS)
+
     const resp = await fetch('/api/generate-trivia-batch', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ categories: catIds, countPerCategory: count }),
+      signal: controller.signal,
     })
+    clearTimeout(timer)
 
     if (resp.ok) {
       const data = await resp.json().catch(() => ({}))
       const decks = data?.decks ?? {}
+      let batchHits = 0
 
-      // Popola la cache con i deck ricevuti
       for (const cat of missing) {
         const qs = decks[cat.id]
         if (Array.isArray(qs) && qs.length > 0) {
-          const normalized = qs.map((q) => normalize(q, cat.id))
-          _cache.set(cat.id, normalized)
+          _cache.set(cat.id, qs.map((q) => normalize(q, cat.id)))
+          batchHits++
         }
         ready++
         onProgress?.(ready, total)
       }
 
-      // Verifica se qualche categoria è rimasta vuota → fallback individuale
+      // Se il batch ha coperto tutto, fine
+      if (batchHits === missing.length) return
+
+      // Altrimenti fallback per le categorie mancanti
       const stillMissing = missing.filter(
         (c) => !_cache.has(c.id) || _cache.get(c.id).length < count,
       )
       if (stillMissing.length > 0) {
-        console.warn('[ai] batch missing', stillMissing.length, 'categories, falling back')
-        await _doIndividualFallback(stillMissing, count)
+        console.warn('[ai] batch partial:', batchHits, '/', missing.length, '— falling back for', stillMissing.length)
+        await Promise.all(stillMissing.map((c) => generateDeck(c.id, count)))
       }
       return
     }
-
-    console.warn('[ai] batch endpoint failed, status', resp.status)
+    console.warn('[ai] batch status', resp.status)
   } catch (err) {
-    console.warn('[ai] batch fetch failed:', err?.message ?? err)
+    if (err?.name === 'AbortError') {
+      console.warn('[ai] batch timed out after', BATCH_TIMEOUT_MS, 'ms — falling back')
+    } else {
+      console.warn('[ai] batch failed:', err?.message ?? err)
+    }
   }
 
-  // Fallback completo: genera individualmente
-  console.warn('[ai] falling back to individual generation')
+  // ── Fallback: chiamate individuali parallele ──
   ready = baseReady
-  await _doIndividualFallback(missing, count, (cat) => {
+  onProgress?.(ready, total)
+  await Promise.all(missing.map(async (cat) => {
+    await generateDeck(cat.id, count)
     ready++
     onProgress?.(ready, total)
-  })
-}
-
-const _doIndividualFallback = async (cats, count, onEach) => {
-  await Promise.all(cats.map(async (cat) => {
-    await generateDeck(cat.id, count)
-    onEach?.(cat)
   }))
 }
 
