@@ -113,6 +113,7 @@ const Mappa = () => {
           localPin={mappa.localPin}
           confirmed={mappa.confirmed}
           isExpired={mappa.isExpired}
+          submittedPins={mappa.pins}
           onPinDrop={mappa.placePin}
           onConfirm={mappa.confirmPin}
           onExit={handleChangeGame}

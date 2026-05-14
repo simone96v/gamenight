@@ -3,13 +3,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import AppHeader from '../components/AppHeader'
 import GradientTitle from '../components/ui/GradientTitle'
 import OptionCard from '../components/ui/OptionCard'
-import Spinner from '../components/ui/Spinner'
 import ErrorBanner from '../components/ErrorBanner'
-import { useSession } from '../stores/useSession'
-import { createRoom } from '../lib/room'
 
 const OPTIONS = [
   {
@@ -263,34 +259,10 @@ const BottomLeftBlob = ({ expr }) => (
 
 const HomeScreen = () => {
   const navigate = useNavigate()
-  const resetSession = useSession((s) => s.resetSession)
-  const setOnlineMode = useSession((s) => s.setOnlineMode)
-  const showError = useSession((s) => s.showError)
-  const [creating, setCreating] = useState(false)
   const { topExpr, bottomExpr } = useExpressions()
 
-  const handlePick = async (id) => {
-    if (creating) return
-    if (id === 'join') {
-      navigate('/join')
-      return
-    }
-    setCreating(true)
-    resetSession()
-    const { code, error } = await createRoom({
-      players: [],
-      categoryVotes: {},
-      gameVotes: {},
-      selectedGame: null,
-    })
-    if (error || !code) {
-      showError('generic')
-      setCreating(false)
-      return
-    }
-    setOnlineMode(code, true, null)
-    setCreating(false)
-    navigate('/lobby')
+  const handlePick = (id) => {
+    navigate(id === 'join' ? '/join' : '/create')
   }
 
   return (
@@ -364,8 +336,6 @@ const HomeScreen = () => {
               option={opt}
               index={i}
               onClick={() => handlePick(opt.id)}
-              disabled={creating && opt.id === 'create'}
-              badge={creating && opt.id === 'create' ? <Spinner size="sm" /> : null}
             />
           ))}
         </div>
