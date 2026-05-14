@@ -232,11 +232,13 @@ const S = {
     minHeight: 'clamp(100px, 25dvh, 200px)',
   },
   label: {
+    fontFamily: "'Baloo 2', cursive",
     fontSize: 'clamp(80px, 22dvh, 180px)',
-    fontWeight: 900,
-    letterSpacing: '-0.04em',
+    fontWeight: 800,
+    letterSpacing: '-0.02em',
     userSelect: 'none',
     zIndex: 2,
+    lineHeight: 1,
   },
   pulseRing: {
     position: 'absolute',
