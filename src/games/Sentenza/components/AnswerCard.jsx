@@ -20,7 +20,21 @@ const AnswerCard = ({
       y: selected ? -4 : 0,
     }}
     transition={{ delay: index * 0.06, type: 'spring', stiffness: 280, damping: 22 }}
-    whileTap={!disabled ? { scale: 0.96 } : undefined}
+    whileHover={!disabled ? {
+      y: -3,
+      scale: 1.02,
+      boxShadow: selected
+        ? '0 0 0 3px #818CF8, 0 14px 32px rgba(99, 102, 241, 0.4)'
+        : '0 8px 22px rgba(31, 41, 55, 0.22)',
+    } : undefined}
+    whileTap={!disabled ? {
+      y: 1,
+      scale: 0.96,
+      boxShadow: selected
+        ? '0 0 0 3px #818CF8, 0 2px 8px rgba(99, 102, 241, 0.2)'
+        : '0 2px 6px rgba(31, 41, 55, 0.10)',
+    } : undefined}
+    transition={{ delay: index * 0.06, type: 'spring', stiffness: 400, damping: 22 }}
     onClick={disabled ? undefined : () => { haptic.light(); onClick?.() }}
     disabled={disabled}
     style={{

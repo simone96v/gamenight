@@ -186,7 +186,7 @@ const CategoryWheel = ({
             position: 'absolute',
             top: 24,
             left: 0,
-            filter: 'drop-shadow(0 14px 32px rgba(124, 58, 237, 0.25))',
+            filter: 'drop-shadow(0 14px 32px rgba(0, 0, 0, 0.25))',
           }}
         >
           {categories.map((cat, i) => {
@@ -246,7 +246,7 @@ const CategoryWheel = ({
           style={{
             background: isBusy
               ? 'var(--surface2)'
-              : 'linear-gradient(135deg, #7C3AED 0%, #EC4899 100%)',
+              : '#111827',
             color: isBusy ? 'var(--muted)' : '#fff',
             border: 'none',
             padding: '14px 32px',
@@ -256,7 +256,7 @@ const CategoryWheel = ({
             letterSpacing: '0.01em',
             cursor: (isBusy || disabled) ? 'default' : 'pointer',
             opacity: disabled ? 0.55 : 1,
-            boxShadow: isBusy ? 'none' : '0 8px 20px rgba(124, 58, 237, 0.35)',
+            boxShadow: isBusy ? 'none' : '0 8px 20px rgba(0, 0, 0, 0.35)',
             transition: 'all 0.2s',
             minWidth: 200,
           }}
@@ -299,7 +299,7 @@ const celebrationOverlayStyle = {
   alignItems: 'center',
   justifyContent: 'center',
   gap: 'clamp(10px, 2dvh, 18px)',
-  background: 'radial-gradient(ellipse at center, rgba(124,58,237,0.92) 0%, rgba(31,41,55,0.95) 100%)',
+  background: 'radial-gradient(ellipse at center, rgba(17,24,39,0.92) 0%, rgba(31,41,55,0.95) 100%)',
   borderRadius: 20,
   backdropFilter: 'blur(12px)',
 }

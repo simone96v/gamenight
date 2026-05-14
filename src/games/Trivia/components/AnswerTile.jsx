@@ -29,7 +29,19 @@ const AnswerTile = ({
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: index * 0.05 }}
-        whileTap={!disabled ? { scale: 0.96 } : undefined}
+        whileHover={!disabled ? {
+          y: -3,
+          scale: 1.02,
+          boxShadow: isMine
+            ? '0 12px 30px rgba(31, 41, 55, 0.3)'
+            : '0 8px 22px rgba(31, 41, 55, 0.18)',
+        } : undefined}
+        whileTap={!disabled ? {
+          y: 1,
+          scale: 0.96,
+          boxShadow: '0 2px 6px rgba(31, 41, 55, 0.10)',
+        } : undefined}
+        transition={{ type: 'spring', stiffness: 400, damping: 22 }}
         onClick={disabled ? undefined : () => { haptic.light(); onClick?.() }}
         disabled={disabled}
         style={{

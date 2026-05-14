@@ -7,7 +7,7 @@ const AppHeader = ({ actions = null, leading = null, accentColor }) => {
   const isHost = useSession((s) => s.isHost)
   const roomCode = useSession((s) => s.roomCode)
   const resetSession = useSession((s) => s.resetSession)
-  const accent = accentColor || '#7C3AED'
+  const accent = accentColor || '#111827'
 
   const handleLogoClick = async () => {
     if (isHost && roomCode) {

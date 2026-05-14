@@ -22,7 +22,20 @@ const ProofCard = ({
         y: selected ? -4 : 0,
       }}
       transition={{ delay: index * 0.08, type: 'spring', stiffness: 260, damping: 22 }}
-      whileTap={!disabled ? { scale: 0.97 } : undefined}
+      whileHover={!disabled ? {
+        y: -3,
+        boxShadow: selected
+          ? '0 0 0 3px rgba(99, 102, 241, 0.4), 0 12px 32px rgba(99, 102, 241, 0.25)'
+          : '0 6px 18px rgba(31, 41, 55, 0.12)',
+      } : undefined}
+      whileTap={!disabled ? {
+        y: 1,
+        scale: 0.97,
+        boxShadow: selected
+          ? '0 0 0 3px rgba(99, 102, 241, 0.3), 0 2px 8px rgba(99, 102, 241, 0.15)'
+          : '0 1px 4px rgba(31, 41, 55, 0.06)',
+      } : undefined}
+      transition={{ delay: index * 0.08, type: 'spring', stiffness: 400, damping: 22 }}
       onClick={disabled ? undefined : () => { haptic.light(); onClick?.() }}
       disabled={disabled}
       style={{

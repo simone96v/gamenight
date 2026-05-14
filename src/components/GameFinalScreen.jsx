@@ -105,7 +105,7 @@ const S = {
   emoji: {
     fontSize: 'clamp(64px, 12vw, 90px)',
     lineHeight: 1,
-    filter: 'drop-shadow(0 6px 18px rgba(124,58,237,0.30))',
+    filter: 'drop-shadow(0 6px 18px rgba(0,0,0,0.30))',
   },
   sub: {
     margin: 0,

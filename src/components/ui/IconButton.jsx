@@ -30,7 +30,15 @@ const IconButton = ({
   return (
     <motion.button
       type="button"
-      whileTap={disabled ? undefined : { scale: 0.92 }}
+      whileHover={disabled ? undefined : {
+        scale: 1.08,
+        boxShadow: '0 4px 14px rgba(0,0,0,0.12)',
+      }}
+      whileTap={disabled ? undefined : {
+        scale: 0.92,
+        boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+      }}
+      transition={{ type: 'spring', stiffness: 400, damping: 22 }}
       onClick={disabled ? undefined : onClick}
       aria-label={ariaLabel}
       disabled={disabled}
@@ -45,11 +53,12 @@ const IconButton = ({
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: 'var(--shadow-sm)',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
         padding: 0,
         lineHeight: 1,
         opacity: disabled ? 0.4 : 1,
         flexShrink: 0,
+        transition: 'opacity 0.15s ease',
         ...style,
       }}
       {...rest}

@@ -8,8 +8,14 @@ const SIZES = {
   xl: 'clamp(36px, 7vw, 56px)',
 }
 
-const GradientTitle = ({ as = 'h1', size = 'md', children, style, ...rest }) => {
+const GradientTitle = ({ as = 'h1', size = 'md', gradient, children, style, ...rest }) => {
   const Tag = as
+  const gradientStyle = gradient ? {
+    background: gradient,
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+  } : { color: 'var(--text)' }
+
   return (
     <Tag
       style={{
@@ -18,10 +24,8 @@ const GradientTitle = ({ as = 'h1', size = 'md', children, style, ...rest }) => 
         fontFamily: "'Baloo 2', cursive",
         fontWeight: 700,
         letterSpacing: '-0.01em',
-        background: 'linear-gradient(120deg, #7C3AED 30%, #EC4899 90%)',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
         lineHeight: 1.15,
+        ...gradientStyle,
         ...style,
       }}
       {...rest}

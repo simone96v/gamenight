@@ -6,9 +6,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { haptic } from '../utils/haptic'
 
 const STEPS = [
-  { label: '3', color: '#7C3AED', delay: 0 },
-  { label: '2', color: '#A855F7', delay: 1 },
-  { label: '1', color: '#EC4899', delay: 2 },
+  { label: '3', color: 'var(--text)', delay: 0 },
+  { label: '2', color: 'var(--muted)', delay: 1 },
+  { label: '1', color: 'var(--muted)', delay: 2 },
   { label: 'VIA!', color: '#10B981', delay: 3 },
 ]
 

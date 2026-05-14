@@ -251,8 +251,21 @@ const GameCard = ({ game, index, onClick, selected, voteCount }) => (
     initial={{ opacity: 0, y: 18, scale: 0.94 }}
     animate={{ opacity: 1, y: 0, scale: 1 }}
     transition={{ delay: index * 0.05, type: 'spring', stiffness: 260, damping: 22 }}
-    whileHover={{ scale: 1.03, y: -4 }}
-    whileTap={{ scale: 0.97 }}
+    whileHover={{
+      scale: 1.03,
+      y: -4,
+      boxShadow: selected
+        ? `0 0 0 4px rgba(0, 0, 0, 0.25), 0 24px 48px ${game.shadow}`
+        : `0 16px 36px rgba(31, 41, 55, 0.14), 0 0 0 1px rgba(255,255,255,0.5) inset`,
+    }}
+    whileTap={{
+      scale: 0.97,
+      y: 0,
+      boxShadow: selected
+        ? `0 0 0 4px rgba(0, 0, 0, 0.20), 0 4px 12px ${game.shadow}`
+        : `0 4px 10px rgba(31, 41, 55, 0.06)`,
+    }}
+    transition={{ type: 'spring', stiffness: 300, damping: 22 }}
     onClick={onClick}
     style={{
       width: '100%',
@@ -260,7 +273,7 @@ const GameCard = ({ game, index, onClick, selected, voteCount }) => (
       borderRadius: 20,
       border: selected ? '2.5px solid var(--accent)' : '1px solid var(--border)',
       boxShadow: selected
-        ? `0 0 0 4px rgba(124, 58, 237, 0.20), 0 18px 36px ${game.shadow}`
+        ? `0 0 0 4px rgba(0, 0, 0, 0.20), 0 18px 36px ${game.shadow}`
         : `0 10px 22px rgba(31, 41, 55, 0.08), 0 0 0 1px rgba(255,255,255,0.5) inset`,
       padding: 0,
       display: 'flex',
@@ -269,7 +282,6 @@ const GameCard = ({ game, index, onClick, selected, voteCount }) => (
       textAlign: 'left',
       position: 'relative',
       overflow: 'hidden',
-      transition: 'box-shadow 0.25s, transform 0.2s',
     }}
   >
     {/* Hero gradient con pattern + emoji */}
@@ -368,13 +380,13 @@ const GameCard = ({ game, index, onClick, selected, voteCount }) => (
             position: 'absolute',
             top: 8,
             right: 8,
-            background: 'linear-gradient(135deg, #7C3AED, #EC4899)',
+            background: '#111827',
             color: '#fff',
             borderRadius: 999,
             padding: '4px 10px',
             fontSize: 11,
             fontWeight: 900,
-            boxShadow: '0 4px 14px rgba(124, 58, 237, 0.45)',
+            boxShadow: '0 4px 14px rgba(0, 0, 0, 0.45)',
             display: 'inline-flex',
             alignItems: 'center',
             gap: 4,
@@ -456,7 +468,7 @@ const pillStyle = {
   padding: '3px 9px',
   fontSize: 10,
   fontWeight: 800,
-  border: '1px solid rgba(124, 58, 237, 0.14)',
+  border: '1px solid rgba(0, 0, 0, 0.14)',
   letterSpacing: '-0.005em',
 }
 

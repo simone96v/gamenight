@@ -7,8 +7,8 @@ export const CATEGORIES = [
     label: 'Coppia',
     emoji: '💕',
     description: 'Solo io e te. Pronti a conoscerci sul serio?',
-    bg: 'linear-gradient(135deg, #F472B6 0%, #EC4899 60%, #DB2777 100%)',
-    shadow: 'rgba(236, 72, 153, 0.40)',
+    bg: 'linear-gradient(135deg, #FDA4AF 0%, #FB7185 60%, #F43F5E 100%)',
+    shadow: 'rgba(244, 63, 94, 0.40)',
     ageWarning: true,
   },
   {
@@ -16,8 +16,8 @@ export const CATEGORIES = [
     label: 'Serata tra amici',
     emoji: '🎮',
     description: 'Domande casual, sfide leggere. Classica.',
-    bg: 'linear-gradient(135deg, #A78BFA 0%, #7C3AED 60%, #6D28D9 100%)',
-    shadow: 'rgba(124, 58, 237, 0.40)',
+    bg: 'linear-gradient(135deg, #C4B5FD 0%, #A78BFA 60%, #8B5CF6 100%)',
+    shadow: 'rgba(139, 92, 246, 0.40)',
   },
   {
     id: 'bar',

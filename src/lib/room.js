@@ -109,8 +109,7 @@ export const subscribeToRoom = (code, onUpdate) => {
 // Aggiunge un giocatore alla stanza tramite RPC atomico (FOR UPDATE).
 // Elimina la race-condition fra join simultanei.
 // `isHost` marca il giocatore come host (solo per il creatore della stanza).
-export const addPlayerToRoom = async (code, { id, name, isHost = false }) => {
-  // Leggi prima per avere il conteggio corrente (serve per il colore)
+export const addPlayerToRoom = async (code, { id, name, color: chosenColor, isHost = false }) => {
   const { room, error: getErr } = await getRoom(code)
   if (getErr || !room) return { player: null, error: getErr ?? new Error('room_not_found') }
 
@@ -118,7 +117,7 @@ export const addPlayerToRoom = async (code, { id, name, isHost = false }) => {
   const players = Array.isArray(state.players) ? state.players : []
   if (players.length >= MAX_PLAYERS) return { player: null, error: new Error('room_full') }
 
-  const color = pickColor(players.length)
+  const color = chosenColor || pickColor(players.length)
 
   const { error } = await supabase.rpc('add_player', {
     p_code: code,

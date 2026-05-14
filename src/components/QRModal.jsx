@@ -63,9 +63,7 @@ const QRModal = ({ open = false, onClose, joinUrl, roomCode }) => {
           fontSize: 'clamp(28px, 4.5dvh, 38px)',
           fontWeight: 900,
           letterSpacing: '0.15em',
-          background: 'linear-gradient(120deg, #7C3AED 30%, #EC4899 90%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
+          color: 'var(--text)',
         }}>
           {roomCode}
         </div>

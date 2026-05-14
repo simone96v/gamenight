@@ -345,7 +345,7 @@ const S = {
     fontSize: 'clamp(11px, 1.4dvh, 13px)',
     padding: '5px 12px',
     borderRadius: 999,
-    border: '1.5px solid rgba(124,58,237,0.18)',
+    border: '1.5px solid rgba(0,0,0,0.18)',
     letterSpacing: '0.05em',
     minWidth: 44,
     textAlign: 'center',

@@ -1,20 +1,25 @@
-// Bottone primario riusabile.
-// Varianti:
-//   primary   → gradiente accent → accent2, testo bianco
-//   secondary → bg trasparente, border 1.5px --border, testo --muted
-//   danger    → bg --danger, testo bianco
-// `width="full"` → larghezza 100%.
-// `disabled`    → opacity 0.4 + pointer-events none.
-// Animazione: whileTap scale 0.96, transizione spring stiffness 400.
-
 import { motion } from 'framer-motion'
 import { haptic } from '../../utils/haptic'
 
-const VARIANT_CLASS = {
-  primary:   'text-white',
-  secondary: 'text-muted',
-  danger:    'bg-danger text-white',
+const SHADOWS = {
+  primary: {
+    rest: '0 4px 14px rgba(0,0,0,0.18)',
+    hover: '0 10px 30px rgba(0,0,0,0.3)',
+    tap: '0 2px 6px rgba(0,0,0,0.15)',
+  },
+  secondary: {
+    rest: '0 2px 8px rgba(0,0,0,0.06)',
+    hover: '0 6px 20px rgba(0,0,0,0.10)',
+    tap: '0 1px 3px rgba(0,0,0,0.04)',
+  },
+  danger: {
+    rest: '0 4px 14px rgba(239,68,68,0.25)',
+    hover: '0 10px 30px rgba(239,68,68,0.35)',
+    tap: '0 2px 6px rgba(239,68,68,0.15)',
+  },
 }
+
+const spring = { type: 'spring', stiffness: 400, damping: 22 }
 
 const Button = ({
   variant = 'primary',
@@ -28,21 +33,29 @@ const Button = ({
   ...rest
 }) => {
   const widthClass = width === 'full' ? 'w-full' : ''
-  const disabledClass = disabled ? 'opacity-40 pointer-events-none' : ''
   const isSecondary = variant === 'secondary'
+  const s = SHADOWS[variant] || SHADOWS.primary
+  const hasCustomShadow = !!styleProp?.boxShadow
 
   return (
     <motion.button
       type={type}
       disabled={disabled}
       onClick={disabled ? undefined : (e) => { haptic.tick(); onClick?.(e) }}
-      whileTap={disabled ? undefined : { scale: 0.96 }}
-      transition={{ type: 'spring', stiffness: 400 }}
+      whileHover={disabled ? undefined : {
+        y: -2,
+        ...(!hasCustomShadow && { boxShadow: s.hover }),
+      }}
+      whileTap={disabled ? undefined : {
+        y: 1,
+        scale: 0.97,
+        ...(!hasCustomShadow && { boxShadow: s.tap }),
+      }}
+      transition={spring}
       className={[
         'inline-flex items-center justify-center font-semibold select-none rounded-sm',
-        VARIANT_CLASS[variant] ?? VARIANT_CLASS.primary,
         widthClass,
-        disabledClass,
+        disabled ? 'pointer-events-none' : '',
         className,
       ].join(' ')}
       style={{
@@ -52,15 +65,15 @@ const Button = ({
         gap: '8px',
         borderRadius: 'var(--radius-sm)',
         background: variant === 'primary'
-          ? 'linear-gradient(135deg, #7C3AED 0%, #EC4899 100%)'
+          ? '#111827'
           : isSecondary
             ? 'var(--surface)'
             : undefined,
-        color: isSecondary ? 'var(--text)' : undefined,
+        color: isSecondary ? 'var(--text)' : '#fff',
         border: isSecondary ? '1.5px solid var(--border-strong)' : 'none',
-        boxShadow: variant === 'primary'
-          ? '0 6px 18px rgba(124, 58, 237, 0.35)'
-          : 'none',
+        boxShadow: s.rest,
+        opacity: disabled ? 0.5 : 1,
+        transition: 'opacity 0.2s ease, background 0.15s ease, border-color 0.15s ease',
         ...styleProp,
       }}
       {...rest}

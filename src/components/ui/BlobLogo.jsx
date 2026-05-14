@@ -32,7 +32,7 @@ const BlobLogo = ({ size = 'md', clickable = false, onClick }) => {
         height={s.blob}
         viewBox="0 0 100 100"
         style={{
-          filter: 'drop-shadow(0 4px 12px rgba(124, 58, 237, 0.35))',
+          filter: 'drop-shadow(0 4px 12px rgba(0, 0, 0, 0.35))',
           flexShrink: 0,
         }}
         aria-hidden="true"

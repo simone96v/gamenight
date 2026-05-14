@@ -17,16 +17,21 @@ const OPTIONS = [
     emoji: '🎉',
     title: 'Crea party',
     description: 'Apri un nuovo party e invita i tuoi amici.',
-    bg: 'linear-gradient(135deg, #A78BFA 0%, #7C3AED 60%, #EC4899 100%)',
-    shadow: 'rgba(124, 58, 237, 0.40)',
+    bg: 'linear-gradient(#fff, #fff) padding-box, linear-gradient(90deg, #8B5CF6, #3B82F6, #10B981, #F59E0B, #F43F5E, #EC4899) border-box',
+    shadow: 'rgba(0, 0, 0, 0.06)',
+    border: '3px solid transparent',
+    textColor: '#111827',
   },
   {
     id: 'join',
     emoji: '🔑',
     title: 'Ho già un codice',
     description: 'Entra in un party già creato da un amico.',
-    bg: 'linear-gradient(135deg, #FB923C 0%, #F97316 100%)',
-    shadow: 'rgba(249, 115, 22, 0.35)',
+    bg: '#FFFFFF',
+    shadow: 'rgba(0, 0, 0, 0.04)',
+    border: '1.5px solid var(--border-strong)',
+    textColor: '#111827',
+    subtleTitle: true,
   },
 ]
 
@@ -61,28 +66,29 @@ const StatPill = ({ emoji, label, delay }) => (
   </motion.div>
 )
 
-// Sequenza espressioni — top e bottom sfasati.
+// Sequenza espressioni — blob guardano verso il centro.
+// Top-left guarda a destra, bottom-right guarda a sinistra.
 const EXPR_SEQUENCE = [
-  { top: 'normal',     bottom: 'normal',     dur: 2500 },
-  { top: 'blink',      bottom: 'normal',     dur: 150 },
-  { top: 'normal',     bottom: 'normal',     dur: 3000 },
-  { top: 'normal',     bottom: 'blink',      dur: 150 },
-  { top: 'normal',     bottom: 'normal',     dur: 2000 },
+  { top: 'look-right', bottom: 'look-left',  dur: 2500 },
+  { top: 'blink',      bottom: 'look-left',  dur: 150 },
+  { top: 'look-right', bottom: 'look-left',  dur: 3000 },
+  { top: 'look-right', bottom: 'blink',      dur: 150 },
   { top: 'look-right', bottom: 'look-left',  dur: 2000 },
-  { top: 'blink',      bottom: 'blink',      dur: 150 },
-  { top: 'happy',      bottom: 'normal',     dur: 2500 },
-  { top: 'normal',     bottom: 'happy',      dur: 2500 },
-  { top: 'blink',      bottom: 'normal',     dur: 150 },
   { top: 'normal',     bottom: 'normal',     dur: 2000 },
+  { top: 'blink',      bottom: 'blink',      dur: 150 },
+  { top: 'happy',      bottom: 'look-left',  dur: 2500 },
+  { top: 'look-right', bottom: 'happy',      dur: 2500 },
+  { top: 'blink',      bottom: 'look-left',  dur: 150 },
+  { top: 'look-right', bottom: 'look-left',  dur: 2000 },
   { top: 'look-left',  bottom: 'look-right', dur: 2000 },
-  { top: 'normal',     bottom: 'blink',      dur: 150 },
-  { top: 'normal',     bottom: 'normal',     dur: 3000 },
+  { top: 'look-right', bottom: 'blink',      dur: 150 },
+  { top: 'look-right', bottom: 'look-left',  dur: 3000 },
   { top: 'blink',      bottom: 'blink',      dur: 150 },
 ]
 
 const useExpressions = () => {
-  const [topExpr, setTopExpr] = useState('normal')
-  const [bottomExpr, setBottomExpr] = useState('normal')
+  const [topExpr, setTopExpr] = useState('look-right')
+  const [bottomExpr, setBottomExpr] = useState('look-left')
   const idxRef = useRef(0)
 
   useEffect(() => {
@@ -102,60 +108,74 @@ const useExpressions = () => {
 }
 
 // Occhi SVG con espressioni — posizioni relative al centro (lx, rx, ey).
-const BlobEyes = ({ expr, lx, rx, ey, prefix }) => {
-  const pupilDx = expr === 'look-left' ? -4 : expr === 'look-right' ? 4 : 0
+const BlobEyes = ({ expr, lx, rx, ey, prefix, rotate = 0 }) => {
+  const pupilDx = expr === 'look-left' ? -9 : expr === 'look-right' ? 9 : 0
+  const pupilDy = expr === 'look-left' ? -3 : expr === 'look-right' ? -3 : 0
+  const cx = (lx + rx) / 2
+  const wrap = (children) =>
+    rotate ? <g transform={`rotate(${rotate}, ${cx}, ${ey})`}>{children}</g> : <>{children}</>
 
   if (expr === 'blink') {
-    return (
+    return wrap(
       <>
-        <ellipse cx={lx} cy={ey} rx="14" ry="2.5" fill="#fff" opacity="0.9" />
-        <ellipse cx={rx} cy={ey} rx="14" ry="2.5" fill="#fff" opacity="0.9" />
+        <ellipse cx={lx} cy={ey} rx="24" ry="4" fill="#fff" opacity="0.9" />
+        <ellipse cx={rx} cy={ey} rx="24" ry="4" fill="#fff" opacity="0.9" />
       </>
     )
   }
 
   if (expr === 'happy') {
-    return (
+    return wrap(
       <>
-        <path d={`M${lx - 14} ${ey + 2} Q${lx} ${ey - 14}, ${lx + 14} ${ey + 2}`}
-          fill="none" stroke="#fff" strokeWidth="4.5" strokeLinecap="round" />
-        <path d={`M${rx - 14} ${ey + 2} Q${rx} ${ey - 14}, ${rx + 14} ${ey + 2}`}
-          fill="none" stroke="#fff" strokeWidth="4.5" strokeLinecap="round" />
+        <path d={`M${lx - 22} ${ey + 3} Q${lx} ${ey - 22}, ${lx + 22} ${ey + 3}`}
+          fill="none" stroke="#fff" strokeWidth="6" strokeLinecap="round" />
+        <path d={`M${rx - 22} ${ey + 3} Q${rx} ${ey - 22}, ${rx + 22} ${ey + 3}`}
+          fill="none" stroke="#fff" strokeWidth="6" strokeLinecap="round" />
       </>
     )
   }
 
-  return (
+  return wrap(
     <>
-      <ellipse cx={lx} cy={ey} rx="16" ry="17" fill={`url(#${prefix}-eye-l)`} />
-      <circle cx={lx + 2 + pupilDx} cy={ey + 3} r="7.5" fill="#6D28D9" />
-      <circle cx={lx + 4 + pupilDx} cy={ey + 1} r="3" fill="#1E1B4B" />
-      <circle cx={lx + 6 + pupilDx} cy={ey - 2} r="1.8" fill="rgba(255,255,255,0.9)" />
-      <ellipse cx={rx} cy={ey} rx="16" ry="17" fill={`url(#${prefix}-eye-r)`} />
-      <circle cx={rx + 2 + pupilDx} cy={ey + 3} r="7.5" fill="#6D28D9" />
-      <circle cx={rx + 4 + pupilDx} cy={ey + 1} r="3" fill="#1E1B4B" />
-      <circle cx={rx + 6 + pupilDx} cy={ey - 2} r="1.8" fill="rgba(255,255,255,0.9)" />
+      <ellipse cx={lx} cy={ey} rx="26" ry="28" fill={`url(#${prefix}-eye-l)`} />
+      <circle cx={lx + 3 + pupilDx} cy={ey + 4 + pupilDy} r="12" fill="#6D28D9" />
+      <circle cx={lx + 5 + pupilDx} cy={ey + 1 + pupilDy} r="4.5" fill="#1E1B4B" />
+      <circle cx={lx + 9 + pupilDx} cy={ey - 3 + pupilDy} r="2.8" fill="rgba(255,255,255,0.9)" />
+      <ellipse cx={rx} cy={ey} rx="26" ry="28" fill={`url(#${prefix}-eye-r)`} />
+      <circle cx={rx + 3 + pupilDx} cy={ey + 4 + pupilDy} r="12" fill="#6D28D9" />
+      <circle cx={rx + 5 + pupilDx} cy={ey + 1 + pupilDy} r="4.5" fill="#1E1B4B" />
+      <circle cx={rx + 9 + pupilDx} cy={ey - 3 + pupilDy} r="2.8" fill="rgba(255,255,255,0.9)" />
     </>
   )
 }
 
-const blobDefs = (prefix) => (
-  <defs>
-    <linearGradient id={`${prefix}-grad`} x1="0%" y1="0%" x2="100%" y2="80%">
-      <stop offset="0%" stopColor="#C4B5FD" />
-      <stop offset="40%" stopColor="#A78BFA" />
-      <stop offset="100%" stopColor="#7C3AED" />
-    </linearGradient>
-    <radialGradient id={`${prefix}-eye-l`} cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stopColor="#fff" />
-      <stop offset="100%" stopColor="#F0ECF9" />
-    </radialGradient>
-    <radialGradient id={`${prefix}-eye-r`} cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stopColor="#fff" />
-      <stop offset="100%" stopColor="#F0ECF9" />
-    </radialGradient>
-  </defs>
-)
+const BLOB_COLORS = {
+  tb: ['#C4B5FD', '#A78BFA', '#8B5CF6'],
+  tr: ['#FDE68A', '#FBBF24', '#F59E0B'],
+  bl: ['#6EE7B7', '#34D399', '#10B981'],
+  bb: ['#FDA4AF', '#FB7185', '#F43F5E'],
+}
+
+const blobDefs = (prefix) => {
+  const [c1, c2, c3] = BLOB_COLORS[prefix] || BLOB_COLORS.tb
+  return (
+    <defs>
+      <linearGradient id={`${prefix}-grad`} x1="0%" y1="0%" x2="100%" y2="80%">
+        <stop offset="0%" stopColor={c1} />
+        <stop offset="40%" stopColor={c2} />
+        <stop offset="100%" stopColor={c3} />
+      </linearGradient>
+      <radialGradient id={`${prefix}-eye-l`} cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stopColor="#fff" />
+        <stop offset="100%" stopColor="#F0ECF9" />
+      </radialGradient>
+      <radialGradient id={`${prefix}-eye-r`} cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stopColor="#fff" />
+        <stop offset="100%" stopColor="#F0ECF9" />
+      </radialGradient>
+    </defs>
+  )
+}
 
 const BottomBlob = ({ expr }) => (
   <div style={{
@@ -173,7 +193,7 @@ const BottomBlob = ({ expr }) => (
     >
       {blobDefs('bb')}
       <circle cx="150" cy="150" r="145" fill="url(#bb-grad)" />
-      <BlobEyes expr={expr} lx={115} rx={185} ey={140} prefix="bb" />
+      <BlobEyes expr={expr} lx={115} rx={185} ey={140} prefix="bb" rotate={-45} />
     </svg>
   </div>
 )
@@ -194,7 +214,49 @@ const TopBlob = ({ expr }) => (
     >
       {blobDefs('tb')}
       <circle cx="150" cy="150" r="145" fill="url(#tb-grad)" />
-      <BlobEyes expr={expr} lx={115} rx={185} ey={140} prefix="tb" />
+      <BlobEyes expr={expr} lx={115} rx={185} ey={140} prefix="tb" rotate={-45} />
+    </svg>
+  </div>
+)
+
+const TopRightBlob = ({ expr }) => (
+  <div style={{
+    position: 'fixed',
+    top: 'clamp(-70px, -10dvh, -40px)',
+    right: 'clamp(-90px, -14vw, -55px)',
+    zIndex: 0,
+    pointerEvents: 'none',
+    lineHeight: 0,
+  }}>
+    <svg
+      viewBox="0 0 300 300"
+      style={{ width: 'clamp(230px, 52vw, 360px)', height: 'auto' }}
+      aria-hidden="true"
+    >
+      {blobDefs('tr')}
+      <circle cx="150" cy="150" r="145" fill="url(#tr-grad)" />
+      <BlobEyes expr={expr} lx={115} rx={185} ey={140} prefix="tr" rotate={45} />
+    </svg>
+  </div>
+)
+
+const BottomLeftBlob = ({ expr }) => (
+  <div style={{
+    position: 'fixed',
+    bottom: 'clamp(-70px, -10dvh, -40px)',
+    left: 'clamp(-90px, -14vw, -55px)',
+    zIndex: 0,
+    pointerEvents: 'none',
+    lineHeight: 0,
+  }}>
+    <svg
+      viewBox="0 0 300 300"
+      style={{ width: 'clamp(230px, 52vw, 360px)', height: 'auto' }}
+      aria-hidden="true"
+    >
+      {blobDefs('bl')}
+      <circle cx="150" cy="150" r="145" fill="url(#bl-grad)" />
+      <BlobEyes expr={expr} lx={115} rx={185} ey={140} prefix="bl" rotate={45} />
     </svg>
   </div>
 )
@@ -309,6 +371,8 @@ const HomeScreen = () => {
       </div>
 
       <TopBlob expr={topExpr} />
+      <TopRightBlob expr={bottomExpr} />
+      <BottomLeftBlob expr={topExpr} />
       <BottomBlob expr={bottomExpr} />
     </motion.div>
   )

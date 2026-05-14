@@ -11,23 +11,23 @@
 /* usabili come utility (bg-surface, text-muted, ecc).                 */
 /* ------------------------------------------------------------------ */
 :root {
-  --bg:        #F5F3FF;
-  --bg2:       #EDE9FE;
+  --bg:        #F8F9FA;
+  --bg2:       #F1F3F5;
   --surface:   #FFFFFF;
-  --surface2:  #F4F0FF;
-  --accent:    #7C3AED;
-  --accent2:   #EC4899;
+  --surface2:  #F8F9FA;
+  --accent:    #111827;
+  --accent2:   #374151;
   --accent3:   #06B6D4;
   --success:   #22C55E;
   --danger:    #EF4444;
   --warning:   #F59E0B;
-  --text:      #1F2937;
+  --text:      #111827;
   --muted:     #6B7280;
-  --border:    rgba(31, 41, 55, 0.08);
-  --border-strong: rgba(31, 41, 55, 0.16);
-  --shadow-sm: 0 2px 8px rgba(124, 58, 237, 0.08);
-  --shadow-md: 0 8px 24px rgba(124, 58, 237, 0.12);
-  --shadow-lg: 0 16px 40px rgba(124, 58, 237, 0.18);
+  --border:    rgba(0, 0, 0, 0.06);
+  --border-strong: rgba(0, 0, 0, 0.12);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.12);
   --radius:    22px;
   --radius-sm: 14px;
 }
@@ -51,11 +51,7 @@ body {
   overflow: hidden;
   margin: 0;
   font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  background:
-    radial-gradient(circle at 0% 0%, rgba(236, 72, 153, 0.10), transparent 45%),
-    radial-gradient(circle at 100% 0%, rgba(6, 182, 212, 0.10), transparent 45%),
-    radial-gradient(circle at 50% 100%, rgba(124, 58, 237, 0.10), transparent 50%),
-    var(--bg);
+  background: var(--bg);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -88,7 +84,7 @@ body {
 .liquid-blob.lb1 {
   width: 340px;
   height: 340px;
-  background: rgba(167, 139, 250, 0.35);
+  background: rgba(139, 92, 246, 0.12);
   top: -90px;
   left: -110px;
   border-radius: 56% 44% 65% 35% / 47% 67% 33% 53%;
@@ -98,7 +94,7 @@ body {
 .liquid-blob.lb2 {
   width: 300px;
   height: 300px;
-  background: rgba(236, 72, 153, 0.28);
+  background: rgba(245, 158, 11, 0.12);
   top: 22%;
   right: -130px;
   border-radius: 50% 50% 40% 60% / 40% 60% 40% 60%;
@@ -108,7 +104,7 @@ body {
 .liquid-blob.lb3 {
   width: 380px;
   height: 380px;
-  background: rgba(6, 182, 212, 0.22);
+  background: rgba(16, 185, 129, 0.10);
   bottom: -140px;
   left: 22%;
   border-radius: 60% 40% 50% 50% / 55% 45% 60% 40%;

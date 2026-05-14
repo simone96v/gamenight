@@ -85,7 +85,7 @@ const S = {
     background: 'var(--surface, #FFF)',
     borderRadius: 22,
     padding: '28px 24px',
-    boxShadow: '0 16px 40px rgba(124, 58, 237, 0.18)',
+    boxShadow: '0 16px 40px rgba(0, 0, 0, 0.18)',
     textAlign: 'center',
   },
   emoji: { fontSize: 48, lineHeight: 1, marginBottom: 12 },
@@ -98,7 +98,7 @@ const S = {
   },
   actions: { display: 'flex', gap: 10, justifyContent: 'center' },
   btnPrimary: {
-    background: 'linear-gradient(135deg, #7C3AED 0%, #EC4899 100%)',
+    background: '#111827',
     color: '#fff',
     border: 'none',
     padding: '12px 22px',

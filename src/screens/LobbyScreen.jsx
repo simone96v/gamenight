@@ -1,9 +1,4 @@
-// Lobby — modello host-controlled.
-// Host: aggiunge il proprio nome, vede QR, vede giocatori, impostazioni, bottone "Inizia".
-// Client: vede giocatori, messaggio "In attesa dell'host..."
-// L'host avvia il gioco con il bottone "Inizia la sfida".
-
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import AppHeader from '../components/AppHeader'
@@ -15,6 +10,95 @@ import GradientTitle from '../components/ui/GradientTitle'
 import { useSession } from '../stores/useSession'
 import { useSettings } from '../stores/useSettings'
 import { addPlayerToRoom, pushRoom, closeRoom } from '../lib/room'
+import { AVATAR_COLORS, BLOB_GRADIENTS } from '../utils/colors'
+
+const MINI_EXPR_SEQ = [
+  { expr: 'normal',     dur: 2500 },
+  { expr: 'look-right', dur: 2000 },
+  { expr: 'blink',      dur: 150 },
+  { expr: 'look-right', dur: 3000 },
+  { expr: 'normal',     dur: 2000 },
+  { expr: 'look-left',  dur: 2500 },
+  { expr: 'blink',      dur: 150 },
+  { expr: 'look-left',  dur: 2000 },
+  { expr: 'happy',      dur: 2000 },
+  { expr: 'blink',      dur: 150 },
+  { expr: 'normal',     dur: 3000 },
+]
+
+const useMiniExpr = () => {
+  const [expr, setExpr] = useState('normal')
+  const idxRef = useRef(0)
+  useEffect(() => {
+    let timer
+    const step = () => {
+      const s = MINI_EXPR_SEQ[idxRef.current]
+      setExpr(s.expr)
+      idxRef.current = (idxRef.current + 1) % MINI_EXPR_SEQ.length
+      timer = setTimeout(step, s.dur)
+    }
+    step()
+    return () => clearTimeout(timer)
+  }, [])
+  return expr
+}
+
+const MiniBlobEyes = ({ expr, lx, rx, ey, id }) => {
+  const dx = expr === 'look-left' ? -9 : expr === 'look-right' ? 9 : 0
+  const dy = expr === 'look-left' ? -3 : expr === 'look-right' ? -3 : 0
+
+  if (expr === 'blink') {
+    return (
+      <>
+        <ellipse cx={lx} cy={ey} rx="24" ry="4" fill="#fff" opacity="0.9" />
+        <ellipse cx={rx} cy={ey} rx="24" ry="4" fill="#fff" opacity="0.9" />
+      </>
+    )
+  }
+  if (expr === 'happy') {
+    return (
+      <>
+        <path d={`M${lx - 22} ${ey + 3} Q${lx} ${ey - 22}, ${lx + 22} ${ey + 3}`}
+          fill="none" stroke="#fff" strokeWidth="6" strokeLinecap="round" />
+        <path d={`M${rx - 22} ${ey + 3} Q${rx} ${ey - 22}, ${rx + 22} ${ey + 3}`}
+          fill="none" stroke="#fff" strokeWidth="6" strokeLinecap="round" />
+      </>
+    )
+  }
+  return (
+    <>
+      <ellipse cx={lx} cy={ey} rx="26" ry="28" fill={`url(#${id}-el)`} />
+      <circle cx={lx + 3 + dx} cy={ey + 4 + dy} r="12" fill="#6D28D9" />
+      <circle cx={lx + 5 + dx} cy={ey + 1 + dy} r="4.5" fill="#1E1B4B" />
+      <circle cx={lx + 9 + dx} cy={ey - 3 + dy} r="2.8" fill="rgba(255,255,255,0.9)" />
+      <ellipse cx={rx} cy={ey} rx="26" ry="28" fill={`url(#${id}-el)`} />
+      <circle cx={rx + 3 + dx} cy={ey + 4 + dy} r="12" fill="#6D28D9" />
+      <circle cx={rx + 5 + dx} cy={ey + 1 + dy} r="4.5" fill="#1E1B4B" />
+      <circle cx={rx + 9 + dx} cy={ey - 3 + dy} r="2.8" fill="rgba(255,255,255,0.9)" />
+    </>
+  )
+}
+
+const MiniBlob = ({ color, expr = 'normal', size = 42, id = 'mb' }) => {
+  const [c1, c2, c3] = BLOB_GRADIENTS[color] || ['#E5E7EB', '#D1D5DB', '#9CA3AF']
+  return (
+    <svg viewBox="0 0 300 300" width={size} height={size} style={{ flexShrink: 0 }}>
+      <defs>
+        <linearGradient id={`${id}-g`} x1="0%" y1="0%" x2="100%" y2="80%">
+          <stop offset="0%" stopColor={c1} />
+          <stop offset="40%" stopColor={c2} />
+          <stop offset="100%" stopColor={c3} />
+        </linearGradient>
+        <radialGradient id={`${id}-el`} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#fff" />
+          <stop offset="100%" stopColor="#F0ECF9" />
+        </radialGradient>
+      </defs>
+      <circle cx="150" cy="150" r="145" fill={`url(#${id}-g)`} />
+      <MiniBlobEyes expr={expr} lx={115} rx={185} ey={140} id={id} />
+    </svg>
+  )
+}
 
 const containerVariants = {
   hidden: {},
@@ -28,7 +112,9 @@ const itemVariants = {
 
 const LobbyScreen = () => {
   const navigate = useNavigate()
+  const blobExpr = useMiniExpr()
   const [name, setName] = useState('')
+  const [selectedColor, setSelectedColor] = useState(null)
   const [starting, setStarting] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
 
@@ -47,11 +133,13 @@ const LobbyScreen = () => {
   const showNameInput = !localPlayerId && players.length < 8
   const canStart = isHost && hostHasJoined && players.length >= 2
 
+  const takenColors = players.map((p) => p.color)
+
   const [adding, setAdding] = useState(false)
 
   const handleAdd = async () => {
     const trimmed = name.trim()
-    if (!trimmed || players.length >= 8 || adding) return
+    if (!trimmed || players.length >= 8 || adding || !selectedColor) return
     setAdding(true)
     const playerId =
       crypto.randomUUID?.() ??
@@ -59,6 +147,7 @@ const LobbyScreen = () => {
     const { error } = await addPlayerToRoom(roomCode, {
       id: playerId,
       name: trimmed,
+      color: selectedColor,
       isHost: isHost && !localPlayerId,
     })
     setAdding(false)
@@ -70,6 +159,7 @@ const LobbyScreen = () => {
       setOnlineMode(roomCode, true, playerId)
     }
     setName('')
+    setSelectedColor(null)
   }
 
   const handleRemove = (id) => {
@@ -77,9 +167,6 @@ const LobbyScreen = () => {
     removePlayer(id)
   }
 
-  // Host fa avanzare il flusso: lobby → game_voting.
-  // La categoria è già stata scelta dall'host prima della creazione stanza
-  // (salvata in gameState.selectedCategory). Resettiamo solo i voti dei giochi.
   const handleStartGame = useCallback(async () => {
     if (!canStart || starting) return
     setStarting(true)
@@ -89,7 +176,6 @@ const LobbyScreen = () => {
       gameVotes: {},
       selectedGame: null,
     }
-    // Stato piatto top-level: tutte le RPC server-side scrivono qui.
     const fullState = {
       players: s.players,
       currentIdx: s.currentIdx,
@@ -135,7 +221,7 @@ const LobbyScreen = () => {
           animate={{ opacity: 1, y: 0 }}
           style={{ textAlign: 'center', flexShrink: 0 }}
         >
-          <GradientTitle as="h1" size="lg">Party in corso 🎉</GradientTitle>
+          <GradientTitle as="h1" size="lg">Party in corso</GradientTitle>
           <p style={{
             margin: '6px 0 0',
             color: 'var(--muted)',
@@ -148,7 +234,7 @@ const LobbyScreen = () => {
           </p>
         </motion.div>
 
-        {/* Card codice + QR + copia */}
+        {/* Invite card */}
         {roomCode && (
           <motion.div
             initial={{ opacity: 0, y: 12 }}
@@ -156,7 +242,6 @@ const LobbyScreen = () => {
             transition={{ delay: 0.08 }}
             style={inviteCardStyle}
           >
-            {/* Blob decorativi */}
             <div style={inviteOrbStyle('top-right')} />
             <div style={inviteOrbStyle('bottom-left')} />
 
@@ -169,8 +254,9 @@ const LobbyScreen = () => {
             {isHost && (
               <div style={{ width: '100%', position: 'relative', zIndex: 1 }}>
                 <motion.button
-                  whileHover={{ y: -1 }}
-                  whileTap={{ scale: 0.97 }}
+                  whileHover={{ y: -2, boxShadow: '0 8px 24px rgba(0,0,0,0.18)' }}
+                  whileTap={{ y: 0, scale: 0.96, boxShadow: '0 2px 6px rgba(0,0,0,0.08)' }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 22 }}
                   onClick={() => setShowShareModal(true)}
                   style={shareBtnStyle}
                 >
@@ -182,7 +268,7 @@ const LobbyScreen = () => {
           </motion.div>
         )}
 
-        {/* Host name input */}
+        {/* Host name + color input */}
         {showNameInput && (
           <motion.div
             initial={{ opacity: 0, scale: 0.96 }}
@@ -190,6 +276,47 @@ const LobbyScreen = () => {
             transition={{ delay: 0.12 }}
             style={nameInputBoxStyle}
           >
+            <div style={{ fontSize: 'clamp(11px, 1.4dvh, 13px)', color: 'var(--muted)', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>
+              🎨 {isHost ? 'Scegli il tuo blob (host)' : 'Scegli il tuo blob'}
+            </div>
+            <div style={{ display: 'flex', gap: 'clamp(6px, 1.5vw, 10px)', justifyContent: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
+              {AVATAR_COLORS.map((c) => {
+                const taken = takenColors.includes(c)
+                const active = selectedColor === c
+                return (
+                  <motion.button
+                    key={c}
+                    type="button"
+                    whileHover={!taken ? { scale: 1.15, boxShadow: `0 0 0 3px ${c}40, 0 4px 14px ${c}50` } : {}}
+                    whileTap={!taken ? { scale: 0.85 } : {}}
+                    transition={{ type: 'spring', stiffness: 400, damping: 22 }}
+                    onClick={() => !taken && setSelectedColor(c)}
+                    disabled={taken}
+                    style={{
+                      width: 'clamp(32px, 4.5vw, 40px)',
+                      height: 'clamp(32px, 4.5vw, 40px)',
+                      borderRadius: '50%',
+                      background: c,
+                      border: active ? '3px solid var(--text)' : '3px solid transparent',
+                      boxShadow: active ? `0 0 0 3px ${c}50, 0 4px 12px ${c}40` : `0 2px 8px ${c}30`,
+                      opacity: taken ? 0.2 : 1,
+                      cursor: taken ? 'not-allowed' : 'pointer',
+                      outline: 'none',
+                      position: 'relative',
+                    }}
+                  >
+                    {taken && (
+                      <span style={{
+                        position: 'absolute', inset: 0,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: '#fff', fontWeight: 800, fontSize: 14,
+                        textShadow: '0 1px 3px rgba(0,0,0,0.4)',
+                      }}>✕</span>
+                    )}
+                  </motion.button>
+                )
+              })}
+            </div>
             <div style={{ fontSize: 'clamp(11px, 1.4dvh, 13px)', color: 'var(--muted)', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>
               ✍️ {isHost ? 'Il tuo nome (host)' : 'Il tuo nome'}
             </div>
@@ -205,7 +332,7 @@ const LobbyScreen = () => {
               <Button
                 type="submit"
                 variant="primary"
-                disabled={!name.trim() || adding}
+                disabled={!name.trim() || adding || !selectedColor}
                 style={{ flexShrink: 0, padding: '0 16px', boxShadow: 'none', height: 'clamp(44px, 6dvh, 56px)' }}
               >
                 {adding ? '...' : 'Entra'}
@@ -214,47 +341,54 @@ const LobbyScreen = () => {
           </motion.div>
         )}
 
-        {/* Players slots */}
-        <div style={{ flexShrink: 0 }}>
-          <div style={playerListLabelStyle}>
-            <span>👥 Giocatori</span>
-            <span style={{ color: 'var(--accent)', fontWeight: 800 }}>{players.length}/8</span>
-          </div>
-          <motion.div
-            style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}
-            variants={containerVariants}
-            initial="hidden"
-            animate="show"
-          >
-            {players.map((p) => (
-              <motion.div
-                key={p.id}
-                variants={itemVariants}
-                onClick={() => (isHost && !p.is_host ? handleRemove(p.id) : undefined)}
-                style={{ ...playerRowStyle, cursor: isHost && !p.is_host ? 'pointer' : 'default' }}
-              >
-                <div style={{ ...playerDotStyle, background: p.color }}>
-                  {p.name?.slice(0, 2).toUpperCase()}
+        {/* Players list */}
+        {players.length > 0 && (
+          <div style={{ flexShrink: 0 }}>
+            <div style={playerListLabelStyle}>
+              <span>👥 Giocatori</span>
+              <span style={{ color: 'var(--accent)', fontWeight: 800 }}>{players.length}/8</span>
+            </div>
+            <motion.div
+              style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+            >
+              {players.map((p) => (
+                <motion.div
+                  key={p.id}
+                  variants={itemVariants}
+                  whileHover={isHost && !p.is_host ? {
+                    y: -1,
+                    boxShadow: '0 4px 14px rgba(0,0,0,0.08)',
+                    backgroundColor: 'var(--surface2)',
+                  } : undefined}
+                  whileTap={isHost && !p.is_host ? {
+                    scale: 0.98,
+                    y: 0,
+                  } : undefined}
+                  onClick={() => (isHost && !p.is_host ? handleRemove(p.id) : undefined)}
+                  style={{ ...playerRowStyle, cursor: isHost && !p.is_host ? 'pointer' : 'default' }}
+                >
+                  <MiniBlob color={p.color} expr={blobExpr} id={`mb-${p.id}`} />
+                  <span style={playerNameStyle}>
+                    {p.name?.slice(0, 12)}
+                  </span>
+                  {p.is_host && <span style={hostPillStyle}>👑 HOST</span>}
+                  {isHost && !p.is_host && (
+                    <span style={removeHintStyle}>✕</span>
+                  )}
+                </motion.div>
+              ))}
+              {players.length < 8 && Array.from({ length: Math.min(2, 8 - players.length) }).map((_, i) => (
+                <div key={`empty-${i}`} style={emptySlotStyle}>
+                  <div style={emptyDotStyle}>?</div>
+                  <span style={emptyTextStyle}>In attesa...</span>
                 </div>
-                <span style={playerNameStyle}>
-                  {p.name?.slice(0, 12)}
-                </span>
-                {p.is_host && <span style={hostPillStyle}>👑 HOST</span>}
-                {isHost && !p.is_host && (
-                  <span style={removeHintStyle}>✕</span>
-                )}
-              </motion.div>
-            ))}
-            {/* Slot vuoti (placeholder) */}
-            {players.length < 8 && Array.from({ length: Math.min(2, 8 - players.length) }).map((_, i) => (
-              <div key={`empty-${i}`} style={emptySlotStyle}>
-                <div style={emptyDotStyle}>?</div>
-                <span style={emptyTextStyle}>In attesa...</span>
-              </div>
-            ))}
-          </motion.div>
-        </div>
-
+              ))}
+            </motion.div>
+          </div>
+        )}
       </div>
 
       {/* Footer */}
@@ -265,6 +399,14 @@ const LobbyScreen = () => {
             width="full"
             onClick={handleStartGame}
             disabled={!canStart || starting}
+            style={{
+              background: 'linear-gradient(#111827, #111827) padding-box, linear-gradient(90deg, #8B5CF6, #3B82F6, #10B981, #F59E0B, #F43F5E, #EC4899) border-box',
+              border: '3px solid transparent',
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.25)',
+              color: '#fff',
+              opacity: (!canStart || starting) ? 0.65 : 1,
+              pointerEvents: (!canStart || starting) ? 'none' : 'auto',
+            }}
           >
             {starting ? '...' : 'Avanti — votate il gioco →'}
           </Button>
@@ -285,7 +427,6 @@ const LobbyScreen = () => {
         joinUrl={joinUrl}
         roomCode={roomCode}
       />
-
     </motion.div>
   )
 }
@@ -307,15 +448,15 @@ const inputStyle = {
 
 const inviteCardStyle = {
   position: 'relative',
-  background: 'linear-gradient(135deg, #A78BFA 0%, #7C3AED 50%, #EC4899 100%)',
+  background: 'linear-gradient(#111827, #111827) padding-box, linear-gradient(135deg, #8B5CF6, #3B82F6, #10B981, #F59E0B, #F43F5E, #EC4899) border-box',
   borderRadius: 24,
   padding: 'clamp(16px, 2.4dvh, 22px) clamp(16px, 4vw, 24px)',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   gap: 'clamp(12px, 1.8dvh, 16px)',
-  boxShadow: '0 16px 36px rgba(124, 58, 237, 0.32), inset 0 1px 0 rgba(255,255,255,0.3)',
-  border: '1px solid rgba(255,255,255,0.18)',
+  boxShadow: '0 16px 36px rgba(0, 0, 0, 0.32)',
+  border: '3px solid transparent',
   overflow: 'hidden',
   flexShrink: 0,
 }
@@ -467,7 +608,7 @@ const playerNameStyle = {
 }
 
 const hostPillStyle = {
-  background: 'linear-gradient(135deg, #7C3AED 0%, #EC4899 100%)',
+  background: '#111827',
   color: '#fff',
   fontWeight: 800,
   fontSize: 10,

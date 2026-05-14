@@ -30,8 +30,8 @@ const MODES = [
     emoji: '🌐',
     title: 'Multiplayer',
     description: 'Crea una stanza e invita gli amici online.',
-    bg: 'linear-gradient(135deg, #A78BFA 0%, #7C3AED 60%, #EC4899 100%)',
-    shadow: 'rgba(124, 58, 237, 0.40)',
+    bg: '#111827',
+    shadow: 'rgba(0, 0, 0, 0.40)',
   },
   {
     id: 'join',

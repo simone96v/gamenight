@@ -156,7 +156,7 @@ const S = {
     background: 'var(--bg2)', color: 'var(--accent)',
     fontWeight: 800, fontSize: 'clamp(11px, 1.4dvh, 13px)',
     padding: '5px 12px', borderRadius: 999,
-    border: '1.5px solid rgba(124,58,237,0.18)',
+    border: '1.5px solid rgba(0,0,0,0.18)',
     letterSpacing: '0.05em', minWidth: 40, textAlign: 'center',
   },
   body: {
@@ -211,8 +211,7 @@ const S = {
   },
   emptyTitle: {
     fontSize: 'clamp(22px, 3dvh, 28px)', fontWeight: 900,
-    background: 'linear-gradient(120deg, #7C3AED 30%, #EC4899 90%)',
-    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+    color: 'var(--text)',
   },
   emptyText: {
     color: 'var(--muted)', fontSize: 'clamp(13px, 1.7dvh, 16px)',

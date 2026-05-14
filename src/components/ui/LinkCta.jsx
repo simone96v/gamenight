@@ -6,7 +6,9 @@ import { motion } from 'framer-motion'
 const LinkCta = ({ children, onClick, style = {}, ...rest }) => (
   <motion.button
     type="button"
-    whileTap={{ scale: 0.97 }}
+    whileHover={{ y: -2, boxShadow: '0 6px 18px rgba(0,0,0,0.10)' }}
+    whileTap={{ y: 0, scale: 0.97, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}
+    transition={{ type: 'spring', stiffness: 400, damping: 22 }}
     onClick={onClick}
     style={{
       background: 'var(--surface)',
@@ -21,7 +23,7 @@ const LinkCta = ({ children, onClick, style = {}, ...rest }) => (
       alignItems: 'center',
       justifyContent: 'center',
       gap: 8,
-      boxShadow: 'var(--shadow-sm)',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
       letterSpacing: '-0.005em',
       ...style,
     }}

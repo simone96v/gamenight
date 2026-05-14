@@ -27,7 +27,7 @@ const PlayerStripCompact = ({ players = [], highlightId = null, style = {} }) =>
             background: isHl ? 'var(--accent)' : 'rgba(255,255,255,0.85)',
             border: `1.5px solid ${isHl ? 'var(--accent)' : 'var(--border)'}`,
             borderRadius: 20,
-            boxShadow: isHl ? '0 0 0 3px rgba(124,58,237,0.25), 0 4px 12px rgba(124,58,237,0.30)' : '0 1px 3px rgba(31,41,55,0.06)',
+            boxShadow: isHl ? '0 0 0 3px rgba(0,0,0,0.25), 0 4px 12px rgba(0,0,0,0.30)' : '0 1px 3px rgba(31,41,55,0.06)',
             transition: 'all 0.2s',
           }}
         >

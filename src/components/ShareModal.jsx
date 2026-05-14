@@ -1,8 +1,9 @@
-// Modale condivisione party: QR code + 3 action button (Copia link / WhatsApp / Telegram).
-
 import { useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
 import { QRCodeSVG } from 'qrcode.react'
 import Modal from './ui/Modal'
+
+const spring = { type: 'spring', stiffness: 400, damping: 22 }
 
 const ShareModal = ({ open = false, onClose, joinUrl, roomCode }) => {
   const [copied, setCopied] = useState(false)
@@ -13,7 +14,7 @@ const ShareModal = ({ open = false, onClose, joinUrl, roomCode }) => {
     return () => clearTimeout(t)
   }, [copied])
 
-  const shareText = `Entra nel mio party su Blob Party! 🎉 Codice: ${roomCode}`
+  const shareText = `Entra nel mio party su Blob Party! Codice: ${roomCode}`
 
   const handleCopy = async () => {
     try {
@@ -53,7 +54,6 @@ const ShareModal = ({ open = false, onClose, joinUrl, roomCode }) => {
         Scansiona il QR o condividi su un'app
       </p>
 
-      {/* QR code */}
       <div style={{
         background: '#fff',
         padding: 'clamp(14px, 2dvh, 18px)',
@@ -66,7 +66,6 @@ const ShareModal = ({ open = false, onClose, joinUrl, roomCode }) => {
         <QRCodeSVG value={joinUrl} size={200} bgColor="#FFFFFF" fgColor="#1F2937" level="M" />
       </div>
 
-      {/* Codice */}
       <div style={{ textAlign: 'center', marginBottom: 'clamp(14px, 2dvh, 18px)' }}>
         <div style={{
           fontSize: 'clamp(10px, 1.3dvh, 12px)',
@@ -82,23 +81,20 @@ const ShareModal = ({ open = false, onClose, joinUrl, roomCode }) => {
           fontSize: 'clamp(28px, 4.5dvh, 38px)',
           fontWeight: 900,
           letterSpacing: '0.15em',
-          background: 'linear-gradient(120deg, #7C3AED 30%, #EC4899 90%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
+          color: 'var(--text)',
         }}>
           {roomCode}
         </div>
       </div>
 
-      {/* Action buttons */}
       <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
         <ShareAction
           label={copied ? 'Copiato!' : 'Copia link'}
-          color={copied ? 'var(--success)' : 'var(--accent)'}
+          color={copied ? '#22C55E' : '#111827'}
           onClick={handleCopy}
         >
           {copied ? (
-            <span style={{ fontSize: 20, fontWeight: 900 }}>✓</span>
+            <span style={{ fontSize: 20, fontWeight: 900 }}>&#10003;</span>
           ) : (
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
@@ -132,9 +128,19 @@ const ShareModal = ({ open = false, onClose, joinUrl, roomCode }) => {
 }
 
 const ShareAction = ({ label, color, onClick, children }) => (
-  <button
+  <motion.button
     type="button"
     onClick={onClick}
+    whileHover={{
+      y: -3,
+      boxShadow: `0 8px 20px ${color}40`,
+    }}
+    whileTap={{
+      y: 0,
+      scale: 0.96,
+      boxShadow: `0 2px 6px ${color}20`,
+    }}
+    transition={spring}
     style={{
       flex: 1,
       display: 'flex',
@@ -146,16 +152,9 @@ const ShareAction = ({ label, color, onClick, children }) => (
       border: '1.5px solid var(--border-strong)',
       borderRadius: 'var(--radius-sm)',
       cursor: 'pointer',
-      transition: 'all 0.15s',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
       minWidth: 0,
-    }}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.transform = 'translateY(-2px)'
-      e.currentTarget.style.boxShadow = `0 6px 14px ${color}55`
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.transform = 'translateY(0)'
-      e.currentTarget.style.boxShadow = 'none'
+      transition: 'border-color 0.15s ease',
     }}
   >
     <div style={{
@@ -180,7 +179,7 @@ const ShareAction = ({ label, color, onClick, children }) => (
     }}>
       {label}
     </span>
-  </button>
+  </motion.button>
 )
 
 export default ShareModal
