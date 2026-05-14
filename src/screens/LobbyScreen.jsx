@@ -10,6 +10,7 @@ import GradientTitle from '../components/ui/GradientTitle'
 import { useSession } from '../stores/useSession'
 import { useSettings } from '../stores/useSettings'
 import { addPlayerToRoom, pushRoom, closeRoom } from '../lib/room'
+import { prefetchAllCategories, getPrefetchProgress } from '../lib/aiQuestions'
 import { AVATAR_COLORS, BLOB_GRADIENTS } from '../utils/colors'
 
 const MINI_EXPR_SEQ = [
@@ -129,9 +130,24 @@ const LobbyScreen = () => {
 
   const numQuestions = useSettings((s) => s.numQuestions)
 
+  // ── Prefetch trivia decks ──
+  // Appena l'host entra nella lobby, genera deck per tutte le categorie in background.
+  // Il bottone "Avanti" è bloccato finché non completano.
+  const [prefetch, setPrefetch] = useState(() => getPrefetchProgress())
+  const prefetchStarted = useRef(false)
+
+  useEffect(() => {
+    if (!isHost || !localPlayerId) return
+    if (prefetchStarted.current) return
+    prefetchStarted.current = true
+    prefetchAllCategories((ready, total) => {
+      setPrefetch({ ready, total, done: ready >= total })
+    })
+  }, [isHost, localPlayerId])
+
   const hostHasJoined = !isHost || (isHost && !!localPlayerId)
   const showNameInput = !localPlayerId && players.length < 8
-  const canStart = isHost && hostHasJoined && players.length >= 2
+  const canStart = isHost && hostHasJoined && players.length >= 2 && prefetch.done
 
   const takenColors = players.map((p) => p.color)
 
@@ -394,22 +410,35 @@ const LobbyScreen = () => {
       {/* Footer */}
       <div className="screen-footer" style={{ flexDirection: 'column', justifyContent: 'center', gap: 4 }}>
         {isHost && hostHasJoined && (
-          <Button
-            variant="primary"
-            width="full"
-            onClick={handleStartGame}
-            disabled={!canStart || starting}
-            style={{
-              background: 'linear-gradient(#111827, #111827) padding-box, linear-gradient(90deg, #8B5CF6, #3B82F6, #10B981, #F59E0B, #F43F5E, #EC4899) border-box',
-              border: '3px solid transparent',
-              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.25)',
-              color: '#fff',
-              opacity: (!canStart || starting) ? 0.65 : 1,
-              pointerEvents: (!canStart || starting) ? 'none' : 'auto',
-            }}
-          >
-            {starting ? '...' : 'Avanti — votate il gioco →'}
-          </Button>
+          <>
+            <Button
+              variant="primary"
+              width="full"
+              onClick={handleStartGame}
+              disabled={!canStart || starting}
+              style={{
+                background: 'linear-gradient(#111827, #111827) padding-box, linear-gradient(90deg, #8B5CF6, #3B82F6, #10B981, #F59E0B, #F43F5E, #EC4899) border-box',
+                border: '3px solid transparent',
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.25)',
+                color: '#fff',
+                opacity: (!canStart || starting) ? 0.65 : 1,
+                pointerEvents: (!canStart || starting) ? 'none' : 'auto',
+              }}
+            >
+              {starting ? '...' : 'Avanti — votate il gioco →'}
+            </Button>
+            {!prefetch.done && prefetch.total > 0 && (
+              <div style={prefetchBarWrapStyle}>
+                <div style={{
+                  ...prefetchBarFillStyle,
+                  width: `${(prefetch.ready / prefetch.total) * 100}%`,
+                }} />
+                <span style={prefetchLabelStyle}>
+                  Preparazione materiali... {prefetch.ready}/{prefetch.total}
+                </span>
+              </div>
+            )}
+          </>
         )}
 
         {!isHost && (
@@ -634,6 +663,37 @@ const waitingStyle = {
   color: 'var(--muted)',
   fontSize: 'clamp(12px, 1.5dvh, 14px)',
   textAlign: 'center',
+}
+
+const prefetchBarWrapStyle = {
+  position: 'relative',
+  width: '100%',
+  height: 22,
+  borderRadius: 11,
+  background: 'var(--surface2)',
+  overflow: 'hidden',
+  marginTop: 2,
+}
+
+const prefetchBarFillStyle = {
+  position: 'absolute',
+  inset: '0 auto 0 0',
+  background: 'linear-gradient(90deg, #8B5CF6, #3B82F6)',
+  borderRadius: 11,
+  transition: 'width 0.4s ease',
+}
+
+const prefetchLabelStyle = {
+  position: 'relative',
+  zIndex: 1,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  height: '100%',
+  fontSize: 'clamp(10px, 1.2dvh, 12px)',
+  fontWeight: 700,
+  color: 'var(--muted)',
+  letterSpacing: '0.02em',
 }
 
 export default LobbyScreen

@@ -9,7 +9,7 @@
 //   3. TUTTI i client (host incluso) vedono la wheel animare via Realtime
 //   4. Al termine animazione, host genera deck via AI e lancia il game
 
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import AppHeader from '../components/AppHeader'
@@ -21,7 +21,7 @@ import BlobLoader from '../components/BlobLoader'
 import { useSession } from '../stores/useSession'
 import { useSettings } from '../stores/useSettings'
 import { pushRoom, rpcStartGame } from '../lib/room'
-import { generateDeck, clearAiCache } from '../lib/aiQuestions'
+import { getCachedDeck, generateDeck } from '../lib/aiQuestions'
 import { TRIVIA_CATEGORIES } from '../games/Trivia/constants'
 
 const ALL_CATEGORIES = TRIVIA_CATEGORIES
@@ -53,8 +53,6 @@ const TriviaLobbyScreen = () => {
   const spinTarget = session?.spinTarget ?? null
 
   const [launching, setLaunching] = useState(false)
-  // Promise della generazione AI — avviata dall'host quando spinTarget appare.
-  const deckPromiseRef = useRef(null)
 
   // Spinner determinato da roomCode + roundIdx — tutti i client lo calcolano uguale.
   const currentSpinner = useMemo(() => {
@@ -99,19 +97,9 @@ const TriviaLobbyScreen = () => {
         ...newGameState,
       })
     }
-    if (roundIdx === 0) clearAiCache()
+    // Cache non viene svuotata: i deck pre-generati dalla lobby servono per tutta la session.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isHost])
-
-  // Host: avvia generazione AI appena spinTarget appare (in parallelo con animazione).
-  useEffect(() => {
-    if (!isHost || !spinTarget) return
-    if (deckPromiseRef.current) return // already generating
-    const cat = availableCategories.find((c) => c.id === spinTarget)
-    if (!cat) return
-    deckPromiseRef.current = generateDeck(cat.id, questionsPerRound)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isHost, spinTarget])
 
   // Update settings on session.
   const updateSessionSetting = (patch) => {
@@ -156,7 +144,6 @@ const TriviaLobbyScreen = () => {
   }
 
   // Spinner clicca Spin → sceglie vincitore → pusha spinTarget su DB.
-  // L'host avvierà la generazione AI in parallelo (vedi useEffect sopra).
   const handleRequestSpin = useCallback(() => {
     if (!isSpinner || launching || spinTarget) return
     if (availableCategories.length === 0) return
@@ -183,17 +170,14 @@ const TriviaLobbyScreen = () => {
     }
   }, [isSpinner, launching, spinTarget, availableCategories])
 
-  // Animazione completata — le domande sono GIA' in generazione dal click Spin.
-  // Ottimizzato: pushRoom e rpcStartGame in parallelo per dimezzare la latenza.
+  // Animazione completata — il deck è già in cache dalla lobby.
+  // getCachedDeck è sincrono → zero attesa. Fallback a generateDeck solo in emergenza.
   const handleSpinEnd = useCallback(async (category) => {
     if (!isHost || launching) return
     setLaunching(true)
     try {
-      // Usa la promise avviata in handleRequestSpin — di solito già risolta
-      const deck = deckPromiseRef.current
-        ? await deckPromiseRef.current
-        : await generateDeck(category.id, questionsPerRound)
-      deckPromiseRef.current = null
+      const deck = getCachedDeck(category.id, questionsPerRound)
+        ?? await generateDeck(category.id, questionsPerRound)
 
       const s = useSession.getState()
       const newSession = {
