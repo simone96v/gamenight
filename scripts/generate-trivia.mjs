@@ -1,22 +1,22 @@
 #!/usr/bin/env node
-// Script per generare 100 domande per categoria via DeepSeek/OpenRouter.
-// Uso: OPENROUTER_API_KEY=sk-or-... node scripts/generate-trivia.mjs
+// Script per generare 500 domande per categoria via endpoint deployato.
+// Uso: node scripts/generate-trivia.mjs
 //
-// Genera 1000 domande (100 × 10 categorie) e le salva in src/data/questions/trivia.json.
-// Ogni batch chiede 25 domande per evitare limiti di token.
+// Genera 5000 domande (500 × 10 categorie) e le salva in src/data/questions/trivia.json.
+// Usa il batch endpoint deployato su Vercel (che ha già l'API key configurata).
+// Ogni batch chiede 10 domande per tenere le risposte rapide.
 
-import { writeFileSync, mkdirSync } from 'fs'
+import { writeFileSync, readFileSync, mkdirSync } from 'fs'
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const OUT_PATH = join(__dirname, '..', 'src', 'data', 'questions', 'trivia.json')
 
+// Supporta sia endpoint deployato che OpenRouter diretto (con OPENROUTER_API_KEY)
 const API_KEY = process.env.OPENROUTER_API_KEY
-if (!API_KEY) {
-  console.error('❌ Imposta OPENROUTER_API_KEY come variabile d\'ambiente')
-  process.exit(1)
-}
+const USE_DEPLOYED = !API_KEY
+const DEPLOYED_URL = 'https://blobpartygames.vercel.app/api/generate-trivia'
 
 const CATEGORIES = [
   { id: 'geografia', desc: 'geografia italiana: regioni, città, fiumi, laghi, montagne, isole, confini, capoluoghi, province, parchi naturali, paesaggi iconici, turismo' },
@@ -51,18 +51,40 @@ REGOLE FONDAMENTALI:
 - topic: sottocategoria specifica (es. "calcio", "regioni", "pittura")
 - Output: SOLO JSON valido, niente altro testo`
 
-const BATCH_SIZE = 25
-const BATCHES_PER_CAT = 4
+const BATCH_SIZE = 10
+const TARGET_PER_CAT = 500
 
-async function generateBatch(category, batchNum) {
+async function generateBatchDeployed(category, batchNum, totalBatches) {
+  const resp = await fetch(DEPLOYED_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ category: category.id, count: BATCH_SIZE }),
+  })
+
+  if (!resp.ok) {
+    throw new Error(`API error ${resp.status}`)
+  }
+
+  const data = await resp.json()
+  const qs = Array.isArray(data?.questions) ? data.questions : []
+  return qs.filter((q) =>
+    q
+    && typeof q.question === 'string' && q.question.length > 10
+    && Array.isArray(q.answers) && q.answers.length === 4
+    && q.answers.every((a) => typeof a === 'string' && a.length > 0)
+    && typeof q.correct === 'number' && q.correct >= 0 && q.correct < 4
+  )
+}
+
+async function generateBatchDirect(category, batchNum, totalBatches) {
   const seed = Math.random().toString(36).slice(2, 10)
-  const prompt = `[seed:${seed}][batch:${batchNum + 1}/${BATCHES_PER_CAT}] Genera esattamente ${BATCH_SIZE} domande per la categoria "${category.id}" (${category.desc}).
+  const prompt = `[seed:${seed}][batch:${batchNum + 1}/${totalBatches}] Genera esattamente ${BATCH_SIZE} domande per la categoria "${category.id}" (${category.desc}).
 
 IMPORTANTE:
 - Domande DIVERSE tra loro, NON ripetere concetti
 - Batch ${batchNum + 1}: copri aspetti DIVERSI della categoria
 - Fatti REALI e VERIFICABILI sull'Italia
-- Mix di difficoltà: ~9 easy, ~10 medium, ~6 hard
+- Mix di difficoltà
 
 JSON:
 {"questions":[{"question":"...","answers":["...","...","...","..."],"correct":0,"difficulty":"easy","topic":"..."}]}`
@@ -117,53 +139,102 @@ JSON:
   )
 }
 
+const generateBatch = USE_DEPLOYED ? generateBatchDeployed : generateBatchDirect
+
 async function main() {
-  console.log('🎯 Generazione 1000 domande trivia via DeepSeek...\n')
+  console.log(`🎯 Generazione ${TARGET_PER_CAT * CATEGORIES.length} domande trivia...`)
+  console.log(`   Modalità: ${USE_DEPLOYED ? 'endpoint deployato' : 'OpenRouter diretto'}`)
+  console.log(`   Batch size: ${BATCH_SIZE}, Target per categoria: ${TARGET_PER_CAT}\n`)
+
+  // Carica domande esistenti se presenti (per incrementale)
+  let existing = []
+  try {
+    existing = JSON.parse(readFileSync(OUT_PATH, 'utf-8'))
+    console.log(`📂 Pool esistente: ${existing.length} domande\n`)
+  } catch {
+    console.log('📂 Nessun pool esistente, si parte da zero\n')
+  }
+
   const allQuestions = []
 
   for (const cat of CATEGORIES) {
-    console.log(`📂 ${cat.id.toUpperCase()} — generando ${BATCH_SIZE * BATCHES_PER_CAT} domande...`)
-    const catQuestions = []
+    // Domande esistenti per questa categoria
+    const existingForCat = existing.filter((q) => q.category === cat.id)
+    const needed = TARGET_PER_CAT - existingForCat.length
 
-    for (let b = 0; b < BATCHES_PER_CAT; b++) {
-      process.stdout.write(`  Batch ${b + 1}/${BATCHES_PER_CAT}... `)
-      try {
-        const qs = await generateBatch(cat, b)
-        console.log(`✅ ${qs.length} domande`)
-        catQuestions.push(...qs)
-      } catch (err) {
-        console.log(`❌ ${err.message}`)
-      }
-      // rate limiting
-      if (b < BATCHES_PER_CAT - 1) await new Promise((r) => setTimeout(r, 1500))
+    if (needed <= 0) {
+      console.log(`✅ ${cat.id.toUpperCase()} — già ${existingForCat.length} domande, skip`)
+      allQuestions.push(...existingForCat.slice(0, TARGET_PER_CAT))
+      continue
     }
 
-    // deduplicate and format
-    const seen = new Set()
-    const unique = catQuestions.filter((q) => {
-      const key = q.question.toLowerCase().trim()
-      if (seen.has(key)) return false
-      seen.add(key)
-      return true
-    })
+    const totalBatches = Math.ceil(needed / BATCH_SIZE)
+    console.log(`📂 ${cat.id.toUpperCase()} — ${existingForCat.length} esistenti, generando ${needed} nuove (${totalBatches} batch)...`)
 
-    const formatted = unique.slice(0, 100).map((q, i) => ({
+    const catQuestions = [...existingForCat]
+    const seen = new Set(existingForCat.map((q) => q.question.toLowerCase().trim()))
+
+    let consecutiveErrors = 0
+    for (let b = 0; b < totalBatches && catQuestions.length < TARGET_PER_CAT; b++) {
+      process.stdout.write(`  Batch ${b + 1}/${totalBatches} (${catQuestions.length}/${TARGET_PER_CAT})... `)
+      try {
+        const qs = await generateBatch(cat, b, totalBatches)
+        // Deduplica
+        const newQs = qs.filter((q) => {
+          const key = q.question.toLowerCase().trim()
+          if (seen.has(key)) return false
+          seen.add(key)
+          return true
+        })
+        console.log(`✅ ${newQs.length} nuove (${qs.length - newQs.length} dupe)`)
+        catQuestions.push(...newQs.map((q, i) => ({
+          id: `${cat.id.slice(0, 3)}_${String(catQuestions.length + i + 1).padStart(3, '0')}`,
+          question: q.question.trim(),
+          answers: q.answers.map((a) => String(a).trim()),
+          correct: q.correct,
+          category: cat.id,
+          difficulty: ['easy', 'medium', 'hard'].includes(q.difficulty) ? q.difficulty : 'medium',
+          topic: (typeof q.topic === 'string' && q.topic) ? q.topic.toLowerCase().trim() : cat.id,
+        })))
+        consecutiveErrors = 0
+      } catch (err) {
+        console.log(`❌ ${err.message}`)
+        consecutiveErrors++
+        if (consecutiveErrors >= 5) {
+          console.log(`  ⚠️ Troppi errori consecutivi, passo alla prossima categoria`)
+          break
+        }
+      }
+      // rate limiting
+      await new Promise((r) => setTimeout(r, USE_DEPLOYED ? 800 : 1500))
+    }
+
+    // Re-numera gli ID
+    const final = catQuestions.slice(0, TARGET_PER_CAT).map((q, i) => ({
+      ...q,
       id: `${cat.id.slice(0, 3)}_${String(i + 1).padStart(3, '0')}`,
-      question: q.question.trim(),
-      answers: q.answers.map((a) => String(a).trim()),
-      correct: q.correct,
-      category: cat.id,
-      difficulty: ['easy', 'medium', 'hard'].includes(q.difficulty) ? q.difficulty : 'medium',
-      topic: (typeof q.topic === 'string' && q.topic) ? q.topic.toLowerCase().trim() : cat.id,
     }))
 
-    console.log(`  → ${formatted.length} domande uniche salvate\n`)
-    allQuestions.push(...formatted)
+    console.log(`  → ${final.length}/${TARGET_PER_CAT} domande uniche\n`)
+    allQuestions.push(...final)
+
+    // Salva progressi intermedi
+    mkdirSync(dirname(OUT_PATH), { recursive: true })
+    writeFileSync(OUT_PATH, JSON.stringify(allQuestions, null, 2), 'utf-8')
+    console.log(`  💾 Salvate ${allQuestions.length} domande (progressivo)\n`)
   }
 
-  mkdirSync(dirname(OUT_PATH), { recursive: true })
   writeFileSync(OUT_PATH, JSON.stringify(allQuestions, null, 2), 'utf-8')
-  console.log(`\n✅ Salvate ${allQuestions.length} domande in ${OUT_PATH}`)
+  console.log(`\n✅ Totale: ${allQuestions.length} domande salvate in ${OUT_PATH}`)
+
+  // Report per categoria
+  const report = {}
+  allQuestions.forEach((q) => { report[q.category] = (report[q.category] || 0) + 1 })
+  console.log('\n📊 Report:')
+  for (const [cat, count] of Object.entries(report)) {
+    const bar = '█'.repeat(Math.round(count / 10))
+    console.log(`  ${cat.padEnd(12)} ${String(count).padStart(3)} ${bar}`)
+  }
 }
 
 main().catch((err) => {

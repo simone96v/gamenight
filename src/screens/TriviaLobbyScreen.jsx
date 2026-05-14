@@ -7,9 +7,9 @@
 //   1. Host configura settings (sync via gameState)
 //   2. Host preme Spin → sceglie vincitore → pusha spinTarget su DB
 //   3. TUTTI i client (host incluso) vedono la wheel animare via Realtime
-//   4. Al termine animazione, host genera deck via AI e lancia il game
+//   4. Al termine animazione, host carica deck dal pool statico e lancia il game
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useEffect, useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import AppHeader from '../components/AppHeader'
@@ -21,7 +21,7 @@ import BlobLoader from '../components/BlobLoader'
 import { useSession } from '../stores/useSession'
 import { useSettings } from '../stores/useSettings'
 import { pushRoom, rpcStartGame } from '../lib/room'
-import { getCachedDeck, generateDeck } from '../lib/aiQuestions'
+import { getDeck, preloadPool } from '../lib/aiQuestions'
 import { TRIVIA_CATEGORIES } from '../games/Trivia/constants'
 
 const ALL_CATEGORIES = TRIVIA_CATEGORIES
@@ -52,7 +52,8 @@ const TriviaLobbyScreen = () => {
   // spinTarget arriva dal DB — tutti i client lo vedono via Realtime
   const spinTarget = session?.spinTarget ?? null
 
-  const [launching, setLaunching] = useState(false)
+  // launching sincronizzato via gameState per TUTTI i client
+  const launching = session?.launching ?? false
 
   // Spinner determinato da roomCode + roundIdx — tutti i client lo calcolano uguale.
   const currentSpinner = useMemo(() => {
@@ -70,6 +71,9 @@ const TriviaLobbyScreen = () => {
     () => ALL_CATEGORIES.filter((c) => !categoriesPlayed.includes(c.id)),
     [categoriesPlayed],
   )
+
+  // Preload pool statico appena si entra nella lobby — così getDeck è istantaneo.
+  useEffect(() => { preloadPool() }, [])
 
   // Init session: se gameState non ha triviaSession, host la crea.
   useEffect(() => {
@@ -97,7 +101,7 @@ const TriviaLobbyScreen = () => {
         ...newGameState,
       })
     }
-    // Cache non viene svuotata: i deck pre-generati dalla lobby servono per tutta la session.
+    // Il pool statico è cachato a livello di modulo, niente da svuotare.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isHost])
 
@@ -170,14 +174,29 @@ const TriviaLobbyScreen = () => {
     }
   }, [isSpinner, launching, spinTarget, availableCategories])
 
-  // Animazione completata — il deck è già in cache dalla lobby.
-  // getCachedDeck è sincrono → zero attesa. Fallback a generateDeck solo in emergenza.
+  // Helper: setta launching su gameState e pusha a tutti i client.
+  const setLaunching = useCallback((value) => {
+    const s = useSession.getState()
+    const newSession = { ...(s.gameState?.triviaSession ?? {}), launching: value }
+    const newGameState = { ...s.gameState, triviaSession: newSession }
+    useSession.setState({ gameState: newGameState })
+    if (s.mode === 'online' && s.roomCode) {
+      pushRoom(s.roomCode, s.currentPhase, {
+        players: s.players,
+        currentIdx: s.currentIdx,
+        round: s.round,
+        activeGame: s.activeGame,
+        ...newGameState,
+      })
+    }
+  }, [])
+
+  // Animazione completata — carica domande dal pool statico (istantaneo).
   const handleSpinEnd = useCallback(async (category) => {
     if (!isHost || launching) return
     setLaunching(true)
     try {
-      const deck = getCachedDeck(category.id, questionsPerRound)
-        ?? await generateDeck(category.id, questionsPerRound)
+      const deck = await getDeck(category.id, questionsPerRound)
 
       const s = useSession.getState()
       const newSession = {
@@ -185,6 +204,7 @@ const TriviaLobbyScreen = () => {
         categoriesPlayed: [...categoriesPlayed, category.id],
         currentCategory: category.id,
         spinTarget: null,
+        launching: false,
       }
       const newGameState = { ...s.gameState, triviaSession: newSession }
       useSession.setState({ gameState: newGameState })
@@ -213,7 +233,7 @@ const TriviaLobbyScreen = () => {
       showError('generic')
       setLaunching(false)
     }
-  }, [isHost, launching, questionsPerRound, categoriesPlayed, roundIdx, roomCode, timerDuration, showError])
+  }, [isHost, launching, questionsPerRound, categoriesPlayed, roundIdx, roomCode, timerDuration, showError, setLaunching])
 
   const roundTitles = ['🎬 Round 1', '🎯 Round 2', '🏆 Round Finale']
   const roundTitle = roundTitles[roundIdx] ?? `Round ${roundIdx + 1}`
