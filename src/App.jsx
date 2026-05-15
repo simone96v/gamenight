@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import { useRoomSync } from './hooks/useRoomSync'
 import { useHostCleanup } from './hooks/useHostCleanup'
+import { useThemeSync } from './hooks/useThemeSync'
 import { ConnectionContext } from './contexts/connection'
 
 import ErrorBoundary from './components/ErrorBoundary'
@@ -23,12 +24,15 @@ const SentenzaLobbyScreen = lazy(() => import('./screens/SentenzaLobbyScreen'))
 const BlobJumpLobbyScreen = lazy(() => import('./screens/BlobJumpLobbyScreen'))
 const RoundEndScreen = lazy(() => import('./screens/RoundEndScreen'))
 const ScoreboardScreen = lazy(() => import('./screens/ScoreboardScreen'))
+const SoloSetupScreen = lazy(() => import('./screens/SoloSetupScreen'))
+const SoloGamesScreen = lazy(() => import('./screens/SoloGamesScreen'))
 const MappaTest = lazy(() => import('./games/Mappa/MappaTest'))
 const SentenzaTest = lazy(() => import('./games/Sentenza/SentenzaTest'))
 const BlobJumpTest = lazy(() => import('./games/BlobJump/BlobJumpTest'))
 
 function App() {
   useHostCleanup()
+  useThemeSync()
   const { status } = useRoomSync()
 
   return (
@@ -45,6 +49,8 @@ function App() {
             <Route path="/lobby" element={<LobbyScreen />} />
             <Route path="/category" element={<CategoryScreen />} />
             <Route path="/games" element={<GamesScreen />} />
+            <Route path="/solo" element={<SoloSetupScreen />} />
+            <Route path="/solo/games" element={<SoloGamesScreen />} />
             <Route path="/hub" element={<GameHubScreen />} />
             <Route path="/trivia-lobby" element={<TriviaLobbyScreen />} />
             <Route path="/mappa-lobby" element={<MappaLobbyScreen />} />

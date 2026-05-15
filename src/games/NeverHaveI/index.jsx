@@ -150,13 +150,13 @@ const S = {
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
     padding: 'clamp(10px, 1.5dvh, 16px) clamp(14px, 3vw, 20px)',
     flexShrink: 0, borderBottom: '1px solid var(--border)',
-    background: 'rgba(255,255,255,0.65)', backdropFilter: 'blur(8px)',
+    background: 'color-mix(in srgb, var(--surface) 65%, transparent)', backdropFilter: 'blur(8px)',
   },
   counterBadge: {
     background: 'var(--bg2)', color: 'var(--accent)',
     fontWeight: 800, fontSize: 'clamp(11px, 1.4dvh, 13px)',
     padding: '5px 12px', borderRadius: 999,
-    border: '1.5px solid rgba(0,0,0,0.18)',
+    border: '1.5px solid var(--border-strong)',
     letterSpacing: '0.05em', minWidth: 40, textAlign: 'center',
   },
   body: {
@@ -220,7 +220,7 @@ const S = {
   footer: {
     flexShrink: 0, padding: 'clamp(12px, 1.8dvh, 18px) clamp(16px, 4vw, 24px)',
     borderTop: '1px solid var(--border)',
-    background: 'rgba(255,255,255,0.6)', backdropFilter: 'blur(8px)',
+    background: 'color-mix(in srgb, var(--surface) 60%, transparent)', backdropFilter: 'blur(8px)',
   },
   waiting: {
     margin: 0, textAlign: 'center', color: 'var(--muted)',

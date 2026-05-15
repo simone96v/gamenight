@@ -2,6 +2,7 @@
 // Routes per fase: countdown / question / reveal / final.
 // Tutta la logica di rete vive in useTrivia.js; qui solo orchestrazione UI.
 
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTrivia } from './useTrivia'
 import CountdownOverlay from '../../components/CountdownOverlay'
@@ -19,10 +20,21 @@ const Trivia = () => {
 
   // "Cambia gioco": riporta tutti su /games per rivotare. Mantiene stanza/giocatori
   // e categoria, azzera punteggi e voti gioco.
+  // Local mode: hostReplay sets phase to trivia_lobby — navigate back to lobby
+  useEffect(() => {
+    if (trivia.currentPhase === 'trivia_lobby' && !trivia.isOnline) {
+      navigate('/trivia-lobby', { replace: true })
+    }
+  }, [trivia.currentPhase, trivia.isOnline, navigate])
+
   const handleChangeGame = async () => {
+    const s = useSession.getState()
+    if (s.mode !== 'online') {
+      navigate('/solo/games', { replace: true })
+      return
+    }
     setAwaitingGameChange(true)
     navigate('/games', { replace: true })
-    const s = useSession.getState()
     const resetPlayers = (s.players || []).map((p) => ({
       ...p,
       score: 0,
@@ -53,7 +65,8 @@ const Trivia = () => {
         players={trivia.players}
         localPlayerId={trivia.localPlayerId}
         category={trivia.currentCategory}
-        accentColor="#7C3AED"
+        gameName="Trivia"
+        gameEmoji="🧠"
       />
     )
   }

@@ -55,7 +55,7 @@ const ShareModal = ({ open = false, onClose, joinUrl, roomCode }) => {
       </p>
 
       <div style={{
-        background: '#fff',
+        background: 'var(--surface)',
         padding: 'clamp(14px, 2dvh, 18px)',
         borderRadius: 'var(--radius-sm)',
         display: 'flex',
@@ -90,7 +90,7 @@ const ShareModal = ({ open = false, onClose, joinUrl, roomCode }) => {
       <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
         <ShareAction
           label={copied ? 'Copiato!' : 'Copia link'}
-          color={copied ? '#22C55E' : '#111827'}
+          color={copied ? '#22C55E' : 'var(--accent)'}
           onClick={handleCopy}
         >
           {copied ? (

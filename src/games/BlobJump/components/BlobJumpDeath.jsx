@@ -113,7 +113,7 @@ const styles = {
   title: {
     fontSize: 20,
     fontWeight: 800,
-    color: '#111827',
+    color: 'var(--text)',
     marginBottom: 10,
   },
   scoreRow: {

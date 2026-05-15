@@ -1,5 +1,6 @@
-// Fase question: category chip + header + HUD + question card + grid risposte + status bar.
+// Fase question: category chip + header + HUD + question card + grid risposte + confirm button.
 
+import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import AppHeader from '../../../components/AppHeader'
 import GameHUD from '../../../components/GameHUD'
@@ -7,6 +8,9 @@ import IconButton from '../../../components/ui/IconButton'
 import RoundBadge from '../../../components/ui/RoundBadge'
 import QuestionCard from '../components/QuestionCard'
 import AnswerTile from '../components/AnswerTile'
+import { haptic } from '../../../utils/haptic'
+
+const spring = { type: 'spring', stiffness: 400, damping: 22 }
 
 const QuestionPhase = ({
   currentQuestion,
@@ -25,6 +29,23 @@ const QuestionPhase = ({
   onExit,
 }) => {
   const hasAnswered = localAnswer !== null
+  const [selected, setSelected] = useState(null)
+
+  // Reset selection when question changes
+  useEffect(() => {
+    setSelected(null)
+  }, [currentQuestion?.id ?? questionNumber])
+
+  const handleSelect = (i) => {
+    if (hasAnswered || isExpired || submitting) return
+    setSelected(i)
+  }
+
+  const handleConfirm = () => {
+    if (selected === null || hasAnswered || submitting) return
+    haptic.heavy()
+    onAnswer(selected)
+  }
 
   return (
     <div style={containerStyle}>
@@ -55,16 +76,34 @@ const QuestionPhase = ({
               index={i}
               text={ans}
               mode="answer"
-              isMine={i === localAnswer}
+              isMine={hasAnswered ? i === localAnswer : i === selected}
               isLocked={hasAnswered}
               disabled={hasAnswered || isExpired || submitting}
-              onClick={() => onAnswer(i)}
+              onClick={() => handleSelect(i)}
             />
           ))}
         </div>
 
-        <div style={statusBarStyle}>
+        {/* Confirm button / status bar */}
+        <div style={footerStyle}>
           <AnimatePresence mode="wait">
+            {!hasAnswered && !isExpired && selected !== null && (
+              <motion.button
+                key="confirm"
+                type="button"
+                initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -4, scale: 0.95 }}
+                transition={spring}
+                whileHover={{ y: -2, boxShadow: '0 10px 28px rgba(0,0,0,0.25)' }}
+                whileTap={{ y: 1, scale: 0.97 }}
+                onClick={handleConfirm}
+                disabled={submitting}
+                style={confirmBtnStyle}
+              >
+                {submitting ? '...' : 'Conferma'}
+              </motion.button>
+            )}
             {hasAnswered && (
               <motion.p
                 key="answered"
@@ -149,12 +188,27 @@ const gridStyle = {
   flexShrink: 0,
 }
 
-const statusBarStyle = {
+const footerStyle = {
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-  height: 'clamp(20px, 2.5dvh, 28px)',
+  minHeight: 'clamp(40px, 6dvh, 52px)',
   flexShrink: 0,
+}
+
+const confirmBtnStyle = {
+  width: '100%',
+  height: 'clamp(44px, 6dvh, 52px)',
+  borderRadius: 'var(--radius-sm)',
+  border: 'none',
+  background: 'var(--accent)',
+  color: 'var(--bg)',
+  fontSize: 'clamp(15px, 2dvh, 18px)',
+  fontWeight: 800,
+  letterSpacing: '0.01em',
+  cursor: 'pointer',
+  boxShadow: '0 6px 20px rgba(0, 0, 0, 0.2)',
+  transition: 'opacity 0.15s',
 }
 
 const statusTextStyle = {

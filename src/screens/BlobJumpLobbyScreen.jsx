@@ -5,6 +5,7 @@ import AppHeader from '../components/AppHeader'
 import IconButton from '../components/ui/IconButton'
 import Button from '../components/ui/Button'
 import GradientTitle from '../components/ui/GradientTitle'
+import MiniBlob, { useMiniExpr } from '../components/MiniBlob'
 import { useSession } from '../stores/useSession'
 import { pushRoom } from '../lib/room'
 import { GAME_COLORS, accentBtnStyle } from '../theme/gameColors'
@@ -16,18 +17,22 @@ const ROUND_OPTIONS = [1, 3, 5]
 const BlobJumpLobbyScreen = () => {
   const navigate = useNavigate()
   const isHost = useSession((s) => s.isHost)
+  const mode = useSession((s) => s.mode)
   const players = useSession((s) => s.players)
   const gameState = useSession((s) => s.gameState)
   const showError = useSession((s) => s.showError)
   const setAwaitingGC = useSession((s) => s.setAwaitingGameChange)
+  const expr = useMiniExpr()
 
+  const isSolo = mode === 'local'
+  const canControl = isHost || isSolo
   const savedRounds = gameState?.totalRounds ?? 3
   const [rounds, setRounds] = useState(savedRounds)
   const [launching, setLaunching] = useState(false)
 
   const syncRounds = useCallback((val) => {
     setRounds(val)
-    if (!isHost) return
+    if (!canControl) return
     const s = useSession.getState()
     const newGameState = { ...s.gameState, totalRounds: val }
     useSession.setState({ gameState: newGameState })
@@ -40,10 +45,10 @@ const BlobJumpLobbyScreen = () => {
         ...newGameState,
       })
     }
-  }, [isHost])
+  }, [canControl])
 
   const handleStart = useCallback(async () => {
-    if (!isHost || launching) return
+    if (!canControl || launching) return
     setLaunching(true)
 
     try {
@@ -108,12 +113,16 @@ const BlobJumpLobbyScreen = () => {
       showError('generic')
       setLaunching(false)
     }
-  }, [isHost, launching, rounds, showError, navigate])
+  }, [canControl, launching, rounds, showError, navigate])
 
   const handleBack = useCallback(() => {
+    const s = useSession.getState()
+    if (s.mode !== 'online') {
+      navigate('/solo/games', { replace: true })
+      return
+    }
     setAwaitingGC(true)
     navigate('/games', { replace: true })
-    const s = useSession.getState()
     const fullState = {
       players: s.players,
       currentIdx: s.currentIdx,
@@ -124,7 +133,7 @@ const BlobJumpLobbyScreen = () => {
       gameVotes: {},
       selectedGame: null,
     }
-    if (s.mode === 'online' && s.roomCode) {
+    if (s.roomCode) {
       pushRoom(s.roomCode, 'game_voting', fullState)
     }
     setAwaitingGC(false)
@@ -134,7 +143,7 @@ const BlobJumpLobbyScreen = () => {
     <div style={S.container}>
       <AppHeader
         accentColor={C.accent}
-        leading={isHost && <IconButton ariaLabel="Indietro" onClick={handleBack}>←</IconButton>}
+        leading={canControl && <IconButton ariaLabel="Indietro" onClick={handleBack}>←</IconButton>}
       />
 
       <div style={S.body}>
@@ -143,11 +152,7 @@ const BlobJumpLobbyScreen = () => {
           animate={{ opacity: 1, y: 0 }}
           style={{ textAlign: 'center' }}
         >
-          <GradientTitle
-            as="h2"
-            size="lg"
-            gradient={C.gradient}
-          >
+          <GradientTitle as="h2" size="lg">
             🦘 Blob Jump
           </GradientTitle>
           <p style={S.subtitle}>Salta più in alto degli altri!</p>
@@ -165,24 +170,24 @@ const BlobJumpLobbyScreen = () => {
               <motion.button
                 key={n}
                 type="button"
-                onClick={() => isHost && syncRounds(n)}
-                disabled={!isHost}
-                whileHover={isHost ? {
+                onClick={() => canControl && syncRounds(n)}
+                disabled={!canControl}
+                whileHover={canControl ? {
                   y: -2,
                   boxShadow: rounds === n
-                    ? `0 8px 20px ${C.shadow}`
+                    ? '0 8px 20px rgba(0, 0, 0, 0.25)'
                     : '0 4px 14px rgba(0,0,0,0.10)',
                 } : undefined}
-                whileTap={isHost ? { y: 0, scale: 0.95 } : undefined}
+                whileTap={canControl ? { y: 0, scale: 0.95 } : undefined}
                 transition={{ type: 'spring', stiffness: 400, damping: 22 }}
                 style={{
                   ...S.optionBtn,
-                  background: rounds === n ? C.gradient : 'var(--surface)',
-                  color: rounds === n ? '#fff' : 'var(--text)',
-                  border: rounds === n ? `2px solid ${C.accent}` : '2px solid var(--border)',
-                  boxShadow: rounds === n ? `0 4px 12px ${C.shadow}` : '0 2px 6px rgba(0,0,0,0.04)',
-                  opacity: !isHost ? 0.6 : 1,
-                  cursor: isHost ? 'pointer' : 'default',
+                  background: rounds === n ? 'var(--accent)' : 'var(--surface)',
+                  color: rounds === n ? 'var(--bg)' : 'var(--text)',
+                  border: rounds === n ? '2px solid var(--accent)' : '2px solid var(--border)',
+                  boxShadow: rounds === n ? '0 4px 12px rgba(0, 0, 0, 0.2)' : '0 2px 6px rgba(0,0,0,0.04)',
+                  opacity: !canControl ? 0.6 : 1,
+                  cursor: canControl ? 'pointer' : 'default',
                 }}
               >
                 {n}
@@ -199,9 +204,9 @@ const BlobJumpLobbyScreen = () => {
         >
           <span style={S.settingLabel}>Giocatori ({players.length})</span>
           <div style={S.playersList}>
-            {players.map((p) => (
+            {players.map((p, i) => (
               <div key={p.id} style={S.playerChip}>
-                <div style={{ ...S.playerDot, backgroundColor: p.color }} />
+                <MiniBlob color={p.color} expr={expr} size={28} id={`bjl-${i}`} />
                 <span style={S.playerName}>{p.name}</span>
               </div>
             ))}
@@ -209,7 +214,7 @@ const BlobJumpLobbyScreen = () => {
         </motion.div>
 
         <div style={S.footer}>
-          {isHost ? (
+          {canControl ? (
             <Button
               variant="primary"
               width="full"
@@ -291,16 +296,10 @@ const S = {
     display: 'flex',
     alignItems: 'center',
     gap: 6,
-    padding: '6px 12px',
+    padding: '4px 10px 4px 4px',
     background: 'var(--bg)',
     borderRadius: 999,
     border: '1px solid var(--border)',
-  },
-  playerDot: {
-    width: 10,
-    height: 10,
-    borderRadius: '50%',
-    flexShrink: 0,
   },
   playerName: {
     fontSize: 'clamp(12px, 1.4dvh, 14px)',

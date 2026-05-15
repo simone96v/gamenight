@@ -98,8 +98,8 @@ const S = {
   },
   actions: { display: 'flex', gap: 10, justifyContent: 'center' },
   btnPrimary: {
-    background: '#111827',
-    color: '#fff',
+    background: 'var(--accent, #111827)',
+    color: 'var(--bg, #fff)',
     border: 'none',
     padding: '12px 22px',
     borderRadius: 14,

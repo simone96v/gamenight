@@ -25,14 +25,14 @@ const OptionCard = ({
       scale: 1.02,
       y: -4,
       boxShadow: selected
-        ? `0 0 0 4px #111827, 0 20px 48px ${option.shadow}`
+        ? `0 0 0 4px var(--accent), 0 20px 48px ${option.shadow}`
         : `0 20px 48px ${option.shadow}`,
     } : {}}
     whileTap={!disabled ? {
       scale: 0.97,
       y: 0,
       boxShadow: selected
-        ? `0 0 0 4px #111827, 0 4px 12px ${option.shadow}`
+        ? `0 0 0 4px var(--accent), 0 4px 12px ${option.shadow}`
         : `0 4px 12px ${option.shadow}`,
     } : {}}
     onClick={disabled ? undefined : () => { haptic.light(); onClick?.() }}
@@ -41,9 +41,9 @@ const OptionCard = ({
       width: '100%',
       background: option.bg,
       borderRadius: 22,
-      border: selected ? '3px solid #fff' : (option.border || '1px solid rgba(255,255,255,0.15)'),
+      border: selected ? '3px solid var(--surface)' : (option.border || '1px solid rgba(255,255,255,0.15)'),
       boxShadow: selected
-        ? `0 0 0 4px #111827, 0 10px 28px ${option.shadow}`
+        ? `0 0 0 4px var(--accent), 0 10px 28px ${option.shadow}`
         : `0 10px 28px ${option.shadow}`,
       padding: 'clamp(18px, 2.5dvh, 24px) clamp(18px, 4vw, 24px)',
       display: 'flex',

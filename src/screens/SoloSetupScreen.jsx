@@ -1,63 +1,49 @@
+// SoloSetupScreen — setup rapido per gioco singolo: nome + colore → via!
+
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import AppHeader from '../components/AppHeader'
+import IconButton from '../components/ui/IconButton'
 import ErrorBanner from '../components/ErrorBanner'
 import Blob from '../components/Blob'
 import Button from '../components/ui/Button'
-import IconButton from '../components/ui/IconButton'
 import GradientTitle from '../components/ui/GradientTitle'
 import ColorPicker from '../components/ColorPicker'
 import { useSession } from '../stores/useSession'
-import { createRoom, addPlayerToRoom } from '../lib/room'
 
-const CreatePartyScreen = () => {
+const SoloSetupScreen = () => {
   const navigate = useNavigate()
   const [name, setName] = useState('')
   const [selectedColor, setSelectedColor] = useState(null)
-  const [creating, setCreating] = useState(false)
-  const setOnlineMode = useSession((s) => s.setOnlineMode)
   const resetSession = useSession((s) => s.resetSession)
-  const showError = useSession((s) => s.showError)
 
-  const canCreate = name.trim().length > 0 && selectedColor && !creating
+  const canStart = name.trim().length > 0 && selectedColor
   const blobExpr = selectedColor ? 'happy' : 'normal'
 
-  const handleCreate = async () => {
-    if (!canCreate) return
-    setCreating(true)
+  const handleStart = () => {
+    if (!canStart) return
     resetSession()
-
-    const { code, error } = await createRoom({
-      players: [],
-      categoryVotes: {},
-      gameVotes: {},
-      selectedGame: null,
-    })
-    if (error || !code) {
-      showError('generic')
-      setCreating(false)
-      return
-    }
 
     const playerId =
       crypto.randomUUID?.() ??
       `p_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`
-    const { error: addError } = await addPlayerToRoom(code, {
-      id: playerId,
-      name: name.trim(),
-      color: selectedColor,
-      isHost: true,
-    })
-    if (addError) {
-      showError('generic')
-      setCreating(false)
-      return
-    }
 
-    setOnlineMode(code, true, playerId)
-    setCreating(false)
-    navigate('/lobby')
+    useSession.setState({
+      mode: 'local',
+      isHost: true,
+      localPlayerId: playerId,
+      players: [{
+        id: playerId,
+        name: name.trim(),
+        color: selectedColor,
+        score: 0,
+        skip: false,
+        isHost: true,
+      }],
+    })
+
+    navigate('/solo/games')
   }
 
   return (
@@ -80,7 +66,7 @@ const CreatePartyScreen = () => {
         className="screen-body"
         onSubmit={(e) => {
           e.preventDefault()
-          handleCreate()
+          handleStart()
         }}
         style={{
           gap: 'clamp(10px, 1.6dvh, 18px)',
@@ -98,9 +84,9 @@ const CreatePartyScreen = () => {
           style={{ textAlign: 'center', flexShrink: 0 }}
         >
           <GradientTitle as="h1" size="lg">
-            Crea il tuo party
+            Gioca da solo
           </GradientTitle>
-          <p style={subtitleStyle}>Scegli il tuo blob e dai inizio alla festa</p>
+          <p style={subtitleStyle}>Scegli il tuo blob e inizia a giocare</p>
         </motion.div>
 
         <ColorPicker selected={selectedColor} onSelect={setSelectedColor} />
@@ -126,27 +112,25 @@ const CreatePartyScreen = () => {
           type="submit"
           variant="primary"
           width="full"
-          disabled={!canCreate}
+          disabled={!canStart}
           style={
-            canCreate
+            canStart
               ? {
                   background:
-                    'linear-gradient(var(--accent), var(--accent)) padding-box, linear-gradient(90deg, #8B5CF6, #3B82F6, #10B981, #F59E0B, #F43F5E, #EC4899) border-box',
-                  color: 'var(--bg)',
-                  border: '3px solid transparent',
-                  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.25)',
+                    'linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)',
+                  boxShadow: '0 8px 24px rgba(6, 182, 212, 0.35)',
                 }
               : undefined
           }
         >
-          {creating ? '...' : '🎉 Crea party'}
+          🎮 Scegli il gioco
         </Button>
       </form>
 
       <Blob
         color={selectedColor}
         expr={blobExpr}
-        id="create-blob"
+        id="solo-blob"
         size="min(clamp(160px, 40vw, 260px), clamp(120px, 22dvh, 260px))"
         animate={false}
         style={{
@@ -198,4 +182,4 @@ const inputStyle = {
   boxSizing: 'border-box',
 }
 
-export default CreatePartyScreen
+export default SoloSetupScreen

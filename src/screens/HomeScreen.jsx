@@ -6,34 +6,47 @@ import { useNavigate } from 'react-router-dom'
 import GradientTitle from '../components/ui/GradientTitle'
 import OptionCard from '../components/ui/OptionCard'
 import ErrorBanner from '../components/ErrorBanner'
+import { useSettings } from '../stores/useSettings'
 
-const OPTIONS = [
-  {
-    id: 'create',
-    emoji: '🎉',
-    title: 'Crea party',
-    description: 'Apri un nuovo party e invita i tuoi amici.',
-    bg: 'linear-gradient(#fff, #fff) padding-box, linear-gradient(90deg, #8B5CF6, #3B82F6, #10B981, #F59E0B, #F43F5E, #EC4899) border-box',
-    shadow: 'rgba(0, 0, 0, 0.06)',
-    border: '3px solid transparent',
-    textColor: '#111827',
-  },
-  {
-    id: 'join',
-    emoji: '🔑',
-    title: 'Ho già un codice',
-    description: 'Entra in un party già creato da un amico.',
-    bg: '#FFFFFF',
-    shadow: 'rgba(0, 0, 0, 0.04)',
-    border: '1.5px solid var(--border-strong)',
-    textColor: '#111827',
-    subtleTitle: true,
-  },
-]
+const useOptions = () => {
+  const theme = useSettings((s) => s.theme)
+  const surfaceBg = theme === 'dark' ? '#1e2130' : '#fff'
+  return [
+    {
+      id: 'create',
+      emoji: '🎉',
+      title: 'Crea party',
+      description: 'Apri un nuovo party e invita i tuoi amici.',
+      bg: `linear-gradient(${surfaceBg}, ${surfaceBg}) padding-box, linear-gradient(90deg, #8B5CF6, #3B82F6, #10B981, #F59E0B, #F43F5E, #EC4899) border-box`,
+      shadow: 'rgba(0, 0, 0, 0.06)',
+      border: '3px solid transparent',
+      textColor: 'var(--text)',
+    },
+    {
+      id: 'solo',
+      emoji: '🎮',
+      title: 'Gioca da solo',
+      description: 'Allenati o gioca per conto tuo.',
+      bg: 'linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)',
+      shadow: 'rgba(6, 182, 212, 0.35)',
+    },
+    {
+      id: 'join',
+      emoji: '🔑',
+      title: 'Ho già un codice',
+      description: 'Entra in un party già creato da un amico.',
+      bg: 'var(--surface)',
+      shadow: 'rgba(0, 0, 0, 0.04)',
+      border: '1.5px solid var(--border-strong)',
+      textColor: 'var(--text)',
+      subtleTitle: true,
+    },
+  ]
+}
 
 const STATS = [
   { emoji: '🎮', label: 'Mini-giochi' },
-  { emoji: '👥', label: '2-8 giocatori' },
+  { emoji: '👥', label: '1-8 giocatori' },
   { emoji: '⚡', label: 'Senza account' },
 ]
 
@@ -48,7 +61,7 @@ const StatPill = ({ emoji, label, delay }) => (
       gap: 6,
       padding: '6px 12px',
       borderRadius: 999,
-      background: 'rgba(255,255,255,0.65)',
+      background: 'color-mix(in srgb, var(--surface) 65%, transparent)',
       backdropFilter: 'blur(6px)',
       border: '1px solid var(--border)',
       fontSize: 'clamp(11px, 1.4dvh, 13px)',
@@ -260,12 +273,60 @@ const BottomLeftBlob = ({ expr }) => (
   </div>
 )
 
+const ThemeToggle = () => {
+  const theme = useSettings((s) => s.theme)
+  const toggleTheme = useSettings((s) => s.toggleTheme)
+  const isDark = theme === 'dark'
+
+  return (
+    <motion.button
+      type="button"
+      onClick={toggleTheme}
+      whileHover={{ scale: 1.08, boxShadow: '0 6px 18px rgba(0,0,0,0.12)' }}
+      whileTap={{ scale: 0.92 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 22 }}
+      aria-label={isDark ? 'Passa a modalita chiara' : 'Passa a modalita scura'}
+      style={{
+        position: 'absolute',
+        top: 'clamp(12px, 2dvh, 20px)',
+        right: 'clamp(12px, 3vw, 20px)',
+        zIndex: 10,
+        width: 42,
+        height: 42,
+        borderRadius: '50%',
+        background: 'var(--surface)',
+        border: '1.5px solid var(--border-strong)',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer',
+        fontSize: 20,
+        lineHeight: 1,
+      }}
+    >
+      <motion.span
+        key={isDark ? 'sun' : 'moon'}
+        initial={{ rotate: -90, scale: 0 }}
+        animate={{ rotate: 0, scale: 1 }}
+        exit={{ rotate: 90, scale: 0 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 18 }}
+      >
+        {isDark ? '☀️' : '🌙'}
+      </motion.span>
+    </motion.button>
+  )
+}
+
 const HomeScreen = () => {
   const navigate = useNavigate()
   const { topExpr, bottomExpr } = useExpressions()
+  const OPTIONS = useOptions()
 
   const handlePick = (id) => {
-    navigate(id === 'join' ? '/join' : '/create')
+    if (id === 'join') navigate('/join')
+    else if (id === 'solo') navigate('/solo')
+    else navigate('/create')
   }
 
   return (
@@ -274,8 +335,10 @@ const HomeScreen = () => {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
+      style={{ position: 'relative' }}
     >
       <ErrorBanner />
+      <ThemeToggle />
 
       <div
         className="screen-body"

@@ -9,7 +9,7 @@ const PlayerStripCompact = ({ players = [], highlightId = null, style = {} }) =>
     padding: 'clamp(8px, 1.2dvh, 12px) clamp(12px, 3vw, 18px)',
     justifyContent: 'center',
     borderBottom: '1px solid var(--border)',
-    background: 'rgba(255,255,255,0.5)',
+    background: 'color-mix(in srgb, var(--surface) 50%, transparent)',
     backdropFilter: 'blur(8px)',
     flexShrink: 0,
     ...style,

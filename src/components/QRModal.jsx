@@ -37,7 +37,7 @@ const QRModal = ({ open = false, onClose, joinUrl, roomCode }) => {
       </p>
 
       <div style={{
-        background: '#fff',
+        background: 'var(--surface)',
         padding: 'clamp(14px, 2dvh, 18px)',
         borderRadius: 'var(--radius-sm)',
         display: 'flex',

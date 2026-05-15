@@ -314,10 +314,10 @@ const LobbyScreen = () => {
               onClick={handleStartGame}
               disabled={!canStart || starting}
               style={{
-                background: 'linear-gradient(#111827, #111827) padding-box, linear-gradient(90deg, #8B5CF6, #3B82F6, #10B981, #F59E0B, #F43F5E, #EC4899) border-box',
+                background: 'linear-gradient(var(--accent), var(--accent)) padding-box, linear-gradient(90deg, #8B5CF6, #3B82F6, #10B981, #F59E0B, #F43F5E, #EC4899) border-box',
                 border: '3px solid transparent',
                 boxShadow: '0 8px 24px rgba(0, 0, 0, 0.25)',
-                color: '#fff',
+                color: 'var(--bg)',
                 opacity: (!canStart || starting) ? 0.65 : 1,
                 pointerEvents: (!canStart || starting) ? 'none' : 'auto',
               }}
@@ -363,7 +363,7 @@ const inputStyle = {
 
 const inviteCardStyle = {
   position: 'relative',
-  background: 'linear-gradient(#111827, #111827) padding-box, linear-gradient(135deg, #8B5CF6, #3B82F6, #10B981, #F59E0B, #F43F5E, #EC4899) border-box',
+  background: 'linear-gradient(var(--accent), var(--accent)) padding-box, linear-gradient(135deg, #8B5CF6, #3B82F6, #10B981, #F59E0B, #F43F5E, #EC4899) border-box',
   borderRadius: 24,
   padding: 'clamp(16px, 2.4dvh, 22px) clamp(16px, 4vw, 24px)',
   display: 'flex',
@@ -418,8 +418,8 @@ const codeHintStyle = {
 const shareBtnStyle = {
   width: '100%',
   height: 'clamp(44px, 6dvh, 52px)',
-  background: 'rgba(255,255,255,0.98)',
-  color: 'var(--accent)',
+  background: 'var(--surface)',
+  color: 'var(--text)',
   border: 'none',
   borderRadius: 999,
   fontSize: 'clamp(13px, 1.7dvh, 15px)',
@@ -523,8 +523,8 @@ const playerNameStyle = {
 }
 
 const hostPillStyle = {
-  background: '#111827',
-  color: '#fff',
+  background: 'var(--accent)',
+  color: 'var(--bg)',
   fontWeight: 800,
   fontSize: 10,
   letterSpacing: '0.05em',

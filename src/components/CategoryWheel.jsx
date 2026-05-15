@@ -256,8 +256,8 @@ const CategoryWheel = ({
           style={{
             background: isBusy
               ? 'var(--surface2)'
-              : '#111827',
-            color: isBusy ? 'var(--muted)' : '#fff',
+              : 'var(--accent)',
+            color: isBusy ? 'var(--muted)' : 'var(--bg)',
             border: 'none',
             padding: '14px 32px',
             borderRadius: 16,

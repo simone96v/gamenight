@@ -25,9 +25,13 @@ const BlobJump = () => {
   const [replaying, setReplaying] = useState(false)
 
   const handleChangeGame = useCallback(async () => {
+    const s = useSession.getState()
+    if (s.mode !== 'online') {
+      navigate('/solo/games', { replace: true })
+      return
+    }
     setAwaitingGameChange(true)
     navigate('/games', { replace: true })
-    const s = useSession.getState()
     const resetPlayers = (s.players || []).map((p) => ({ ...p, score: 0 }))
     const fullState = {
       players: resetPlayers,
@@ -90,6 +94,10 @@ const BlobJump = () => {
       <CountdownOverlay
         questionStartedAt={bj.questionStartedAt}
         onComplete={() => {}}
+        players={bj.players}
+        localPlayerId={bj.localPlayerId}
+        gameName="Blob Jump"
+        gameEmoji="🦘"
       />
     )
   }

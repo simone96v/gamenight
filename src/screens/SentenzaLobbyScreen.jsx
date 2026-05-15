@@ -128,11 +128,7 @@ const SentenzaLobbyScreen = () => {
           animate={{ opacity: 1, y: 0 }}
           style={{ textAlign: 'center' }}
         >
-          <GradientTitle
-            as="h2"
-            size="lg"
-            gradient="linear-gradient(135deg, #818CF8 0%, #6366F1 50%, #4F46E5 100%)"
-          >
+          <GradientTitle as="h2" size="lg">
             ⚖️ Sentenza
           </GradientTitle>
           <p style={S.subtitle}>Il Giudice ha sempre ragione. Completa la frase con la carta più assurda.</p>
@@ -155,7 +151,7 @@ const SentenzaLobbyScreen = () => {
                 whileHover={isHost ? {
                   y: -2,
                   boxShadow: rounds === n
-                    ? '0 8px 20px rgba(99, 102, 241, 0.4)'
+                    ? '0 8px 20px rgba(0, 0, 0, 0.25)'
                     : '0 4px 14px rgba(0,0,0,0.10)',
                 } : undefined}
                 whileTap={isHost ? {
@@ -165,15 +161,11 @@ const SentenzaLobbyScreen = () => {
                 transition={{ type: 'spring', stiffness: 400, damping: 22 }}
                 style={{
                   ...S.optionBtn,
-                  background: rounds === n
-                    ? 'linear-gradient(135deg, #6366F1 0%, #818CF8 100%)'
-                    : 'var(--surface)',
-                  color: rounds === n ? '#fff' : 'var(--text)',
-                  border: rounds === n
-                    ? '2px solid #6366F1'
-                    : '2px solid var(--border)',
+                  background: rounds === n ? 'var(--accent)' : 'var(--surface)',
+                  color: rounds === n ? 'var(--bg)' : 'var(--text)',
+                  border: rounds === n ? '2px solid var(--accent)' : '2px solid var(--border)',
                   boxShadow: rounds === n
-                    ? '0 4px 12px rgba(99, 102, 241, 0.3)'
+                    ? '0 4px 12px rgba(0, 0, 0, 0.2)'
                     : '0 2px 6px rgba(0,0,0,0.04)',
                   opacity: !isHost ? 0.6 : 1,
                   cursor: isHost ? 'pointer' : 'default',

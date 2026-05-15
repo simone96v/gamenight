@@ -46,14 +46,15 @@ const GAME_COLORS = {
   },
 }
 
-const accentBtnStyle = (game) => {
-  const c = GAME_COLORS[game]
-  if (!c) return {}
-  return {
-    background: c.gradient,
-    boxShadow: `0 6px 18px ${c.shadow}`,
-  }
+const RAINBOW_BTN = {
+  background:
+    'linear-gradient(var(--accent), var(--accent)) padding-box, linear-gradient(90deg, #8B5CF6, #3B82F6, #10B981, #F59E0B, #F43F5E, #EC4899) border-box',
+  color: 'var(--bg)',
+  border: '3px solid transparent',
+  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.25)',
 }
+
+const accentBtnStyle = () => RAINBOW_BTN
 
 const SPRING = { type: 'spring', stiffness: 400, damping: 22 }
 

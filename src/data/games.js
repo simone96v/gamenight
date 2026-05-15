@@ -19,7 +19,7 @@ export const GAMES = [
     locked: false,
     bg: 'linear-gradient(145deg, #C4B5FD 0%, #A78BFA 60%, #8B5CF6 100%)',
     shadow: 'rgba(139, 92, 246, 0.40)',
-    compatibility: { multi: true, single: false, excludedCategories: [] },
+    compatibility: { multi: true, single: true, excludedCategories: [] },
     component: lazy(() => import('../games/Trivia')),
   },
   {
@@ -34,7 +34,7 @@ export const GAMES = [
     locked: false,
     bg: 'linear-gradient(145deg, #34D399 0%, #059669 60%, #047857 100%)',
     shadow: 'rgba(5, 150, 105, 0.40)',
-    compatibility: { multi: true, single: false, excludedCategories: [] },
+    compatibility: { multi: true, single: true, excludedCategories: [] },
     component: lazy(() => import('../games/Mappa')),
   },
   {
@@ -79,7 +79,7 @@ export const GAMES = [
     locked: false,
     bg: 'linear-gradient(145deg, #C4B5FD 0%, #A78BFA 60%, #7C3AED 100%)',
     shadow: 'rgba(124, 58, 237, 0.40)',
-    compatibility: { multi: true, single: false, excludedCategories: ['couple'] },
+    compatibility: { multi: true, single: true, excludedCategories: ['couple'] },
     component: lazy(() => import('../games/BlobJump')),
   },
 ]

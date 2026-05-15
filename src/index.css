@@ -30,6 +30,30 @@
   --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.12);
   --radius:    22px;
   --radius-sm: 14px;
+  --radius-lg: 20px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Dark mode — tutte le variabili ridefinite per il tema scuro.        */
+/* ------------------------------------------------------------------ */
+[data-theme="dark"] {
+  --bg:        #0f1117;
+  --bg2:       #1a1d27;
+  --surface:   #1e2130;
+  --surface2:  #252838;
+  --accent:    #F3F4F6;
+  --accent2:   #D1D5DB;
+  --accent3:   #22D3EE;
+  --success:   #34D399;
+  --danger:    #F87171;
+  --warning:   #FBBF24;
+  --text:      #F3F4F6;
+  --muted:     #9CA3AF;
+  --border:    rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.15);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.45);
 }
 
 /* ------------------------------------------------------------------ */
@@ -79,6 +103,11 @@ body {
   filter: blur(80px);
   will-change: transform, border-radius;
   mix-blend-mode: multiply;
+}
+
+[data-theme="dark"] .liquid-blob {
+  mix-blend-mode: screen;
+  opacity: 0.35;
 }
 
 .liquid-blob.lb1 {
@@ -191,7 +220,7 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 0 clamp(12px, 3vw, 20px);
-  background: #fff;
+  background: var(--surface);
   border-bottom: 1px solid var(--border);
   position: relative;
   z-index: 2;
@@ -245,7 +274,7 @@ body {
     margin-right: auto;
     border-left: 1px solid var(--border);
     border-right: 1px solid var(--border);
-    background: rgba(255, 255, 255, 0.5);
+    background: color-mix(in srgb, var(--surface) 50%, transparent);
     backdrop-filter: blur(8px);
   }
 }

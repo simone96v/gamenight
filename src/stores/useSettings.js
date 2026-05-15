@@ -17,6 +17,9 @@ export const useSettings = create(
       numQuestions: 10,
       timerDuration: 15,
 
+      // Tema: 'light' | 'dark'
+      theme: 'light',
+
       // Modalità Trivia "session": 3 round con categorie estratte via wheel.
       // questionsPerRound = quante domande per round (settabile in lobby).
       // totalRounds = quanti round in totale (fissato a 3 per design, ma estendibile).
@@ -27,6 +30,8 @@ export const useSettings = create(
       setIntensity: (intensity) => set({ intensity }),
       setNumQuestions: (n) => set({ numQuestions: n }),
       setTimerDuration: (d) => set({ timerDuration: d }),
+      setTheme: (theme) => set({ theme }),
+      toggleTheme: () => set({ theme: get().theme === 'dark' ? 'light' : 'dark' }),
       setTriviaSessionRounds: (n) => set({ triviaSessionRounds: Math.max(1, Math.min(5, n)) }),
       setTriviaQuestionsPerRound: (n) => set({ triviaQuestionsPerRound: Math.max(3, Math.min(15, n)) }),
 
@@ -41,6 +46,6 @@ export const useSettings = create(
       confirmAge: () => set({ ageConfirmed: true }),
       resetAgeConfirmation: () => set({ ageConfirmed: false }),
     }),
-    { name: 'gn:settings', version: 2 },
+    { name: 'gn:settings', version: 3 },
   ),
 )

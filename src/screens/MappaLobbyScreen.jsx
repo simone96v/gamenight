@@ -5,6 +5,7 @@ import AppHeader from '../components/AppHeader'
 import IconButton from '../components/ui/IconButton'
 import Button from '../components/ui/Button'
 import GradientTitle from '../components/ui/GradientTitle'
+import MiniBlob, { useMiniExpr } from '../components/MiniBlob'
 import { useSession } from '../stores/useSession'
 import { pushRoom } from '../lib/room'
 import { GAME_COLORS, accentBtnStyle } from '../theme/gameColors'
@@ -16,19 +17,23 @@ const ROUND_OPTIONS = [5, 10, 25, 50]
 const MappaLobbyScreen = () => {
   const navigate = useNavigate()
   const isHost = useSession((s) => s.isHost)
+  const mode = useSession((s) => s.mode)
   const roomCode = useSession((s) => s.roomCode)
   const players = useSession((s) => s.players)
   const gameState = useSession((s) => s.gameState)
   const showError = useSession((s) => s.showError)
   const setAwaitingGC = useSession((s) => s.setAwaitingGameChange)
 
+  const isSolo = mode === 'local'
+  const canControl = isHost || isSolo
+  const expr = useMiniExpr()
   const savedRounds = gameState?.mappaRounds ?? 10
   const [rounds, setRounds] = useState(savedRounds)
   const [launching, setLaunching] = useState(false)
 
   const syncRounds = useCallback((val) => {
     setRounds(val)
-    if (!isHost) return
+    if (!canControl) return
     const s = useSession.getState()
     const newGameState = { ...s.gameState, mappaRounds: val }
     useSession.setState({ gameState: newGameState })
@@ -41,10 +46,10 @@ const MappaLobbyScreen = () => {
         ...newGameState,
       })
     }
-  }, [isHost])
+  }, [canControl])
 
   const handleStart = useCallback(async () => {
-    if (!isHost || launching) return
+    if (!canControl || launching) return
     setLaunching(true)
 
     try {
@@ -115,12 +120,16 @@ const MappaLobbyScreen = () => {
       showError('generic')
       setLaunching(false)
     }
-  }, [isHost, launching, rounds, showError, navigate])
+  }, [canControl, launching, rounds, showError, navigate])
 
   const handleBack = useCallback(() => {
+    const s = useSession.getState()
+    if (s.mode !== 'online') {
+      navigate('/solo/games', { replace: true })
+      return
+    }
     setAwaitingGC(true)
     navigate('/games', { replace: true })
-    const s = useSession.getState()
     const fullState = {
       players: s.players,
       currentIdx: s.currentIdx,
@@ -131,7 +140,7 @@ const MappaLobbyScreen = () => {
       gameVotes: {},
       selectedGame: null,
     }
-    if (s.mode === 'online' && s.roomCode) {
+    if (s.roomCode) {
       pushRoom(s.roomCode, 'game_voting', fullState)
     }
     setAwaitingGC(false)
@@ -141,7 +150,7 @@ const MappaLobbyScreen = () => {
     <div style={S.container}>
       <AppHeader
         accentColor="#059669"
-        leading={isHost && <IconButton ariaLabel="Indietro" onClick={handleBack}>←</IconButton>}
+        leading={canControl && <IconButton ariaLabel="Indietro" onClick={handleBack}>←</IconButton>}
       />
 
       <div style={S.body}>
@@ -150,14 +159,10 @@ const MappaLobbyScreen = () => {
           animate={{ opacity: 1, y: 0 }}
           style={{ textAlign: 'center' }}
         >
-          <GradientTitle
-            as="h2"
-            size="lg"
-            gradient="linear-gradient(135deg, #34D399 0%, #059669 100%)"
-          >
-            🗺️ Mappa
+          <GradientTitle as="h2" size="lg">
+            📍 Indovina Dove
           </GradientTitle>
-          <p style={S.subtitle}>Indovina dove si trovano i luoghi d'Italia!</p>
+          <p style={S.subtitle}>Piazza il pin sulla mappa d'Italia!</p>
         </motion.div>
 
         <motion.div
@@ -172,33 +177,31 @@ const MappaLobbyScreen = () => {
               <motion.button
                 key={n}
                 type="button"
-                onClick={() => isHost && syncRounds(n)}
-                disabled={!isHost}
-                whileHover={isHost ? {
+                onClick={() => canControl && syncRounds(n)}
+                disabled={!canControl}
+                whileHover={canControl ? {
                   y: -2,
                   boxShadow: rounds === n
-                    ? '0 8px 20px rgba(5, 150, 105, 0.4)'
+                    ? '0 8px 20px rgba(0, 0, 0, 0.25)'
                     : '0 4px 14px rgba(0,0,0,0.10)',
                 } : undefined}
-                whileTap={isHost ? {
+                whileTap={canControl ? {
                   y: 0,
                   scale: 0.95,
                 } : undefined}
                 transition={{ type: 'spring', stiffness: 400, damping: 22 }}
                 style={{
                   ...S.optionBtn,
-                  background: rounds === n
-                    ? 'linear-gradient(135deg, #059669 0%, #34D399 100%)'
-                    : 'var(--surface)',
-                  color: rounds === n ? '#fff' : 'var(--text)',
+                  background: rounds === n ? 'var(--accent)' : 'var(--surface)',
+                  color: rounds === n ? 'var(--bg)' : 'var(--text)',
                   border: rounds === n
-                    ? '2px solid #059669'
+                    ? '2px solid var(--accent)'
                     : '2px solid var(--border)',
                   boxShadow: rounds === n
-                    ? '0 4px 12px rgba(5, 150, 105, 0.3)'
+                    ? '0 4px 12px rgba(0, 0, 0, 0.2)'
                     : '0 2px 6px rgba(0,0,0,0.04)',
-                  opacity: !isHost ? 0.6 : 1,
-                  cursor: isHost ? 'pointer' : 'default',
+                  opacity: !canControl ? 0.6 : 1,
+                  cursor: canControl ? 'pointer' : 'default',
                 }}
               >
                 {n}
@@ -215,9 +218,9 @@ const MappaLobbyScreen = () => {
         >
           <span style={S.settingLabel}>Giocatori ({players.length})</span>
           <div style={S.playersList}>
-            {players.map((p) => (
+            {players.map((p, i) => (
               <div key={p.id} style={S.playerChip}>
-                <div style={{ ...S.playerDot, backgroundColor: p.color }} />
+                <MiniBlob color={p.color} expr={expr} size={28} id={`ml-${i}`} />
                 <span style={S.playerName}>{p.name}</span>
               </div>
             ))}
@@ -225,7 +228,7 @@ const MappaLobbyScreen = () => {
         </motion.div>
 
         <div style={S.footer}>
-          {isHost ? (
+          {canControl ? (
             <Button
               variant="primary"
               width="full"
@@ -307,16 +310,10 @@ const S = {
     display: 'flex',
     alignItems: 'center',
     gap: 6,
-    padding: '6px 12px',
+    padding: '4px 10px 4px 4px',
     background: 'var(--bg)',
     borderRadius: 999,
     border: '1px solid var(--border)',
-  },
-  playerDot: {
-    width: 10,
-    height: 10,
-    borderRadius: '50%',
-    flexShrink: 0,
   },
   playerName: {
     fontSize: 'clamp(12px, 1.4dvh, 14px)',

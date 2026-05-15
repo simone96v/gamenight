@@ -25,9 +25,13 @@ const Mappa = () => {
   const [replaying, setReplaying] = useState(false)
 
   const handleChangeGame = async () => {
+    const s = useSession.getState()
+    if (s.mode !== 'online') {
+      navigate('/solo/games', { replace: true })
+      return
+    }
     setAwaitingGameChange(true)
     navigate('/games', { replace: true })
-    const s = useSession.getState()
     const resetPlayers = (s.players || []).map((p) => ({ ...p, score: 0 }))
     const fullState = {
       players: resetPlayers,

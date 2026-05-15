@@ -12,8 +12,6 @@ import { availableGamesFor } from '../data/games'
 import { startTriviaGame } from '../lib/triviaSetup'
 import { pushRoom, rpcInitGame } from '../lib/room'
 
-const STARS = ['', '⭐', '⭐⭐', '⭐⭐⭐', '⭐⭐⭐⭐']
-
 const GamesScreen = () => {
   const isHost = useSession((s) => s.isHost)
   const roomCode = useSession((s) => s.roomCode)
@@ -262,7 +260,7 @@ const GamesScreen = () => {
   )
 }
 
-// ─── GameCard verticale, ricca di dettagli ──────────────────────────────────
+// ─── GameCard ──────────────────────────────────────────────────────────
 
 const GameCard = ({ game, index, onClick, selected, voteCount }) => (
   <motion.button
@@ -275,7 +273,7 @@ const GameCard = ({ game, index, onClick, selected, voteCount }) => (
       y: -4,
       boxShadow: selected
         ? `0 0 0 4px rgba(0, 0, 0, 0.25), 0 24px 48px ${game.shadow}`
-        : `0 16px 36px rgba(31, 41, 55, 0.14), 0 0 0 1px rgba(255,255,255,0.5) inset`,
+        : `0 16px 36px rgba(31, 41, 55, 0.14), 0 0 0 1px var(--border) inset`,
     }}
     whileTap={{
       scale: 0.97,
@@ -284,7 +282,6 @@ const GameCard = ({ game, index, onClick, selected, voteCount }) => (
         ? `0 0 0 4px rgba(0, 0, 0, 0.20), 0 4px 12px ${game.shadow}`
         : `0 4px 10px rgba(31, 41, 55, 0.06)`,
     }}
-    transition={{ type: 'spring', stiffness: 300, damping: 22 }}
     onClick={onClick}
     style={{
       width: '100%',
@@ -293,7 +290,7 @@ const GameCard = ({ game, index, onClick, selected, voteCount }) => (
       border: selected ? '2.5px solid var(--accent)' : '1px solid var(--border)',
       boxShadow: selected
         ? `0 0 0 4px rgba(0, 0, 0, 0.20), 0 18px 36px ${game.shadow}`
-        : `0 10px 22px rgba(31, 41, 55, 0.08), 0 0 0 1px rgba(255,255,255,0.5) inset`,
+        : `0 10px 22px rgba(31, 41, 55, 0.08), 0 0 0 1px var(--border) inset`,
       padding: 0,
       display: 'flex',
       flexDirection: 'column',
@@ -346,7 +343,7 @@ const GameCard = ({ game, index, onClick, selected, voteCount }) => (
         transition={{ duration: 1, ease: 'easeOut' }}
         style={{
           position: 'relative',
-          fontSize: 'clamp(46px, 9vw, 68px)',
+          fontSize: 'clamp(56px, 12vw, 84px)',
           lineHeight: 1,
           filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.22))',
           zIndex: 1,
@@ -366,29 +363,6 @@ const GameCard = ({ game, index, onClick, selected, voteCount }) => (
         {game.emoji}
       </motion.div>
 
-      {/* Pill nome gioco (in basso al hero) */}
-      <div style={{
-        position: 'absolute',
-        bottom: 8,
-        left: 8,
-        background: 'rgba(255,255,255,0.95)',
-        color: 'var(--text)',
-        borderRadius: 999,
-        padding: '3px 10px',
-        fontSize: 'clamp(10px, 1.2dvh, 12px)',
-        fontWeight: 900,
-        letterSpacing: '-0.005em',
-        boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
-        backdropFilter: 'blur(6px)',
-        zIndex: 2,
-        maxWidth: 'calc(100% - 16px)',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        whiteSpace: 'nowrap',
-      }}>
-        {game.name}
-      </div>
-
       {/* Badge voti (top-right) */}
       {voteCount > 0 && (
         <motion.div
@@ -399,8 +373,8 @@ const GameCard = ({ game, index, onClick, selected, voteCount }) => (
             position: 'absolute',
             top: 8,
             right: 8,
-            background: '#111827',
-            color: '#fff',
+            background: 'var(--accent)',
+            color: 'var(--bg)',
             borderRadius: 999,
             padding: '4px 10px',
             fontSize: 11,
@@ -427,8 +401,8 @@ const GameCard = ({ game, index, onClick, selected, voteCount }) => (
             position: 'absolute',
             top: 8,
             left: 8,
-            background: '#fff',
-            color: 'var(--accent)',
+            background: 'var(--surface)',
+            color: 'var(--text)',
             borderRadius: '50%',
             width: 26,
             height: 26,
@@ -450,45 +424,29 @@ const GameCard = ({ game, index, onClick, selected, voteCount }) => (
     <div style={{
       padding: '10px 12px 12px',
       display: 'flex',
-      flexDirection: 'column',
-      gap: 4,
-      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 8,
     }}>
-      <div style={{
-        fontSize: 'clamp(10px, 1.2dvh, 12px)',
-        color: 'var(--accent)',
-        fontWeight: 800,
-        textTransform: 'uppercase',
-        letterSpacing: '0.08em',
+      <span style={{
+        fontSize: 'clamp(14px, 1.8dvh, 17px)',
+        fontWeight: 900,
+        color: 'var(--text)',
         lineHeight: 1.2,
       }}>
-        {game.tagline}
-      </div>
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 5,
-        flexWrap: 'wrap',
-        marginTop: 'auto',
-        paddingTop: 4,
+        {game.name}
+      </span>
+      <span style={{
+        fontSize: 'clamp(11px, 1.3dvh, 13px)',
+        fontWeight: 700,
+        color: 'var(--muted)',
+        whiteSpace: 'nowrap',
+        flexShrink: 0,
       }}>
-        <span style={pillStyle}>👥 {game.minPlayers}–{game.maxPlayers}</span>
-        {game.difficulty > 0 && <span style={pillStyle}>{STARS[game.difficulty]}</span>}
-        <span style={{ marginLeft: 'auto', fontSize: 16, color: 'var(--accent)', opacity: 0.6 }}>→</span>
-      </div>
+        👥 {game.minPlayers}–{game.maxPlayers}
+      </span>
     </div>
   </motion.button>
 )
-
-const pillStyle = {
-  background: 'var(--bg2)',
-  color: 'var(--accent)',
-  borderRadius: 999,
-  padding: '3px 9px',
-  fontSize: 10,
-  fontWeight: 800,
-  border: '1px solid rgba(0, 0, 0, 0.14)',
-  letterSpacing: '-0.005em',
-}
 
 export default GamesScreen

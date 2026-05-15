@@ -97,7 +97,15 @@ const Sentenza = () => {
   }
 
   if (g.currentPhase === 'sentenza_countdown') {
-    return <CountdownOverlay questionStartedAt={g.questionStartedAt} />
+    return (
+      <CountdownOverlay
+        questionStartedAt={g.questionStartedAt}
+        players={g.players}
+        localPlayerId={g.localPlayerId}
+        gameName="Sentenza"
+        gameEmoji={'⚖️'}
+      />
+    )
   }
 
   if (g.currentPhase === 'sentenza_judging_setup') {

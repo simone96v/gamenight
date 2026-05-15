@@ -18,6 +18,7 @@ import GradientTitle from '../components/ui/GradientTitle'
 import CategoryWheel from '../components/CategoryWheel'
 import ErrorBanner from '../components/ErrorBanner'
 import BlobLoader from '../components/BlobLoader'
+import MiniBlob, { useMiniExpr } from '../components/MiniBlob'
 import { useSession } from '../stores/useSession'
 import { useSettings } from '../stores/useSettings'
 import { pushRoom, rpcStartGame } from '../lib/room'
@@ -30,12 +31,17 @@ const TriviaLobbyScreen = () => {
   const navigate = useNavigate()
 
   const isHost         = useSession((s) => s.isHost)
+  const mode           = useSession((s) => s.mode)
   const roomCode       = useSession((s) => s.roomCode)
   const localPlayerId  = useSession((s) => s.localPlayerId)
   const players        = useSession((s) => s.players)
   const gameState      = useSession((s) => s.gameState)
   const showError      = useSession((s) => s.showError)
   const setAwaitingGC  = useSession((s) => s.setAwaitingGameChange)
+
+  const isSolo = mode === 'local'
+  const canControl = isHost || isSolo
+  const expr = useMiniExpr()
 
   const triviaSessionRoundsLocal = useSettings((s) => s.triviaSessionRounds)
   const triviaQuestionsLocal     = useSettings((s) => s.triviaQuestionsPerRound)
@@ -75,9 +81,9 @@ const TriviaLobbyScreen = () => {
   // Preload pool statico appena si entra nella lobby — così getDeck è istantaneo.
   useEffect(() => { preloadPool() }, [])
 
-  // Init session: se gameState non ha triviaSession, host la crea.
+  // Init session: se gameState non ha triviaSession, host/solo la crea.
   useEffect(() => {
-    if (!isHost) return
+    if (!canControl) return
     if (gameState?.triviaSession) return
     const s = useSession.getState()
     const newGameState = {
@@ -103,11 +109,11 @@ const TriviaLobbyScreen = () => {
     }
     // Il pool statico è cachato a livello di modulo, niente da svuotare.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isHost])
+  }, [canControl])
 
   // Update settings on session.
   const updateSessionSetting = (patch) => {
-    if (!isHost) return
+    if (!canControl) return
     const s = useSession.getState()
     const newSession = { ...(s.gameState?.triviaSession ?? {}), ...patch }
     const newGameState = { ...s.gameState, triviaSession: newSession }
@@ -133,11 +139,15 @@ const TriviaLobbyScreen = () => {
     updateSessionSetting({ totalRounds: n })
   }
 
-  // Host esce.
+  // Host/solo esce.
   const handleExit = async () => {
+    const s = useSession.getState()
+    if (s.mode !== 'online') {
+      navigate('/solo/games', { replace: true })
+      return
+    }
     setAwaitingGC(true)
     navigate('/games', { replace: true })
-    const s = useSession.getState()
     const fullState = {
       players: (s.players || []).map((p) => ({ ...p, score: 0 })),
       currentIdx: 0,
@@ -198,7 +208,7 @@ const TriviaLobbyScreen = () => {
 
   // Animazione completata — carica domande dal pool statico (istantaneo).
   const handleSpinEnd = useCallback(async (category) => {
-    if (!isHost || launching) return
+    if (!canControl || launching) return
 
     // 1. Setta launching=true localmente + push a tutti i client in un solo pushRoom
     const s = useSession.getState()
@@ -213,33 +223,56 @@ const TriviaLobbyScreen = () => {
     useSession.setState({ gameState: launchGameState })
 
     try {
-      // 2. getDeck è istantaneo (pool già in memoria) — fallo PRIMA del pushRoom
-      const deck = getDeck(category.id, questionsPerRound)
+      const deckData = await getDeck(category.id, questionsPerRound)
       const resetScores = roundIdx === 0
 
-      // 3. pushRoom (launching=true per i client) + rpcStartGame in parallelo
-      const [, startResult] = await Promise.all([
-        pushRoom(s.roomCode, s.currentPhase, {
-          players: s.players,
-          currentIdx: s.currentIdx,
-          round: s.round,
-          activeGame: s.activeGame,
-          ...launchGameState,
-        }),
-        deck.then((d) => rpcStartGame(roomCode, d, timerDuration, resetScores)),
-      ])
-
-      if (startResult.error) {
-        console.error('[trivia-lobby] startGame:', startResult.error)
-        showError('generic')
-        setLaunching(false)
+      if (s.mode === 'online' && s.roomCode) {
+        // Online: pushRoom + rpcStartGame in parallelo
+        const [, startResult] = await Promise.all([
+          pushRoom(s.roomCode, s.currentPhase, {
+            players: s.players,
+            currentIdx: s.currentIdx,
+            round: s.round,
+            activeGame: s.activeGame,
+            ...launchGameState,
+          }),
+          rpcStartGame(roomCode, deckData, timerDuration, resetScores),
+        ])
+        if (startResult.error) {
+          console.error('[trivia-lobby] startGame:', startResult.error)
+          showError('generic')
+          setLaunching(false)
+        }
+      } else {
+        // Local/solo: setup game state directly
+        const resetPlayers = resetScores
+          ? (s.players || []).map((p) => ({
+              ...p, score: 0, current_streak: 0, best_streak: 0,
+              correct_count: 0, total_speed_ms: 0,
+            }))
+          : s.players
+        const now = new Date().toISOString()
+        useSession.setState({
+          players: resetPlayers,
+          gameState: {
+            deck: deckData,
+            current_round: 0,
+            current_question: deckData[0],
+            round_results: {},
+            triviaSession: launchSession,
+          },
+          currentPhase: 'countdown',
+          questionStartedAt: now,
+          activeGame: 'trivia',
+        })
+        navigate('/game/trivia', { replace: true })
       }
     } catch (err) {
       console.error('[trivia-lobby] handleSpinEnd:', err)
       showError('generic')
       setLaunching(false)
     }
-  }, [isHost, launching, questionsPerRound, categoriesPlayed, roundIdx, roomCode, timerDuration, showError, setLaunching])
+  }, [canControl, launching, questionsPerRound, categoriesPlayed, roundIdx, roomCode, timerDuration, showError, setLaunching, navigate])
 
   const roundTitles = ['🎬 Round 1', '🎯 Round 2', '🏆 Round Finale']
   const roundTitle = roundTitles[roundIdx] ?? `Round ${roundIdx + 1}`
@@ -251,7 +284,7 @@ const TriviaLobbyScreen = () => {
   return (
     <div className="screen screen-narrow">
       <AppHeader
-        leading={isHost && (
+        leading={canControl && (
           <IconButton ariaLabel="Esci" onClick={handleExit}>←</IconButton>
         )}
         actions={
@@ -288,9 +321,9 @@ const TriviaLobbyScreen = () => {
           transition={{ delay: 0.03 }}
           style={S.playersStrip}
         >
-          {players.map((p) => (
+          {players.map((p, i) => (
             <div key={p.id} style={S.playerChip}>
-              <div style={{ ...S.playerDot, backgroundColor: p.color }} />
+              <MiniBlob color={p.color} expr={expr} size={24} id={`tl-${i}`} />
               <span style={S.playerName}>{p.name}</span>
             </div>
           ))}
@@ -307,9 +340,9 @@ const TriviaLobbyScreen = () => {
             <span style={S.settingLabel}>Round</span>
             <Stepper
               value={totalRounds}
-              onDecrement={() => isHost && handleRoundsChange(totalRounds - 1)}
-              onIncrement={() => isHost && handleRoundsChange(totalRounds + 1)}
-              disabled={!isHost || launching || !!spinTarget || roundIdx > 0}
+              onDecrement={() => canControl && handleRoundsChange(totalRounds - 1)}
+              onIncrement={() => canControl && handleRoundsChange(totalRounds + 1)}
+              disabled={!canControl || launching || !!spinTarget || roundIdx > 0}
               min={1} max={5}
             />
           </div>
@@ -317,9 +350,9 @@ const TriviaLobbyScreen = () => {
             <span style={S.settingLabel}>Domande</span>
             <Stepper
               value={questionsPerRound}
-              onDecrement={() => isHost && handleQuestionsChange(questionsPerRound - 1)}
-              onIncrement={() => isHost && handleQuestionsChange(questionsPerRound + 1)}
-              disabled={!isHost || launching || !!spinTarget || roundIdx > 0}
+              onDecrement={() => canControl && handleQuestionsChange(questionsPerRound - 1)}
+              onIncrement={() => canControl && handleQuestionsChange(questionsPerRound + 1)}
+              disabled={!canControl || launching || !!spinTarget || roundIdx > 0}
               min={1} max={15}
             />
           </div>
@@ -411,13 +444,7 @@ const S = {
     background: 'var(--surface)',
     border: '1px solid var(--border)',
     borderRadius: 999,
-    padding: '4px 10px 4px 6px',
-  },
-  playerDot: {
-    width: 18,
-    height: 18,
-    borderRadius: '50%',
-    flexShrink: 0,
+    padding: '4px 10px 4px 4px',
   },
   playerName: {
     fontSize: 'clamp(11px, 1.3dvh, 13px)',

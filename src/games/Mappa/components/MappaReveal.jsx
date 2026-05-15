@@ -5,6 +5,7 @@ import IconButton from '../../../components/ui/IconButton'
 import Button from '../../../components/ui/Button'
 import RoundBadge from '../../../components/ui/RoundBadge'
 import GameSection from '../../../components/ui/GameSection'
+import MiniBlob, { useMiniExpr } from '../../../components/MiniBlob'
 import MapView from './MapView'
 import { haversine, calcScore } from '../geo'
 import { haptic } from '../../../utils/haptic'
@@ -23,6 +24,7 @@ const MappaReveal = ({
   onAdvance,
   onExit,
 }) => {
+  const expr = useMiniExpr()
   const answer = question?.answer
 
   const results = useMemo(() => {
@@ -128,7 +130,7 @@ const MappaReveal = ({
                 }}
               >
                 <span style={S.lbRank}>{i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`}</span>
-                <div style={{ ...S.lbDot, backgroundColor: r.color }} />
+                <MiniBlob color={r.color} expr={i === 0 ? 'happy' : expr} size={28} id={`mr-${i}`} />
                 <span style={S.lbName}>{r.name}</span>
                 <span style={S.lbFill} />
                 {r.hasPin ? (
@@ -246,12 +248,6 @@ const S = {
     fontWeight: 800,
     minWidth: 24,
     textAlign: 'center',
-  },
-  lbDot: {
-    width: 12,
-    height: 12,
-    borderRadius: '50%',
-    flexShrink: 0,
   },
   lbName: {
     fontSize: 'clamp(13px, 1.6dvh, 16px)',

@@ -1,6 +1,6 @@
 // Full-screen countdown overlay: 3 - 2 - 1 - VIA!
 // Driven by questionStartedAt from server. Calls onComplete when done.
-// Supports optional players, category, and accent color for rich display.
+// Standardized grayscale design with colored player blobs, light/dark mode aware.
 
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -19,7 +19,8 @@ const CountdownOverlay = ({
   players = [],
   localPlayerId,
   category,       // { id, label, emoji, color }
-  accentColor = '#7C3AED',
+  gameName,        // es. "Trivia", "Mappa" — shown if no category
+  gameEmoji,       // es. "🧠", "📍" — shown if no category
 }) => {
   const [stepIndex, setStepIndex] = useState(-1)
   const completedRef = useRef(false)
@@ -61,21 +62,22 @@ const CountdownOverlay = ({
   const step = STEPS[stepIndex]
   const isVia = stepIndex === 3
 
-  // Step color: accent for numbers, green for VIA!
-  const stepColor = isVia ? '#10B981' : accentColor
+  // Badge info: category if available, otherwise game name
+  const badgeEmoji = category?.emoji || gameEmoji
+  const badgeLabel = category?.label || gameName
 
   return (
-    <div style={{ ...S.overlay, background: `linear-gradient(170deg, var(--bg) 0%, ${accentColor}12 100%)` }}>
-      {/* Category badge at the top */}
-      {category && (
+    <div style={S.overlay}>
+      {/* Game/Category badge at the top */}
+      {badgeLabel && (
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.4 }}
-          style={{ ...S.categoryBadge, borderColor: `${accentColor}30` }}
+          style={S.badge}
         >
-          <span style={S.categoryEmoji}>{category.emoji}</span>
-          <span style={{ ...S.categoryLabel, color: accentColor }}>{category.label}</span>
+          {badgeEmoji && <span style={S.badgeEmoji}>{badgeEmoji}</span>}
+          <span style={S.badgeLabel}>{badgeLabel}</span>
         </motion.div>
       )}
 
@@ -91,8 +93,7 @@ const CountdownOverlay = ({
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
               style={{
                 ...S.label,
-                color: stepColor,
-                textShadow: `0 0 60px ${stepColor}40, 0 0 120px ${stepColor}20`,
+                ...(isVia ? S.labelVia : {}),
               }}
             >
               {step.label}
@@ -108,10 +109,7 @@ const CountdownOverlay = ({
               initial={{ scale: 0.5, opacity: 0.5 }}
               animate={{ scale: 2.5, opacity: 0 }}
               transition={{ duration: 0.9, ease: 'easeOut' }}
-              style={{
-                ...S.pulseRing,
-                borderColor: stepColor,
-              }}
+              style={S.pulseRing}
             />
           )}
         </AnimatePresence>
@@ -139,12 +137,9 @@ const CountdownOverlay = ({
                   ...S.blobCircle,
                   background: `linear-gradient(135deg, ${p.color}dd, ${p.color})`,
                   boxShadow: isLocal
-                    ? `0 0 0 2.5px ${accentColor}, 0 4px 16px ${p.color}50`
+                    ? `0 0 0 2.5px var(--text), 0 4px 16px ${p.color}50`
                     : `0 4px 12px ${p.color}30`,
                 }}>
-                  <span style={S.blobInitials}>
-                    {initialsOf(p.name)}
-                  </span>
                   {/* Blob eyes */}
                   <div style={S.blobEyes}>
                     <div style={S.blobEye}>
@@ -157,7 +152,6 @@ const CountdownOverlay = ({
                 </div>
                 <span style={{
                   ...S.playerName,
-                  color: isLocal ? accentColor : 'var(--muted)',
                   fontWeight: isLocal ? 800 : 600,
                 }}>
                   {p.name}
@@ -175,7 +169,7 @@ const CountdownOverlay = ({
             key={i}
             animate={{
               scale: i <= stepIndex ? 1.3 : 1,
-              background: i <= stepIndex ? stepColor : 'var(--surface2)',
+              background: i <= stepIndex ? 'var(--text)' : 'var(--border-strong)',
             }}
             transition={{ type: 'spring', stiffness: 400, damping: 20 }}
             style={S.dot}
@@ -184,13 +178,6 @@ const CountdownOverlay = ({
       </div>
     </div>
   )
-}
-
-const initialsOf = (name) => {
-  const parts = String(name ?? '').trim().split(/\s+/).filter(Boolean)
-  if (parts.length === 0) return '?'
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
-  return (parts[0][0] + parts[1][0]).toUpperCase()
 }
 
 const S = {
@@ -204,25 +191,27 @@ const S = {
     justifyContent: 'center',
     gap: 'clamp(16px, 3dvh, 32px)',
     padding: 'clamp(16px, 3dvh, 32px)',
+    background: 'var(--bg)',
   },
-  categoryBadge: {
+  badge: {
     display: 'flex',
     alignItems: 'center',
     gap: 8,
     background: 'var(--surface)',
-    border: '1.5px solid',
+    border: '1.5px solid var(--border-strong)',
     borderRadius: 999,
     padding: '8px 18px',
     boxShadow: 'var(--shadow-sm)',
   },
-  categoryEmoji: {
+  badgeEmoji: {
     fontSize: 'clamp(20px, 3dvh, 28px)',
     lineHeight: 1,
   },
-  categoryLabel: {
+  badgeLabel: {
     fontSize: 'clamp(13px, 1.6dvh, 16px)',
     fontWeight: 800,
     letterSpacing: '0.02em',
+    color: 'var(--text)',
   },
   centerArea: {
     position: 'relative',
@@ -239,13 +228,21 @@ const S = {
     userSelect: 'none',
     zIndex: 2,
     lineHeight: 1,
+    color: 'var(--text)',
+    textShadow: '0 0 60px var(--border), 0 0 120px var(--border)',
+  },
+  labelVia: {
+    background: 'linear-gradient(135deg, #8B5CF6, #3B82F6, #10B981, #F59E0B, #F43F5E)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    textShadow: 'none',
   },
   pulseRing: {
     position: 'absolute',
     width: 'clamp(80px, 18dvh, 140px)',
     height: 'clamp(80px, 18dvh, 140px)',
     borderRadius: '50%',
-    border: '3px solid',
+    border: '3px solid var(--border-strong)',
     pointerEvents: 'none',
   },
   playersRow: {
@@ -269,9 +266,6 @@ const S = {
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
-  },
-  blobInitials: {
-    display: 'none', // Hidden — eyes shown instead
   },
   blobEyes: {
     display: 'flex',
@@ -299,6 +293,7 @@ const S = {
   },
   playerName: {
     fontSize: 'clamp(10px, 1.2dvh, 12px)',
+    color: 'var(--muted)',
     maxWidth: 56,
     overflow: 'hidden',
     textOverflow: 'ellipsis',

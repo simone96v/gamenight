@@ -1,13 +1,118 @@
+// Classifica finale Mappa — con MiniBlob + corona, coerente con Trivia FinalPhase.
+
 import { motion } from 'framer-motion'
 import AppHeader from '../../../components/AppHeader'
 import GradientTitle from '../../../components/ui/GradientTitle'
 import Button from '../../../components/ui/Button'
-import PlayerAvatar from '../../../components/PlayerAvatar'
+import MiniBlob, { useMiniExpr } from '../../../components/MiniBlob'
 import GameSection from '../../../components/ui/GameSection'
 import { GAME_COLORS, accentBtnStyle } from '../../../theme/gameColors'
 
-const PODIUM_EMOJIS = ['🥇', '🥈', '🥉']
 const C = GAME_COLORS.mappa
+
+/* ── Corona SVG ── */
+const Crown = ({ size = 28 }) => (
+  <svg viewBox="0 0 100 80" width={size} height={size * 0.8} style={{ display: 'block' }}>
+    <polygon
+      points="10,60 20,25 35,45 50,10 65,45 80,25 90,60"
+      fill="#FBBF24"
+      stroke="#F59E0B"
+      strokeWidth="3"
+      strokeLinejoin="round"
+    />
+    <rect x="10" y="58" width="80" height="12" rx="4" fill="#FBBF24" stroke="#F59E0B" strokeWidth="3" />
+    <circle cx="50" cy="10" r="5" fill="#FDE68A" />
+    <circle cx="20" cy="25" r="4" fill="#FDE68A" />
+    <circle cx="80" cy="25" r="4" fill="#FDE68A" />
+  </svg>
+)
+
+/* ── Podium blob ── */
+const PodiumBlob = ({ player, rank, expr, blobSize, delay }) => {
+  const isFirst = rank === 0
+  const rankColors = ['#FBBF24', '#C0C0C0', '#CD7F32']
+  const rankLabels = ['1st', '2nd', '3rd']
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, type: 'spring', stiffness: 200, damping: 20 }}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: isFirst ? 6 : 4,
+        flex: 1,
+        maxWidth: isFirst ? 130 : 110,
+      }}
+    >
+      <div style={{ height: isFirst ? 28 : 0, display: 'flex', alignItems: 'flex-end' }}>
+        {isFirst && (
+          <motion.div
+            initial={{ scale: 0, rotate: -20 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ delay: delay + 0.3, type: 'spring', stiffness: 300, damping: 15 }}
+          >
+            <Crown size={32} />
+          </motion.div>
+        )}
+      </div>
+
+      <motion.div
+        animate={isFirst ? { scale: [1, 1.06, 1] } : {}}
+        transition={isFirst ? { repeat: Infinity, duration: 2.5, ease: 'easeInOut' } : {}}
+      >
+        <MiniBlob color={player.color} expr={expr} size={blobSize} id={`mp-${rank}`} />
+      </motion.div>
+
+      <span style={{
+        fontSize: isFirst ? 'clamp(13px, 1.6dvh, 16px)' : 'clamp(11px, 1.3dvh, 13px)',
+        fontWeight: 700,
+        color: 'var(--text)',
+        maxWidth: isFirst ? 110 : 90,
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+        textAlign: 'center',
+      }}>
+        {player.name}
+      </span>
+
+      <div style={{
+        background: `linear-gradient(135deg, ${rankColors[rank]}22, ${rankColors[rank]}11)`,
+        border: `1.5px solid ${rankColors[rank]}55`,
+        borderRadius: 'var(--radius-sm)',
+        padding: isFirst
+          ? 'clamp(8px, 1.2dvh, 12px) clamp(16px, 3vw, 24px)'
+          : 'clamp(6px, 1dvh, 10px) clamp(12px, 2.5vw, 20px)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 2,
+      }}>
+        <span style={{
+          fontSize: isFirst ? 'clamp(20px, 2.6dvh, 26px)' : 'clamp(16px, 2dvh, 20px)',
+          fontWeight: 900,
+          color: rankColors[rank],
+          lineHeight: 1,
+        }}>
+          {player.score ?? 0}
+        </span>
+        <span style={{
+          fontSize: 'clamp(9px, 1dvh, 11px)',
+          fontWeight: 700,
+          color: rankColors[rank],
+          opacity: 0.7,
+          textTransform: 'uppercase',
+          letterSpacing: '0.08em',
+        }}>
+          {rankLabels[rank]}
+        </span>
+      </div>
+    </motion.div>
+  )
+}
 
 const MappaFinal = ({
   players,
@@ -19,6 +124,7 @@ const MappaFinal = ({
   onChangeGame,
 }) => {
   const sorted = [...(players || [])].sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
+  const expr = useMiniExpr()
 
   return (
     <div style={S.container}>
@@ -27,76 +133,76 @@ const MappaFinal = ({
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          style={{ textAlign: 'center' }}
+          style={{ textAlign: 'center', flexShrink: 0 }}
         >
           <GradientTitle as="h2" size="lg" gradient={C.gradient}>
-            🏆 Classifica Finale
+            Classifica Finale
           </GradientTitle>
           <p style={S.subtitle}>{totalQuestions} domande completate</p>
         </motion.div>
 
+        {/* Podium top 3 */}
         {sorted.length >= 2 && (
           <div style={S.podium}>
             {[1, 0, 2].map((rank) => {
               const p = sorted[rank]
               if (!p) return <div key={rank} style={{ flex: 1 }} />
-              const isFirst = rank === 0
               return (
-                <motion.div
+                <PodiumBlob
                   key={p.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: rank === 0 ? 0.3 : rank === 1 ? 0.1 : 0.5 }}
-                  style={{
-                    ...S.podiumSlot,
-                    transform: isFirst ? 'scale(1.1)' : 'scale(1)',
-                  }}
-                >
-                  <span style={{ fontSize: isFirst ? 32 : 24 }}>{PODIUM_EMOJIS[rank]}</span>
-                  <PlayerAvatar player={p} showScore={false} size={isFirst ? 'lg' : 'md'} />
-                  <span style={S.podiumName}>{p.name}</span>
-                  <span style={{ ...S.podiumScore, color: C.accent }}>{p.score ?? 0}</span>
-                </motion.div>
+                  player={p}
+                  rank={rank}
+                  expr={rank === 0 ? 'happy' : expr}
+                  blobSize={rank === 0 ? 64 : 48}
+                  delay={rank === 0 ? 0.3 : rank === 1 ? 0.1 : 0.5}
+                />
               )
             })}
           </div>
         )}
 
-        <GameSection emoji="📊" title="Tutti i risultati" delay={0.3}>
+        {/* Leaderboard */}
+        <GameSection emoji="📊" title="Tutti i risultati" delay={0.3}
+          style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
+        >
           <div style={S.leaderboard}>
-            {sorted.map((p, i) => (
-              <motion.div
-                key={p.id}
-                initial={{ opacity: 0, x: -16 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 + i * 0.05 }}
-                style={{
-                  ...S.lbRow,
-                  border: p.id === localPlayerId ? `1.5px solid ${C.accent}` : '1.5px solid transparent',
-                  background: p.id === localPlayerId ? `${C.accent}1a` : 'var(--bg)',
-                }}
-              >
-                <span style={{ ...S.lbRank, color: C.accent }}>#{i + 1}</span>
-                <div style={{ ...S.lbDot, backgroundColor: p.color }} />
-                <span style={S.lbName}>{p.name}</span>
-                <span style={{ ...S.lbScore, color: C.accent }}>{p.score ?? 0}</span>
-              </motion.div>
-            ))}
+            {sorted.map((p, i) => {
+              const isLocal = p.id === localPlayerId
+              return (
+                <motion.div
+                  key={p.id}
+                  initial={{ opacity: 0, x: -16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 + i * 0.05 }}
+                  style={{
+                    ...S.lbRow,
+                    border: isLocal ? `1.5px solid ${C.accent}` : '1.5px solid transparent',
+                    background: isLocal ? `${C.accent}14` : 'var(--bg)',
+                  }}
+                >
+                  <span style={{ ...S.lbRank, color: C.accent }}>#{i + 1}</span>
+                  <MiniBlob color={p.color} expr={expr} size={28} id={`mlb-${i}`} />
+                  <span style={S.lbName}>{p.name}</span>
+                  <span style={{ ...S.lbScore, color: C.accent }}>{p.score ?? 0}</span>
+                </motion.div>
+              )
+            })}
           </div>
         </GameSection>
 
+        {/* Footer */}
         <div style={S.footer}>
           {isHost ? (
             <div style={{ display: 'flex', gap: 8, width: '100%' }}>
               <Button variant="secondary" width="full" onClick={onChangeGame} disabled={advancing}>
-                🎮 Cambia gioco
+                Cambia gioco
               </Button>
               <Button variant="primary" width="full" onClick={onReplay} disabled={advancing} style={accentBtnStyle('mappa')}>
-                {advancing ? '...' : '🔄 Gioca ancora'}
+                {advancing ? '...' : 'Gioca ancora'}
               </Button>
             </div>
           ) : (
-            <p style={S.waitText}>Aspettando il boss... 👑</p>
+            <p style={S.waitText}>Aspettando il boss...</p>
           )}
         </div>
       </div>
@@ -121,40 +227,18 @@ const S = {
     overflow: 'hidden',
   },
   subtitle: {
-    margin: '6px 0 0',
+    margin: '4px 0 0',
     color: 'var(--muted)',
-    fontSize: 'clamp(13px, 1.6dvh, 15px)',
+    fontSize: 'clamp(11px, 1.4dvh, 13px)',
     fontWeight: 600,
   },
   podium: {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'flex-end',
-    gap: 'clamp(8px, 2vw, 16px)',
+    gap: 'clamp(6px, 1.5vw, 14px)',
     flexShrink: 0,
-    padding: 'clamp(4px, 1dvh, 12px) 0',
-  },
-  podiumSlot: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: 4,
-    flex: 1,
-    maxWidth: 110,
-  },
-  podiumName: {
-    fontSize: 'clamp(11px, 1.4dvh, 14px)',
-    fontWeight: 700,
-    color: 'var(--text)',
-    maxWidth: 90,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    textAlign: 'center',
-  },
-  podiumScore: {
-    fontSize: 'clamp(14px, 1.8dvh, 18px)',
-    fontWeight: 800,
+    padding: 'clamp(2px, 0.6dvh, 8px) 0',
   },
   leaderboard: {
     display: 'flex',
@@ -169,7 +253,7 @@ const S = {
     display: 'flex',
     alignItems: 'center',
     gap: 'clamp(8px, 1.5vw, 12px)',
-    padding: 'clamp(8px, 1.2dvh, 12px) clamp(10px, 2vw, 16px)',
+    padding: 'clamp(6px, 1dvh, 10px) clamp(10px, 2vw, 16px)',
     borderRadius: 'var(--radius-sm)',
   },
   lbRank: {
@@ -178,22 +262,20 @@ const S = {
     minWidth: 28,
     textAlign: 'center',
   },
-  lbDot: {
-    width: 20,
-    height: 20,
-    borderRadius: '50%',
-    flexShrink: 0,
-  },
   lbName: {
     flex: 1,
     fontWeight: 600,
-    fontSize: 'clamp(13px, 1.6dvh, 16px)',
+    fontSize: 'clamp(13px, 1.6dvh, 15px)',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
   },
   lbScore: {
     fontWeight: 800,
     fontSize: 'clamp(15px, 1.8dvh, 19px)',
     minWidth: 40,
     textAlign: 'right',
+    flexShrink: 0,
   },
   footer: {
     flexShrink: 0,

@@ -65,11 +65,11 @@ const Button = ({
         gap: '8px',
         borderRadius: 'var(--radius-sm)',
         background: variant === 'primary'
-          ? '#111827'
+          ? 'var(--accent)'
           : isSecondary
             ? 'var(--surface)'
             : undefined,
-        color: isSecondary ? 'var(--text)' : '#fff',
+        color: isSecondary ? 'var(--text)' : 'var(--bg)',
         border: isSecondary ? '1.5px solid var(--border-strong)' : 'none',
         boxShadow: s.rest,
         opacity: disabled ? 0.5 : 1,
