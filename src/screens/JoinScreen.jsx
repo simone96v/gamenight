@@ -7,60 +7,11 @@ import Blob from '../components/Blob'
 import Button from '../components/ui/Button'
 import IconButton from '../components/ui/IconButton'
 import GradientTitle from '../components/ui/GradientTitle'
+import ColorPicker from '../components/ColorPicker'
 import { addPlayerToRoom, getRoom } from '../lib/room'
 import { useSession } from '../stores/useSession'
-import { AVATAR_COLORS } from '../utils/colors'
 
 const CODE_ALPHABET = 'BCDFGHJKLMNPRSTVWX'
-
-const ColorPicker = ({ colors, takenColors, selected, onSelect }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 12 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 0.1 }}
-    style={cardStyle}
-  >
-    <div style={labelStyle}>🎨 Scegli il tuo colore</div>
-    <div style={{ display: 'flex', gap: 'clamp(8px, 2vw, 12px)', justifyContent: 'center', flexWrap: 'wrap' }}>
-      {colors.map((c) => {
-        const taken = takenColors.includes(c)
-        const active = selected === c
-        return (
-          <motion.button
-            key={c}
-            type="button"
-            whileHover={!taken ? { scale: 1.15, boxShadow: `0 0 0 3px ${c}40, 0 4px 14px ${c}50` } : {}}
-            whileTap={!taken ? { scale: 0.85 } : {}}
-            transition={{ type: 'spring', stiffness: 400, damping: 22 }}
-            onClick={() => !taken && onSelect(c)}
-            disabled={taken}
-            style={{
-              width: 'clamp(36px, 5vw, 44px)',
-              height: 'clamp(36px, 5vw, 44px)',
-              borderRadius: '50%',
-              background: c,
-              border: active ? '3px solid var(--text)' : '3px solid transparent',
-              boxShadow: active ? `0 0 0 3px ${c}50, 0 4px 12px ${c}40` : `0 2px 8px ${c}30`,
-              opacity: taken ? 0.2 : 1,
-              cursor: taken ? 'not-allowed' : 'pointer',
-              outline: 'none',
-              position: 'relative',
-            }}
-          >
-            {taken && (
-              <span style={{
-                position: 'absolute', inset: 0,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#fff', fontWeight: 800, fontSize: 16,
-                textShadow: '0 1px 3px rgba(0,0,0,0.4)',
-              }}>✕</span>
-            )}
-          </motion.button>
-        )
-      })}
-    </div>
-  </motion.div>
-)
 
 const JoinScreen = () => {
   const navigate = useNavigate()
@@ -107,6 +58,7 @@ const JoinScreen = () => {
   }, [code])
 
   const canSubmit = code.length === 4 && name.trim().length > 0 && selectedColor && !submitting
+  const showForm = code.length === 4
 
   const handleSubmit = async (e) => {
     e?.preventDefault()
@@ -151,11 +103,13 @@ const JoinScreen = () => {
         className="screen-body"
         onSubmit={handleSubmit}
         style={{
-          gap: 'clamp(12px, 1.8dvh, 18px)',
-          paddingTop: 'clamp(16px, 3dvh, 32px)',
-          paddingBottom: 'clamp(16px, 3dvh, 28px)',
+          gap: 'clamp(10px, 1.6dvh, 16px)',
+          paddingTop: 'clamp(12px, 2.5dvh, 24px)',
+          paddingBottom: 'clamp(12px, 2dvh, 20px)',
           position: 'relative',
           zIndex: 2,
+          overflowY: 'auto',
+          scrollbarWidth: 'none',
         }}
       >
         <motion.div
@@ -165,9 +119,9 @@ const JoinScreen = () => {
         >
           <GradientTitle as="h1" size="lg">Entra nel party</GradientTitle>
           <p style={{
-            margin: '6px 0 0',
+            margin: '4px 0 0',
             color: 'var(--muted)',
-            fontSize: 'clamp(12px, 1.5dvh, 14px)',
+            fontSize: 'clamp(11px, 1.4dvh, 14px)',
             fontWeight: 600,
           }}>
             Inserisci il codice e scegli il tuo blob
@@ -186,24 +140,29 @@ const JoinScreen = () => {
             value={code}
             onChange={handleCodeChange}
             placeholder="ABCD"
-            style={{ ...inputStyle, letterSpacing: '0.2em', textAlign: 'center', fontWeight: 800, fontSize: 'clamp(20px, 3dvh, 28px)' }}
+            style={{
+              ...inputStyle,
+              letterSpacing: '0.2em',
+              textAlign: 'center',
+              fontWeight: 800,
+              fontSize: 'clamp(18px, 2.8dvh, 26px)',
+            }}
             autoFocus
             maxLength={4}
           />
         </motion.div>
 
         {/* Color picker — shown when code is 4 chars */}
-        {code.length === 4 && (
+        {showForm && (
           <ColorPicker
-            colors={AVATAR_COLORS}
             takenColors={takenColors}
             selected={selectedColor}
             onSelect={setSelectedColor}
           />
         )}
 
-        {/* Name input */}
-        {code.length === 4 && (
+        {/* Name input + Entra button */}
+        {showForm && (
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -223,7 +182,12 @@ const JoinScreen = () => {
                 type="submit"
                 variant="primary"
                 disabled={!canSubmit}
-                style={{ flexShrink: 0, padding: '0 16px', boxShadow: 'none', height: 'clamp(44px, 6dvh, 56px)' }}
+                style={{
+                  flexShrink: 0,
+                  padding: '0 clamp(12px, 2vw, 16px)',
+                  boxShadow: 'none',
+                  height: 'clamp(40px, 5.5dvh, 52px)',
+                }}
               >
                 {submitting ? '...' : 'Entra'}
               </Button>
@@ -232,15 +196,15 @@ const JoinScreen = () => {
         )}
       </form>
 
-      {/* Bottom blob — gray until color is picked */}
+      {/* Bottom blob — gray until color is picked, hidden when form is full on short screens */}
       <Blob
         color={selectedColor}
         expr={blobExpr}
         id="join-blob"
-        size="clamp(200px, 48vw, 300px)"
+        size="min(clamp(160px, 40vw, 260px), clamp(120px, 22dvh, 260px))"
         animate={false}
         style={{
-          bottom: 'clamp(-90px, -14dvh, -55px)',
+          bottom: 'clamp(-80px, -12dvh, -45px)',
           left: '50%',
           transform: 'translateX(-50%)',
         }}
@@ -253,29 +217,29 @@ const cardStyle = {
   background: 'var(--surface)',
   border: '1px solid var(--border)',
   borderRadius: 'var(--radius)',
-  padding: 'clamp(12px, 1.8dvh, 16px)',
+  padding: 'clamp(10px, 1.6dvh, 16px)',
   boxShadow: 'var(--shadow-sm)',
   flexShrink: 0,
 }
 
 const labelStyle = {
-  fontSize: 'clamp(11px, 1.4dvh, 13px)',
+  fontSize: 'clamp(11px, 1.3dvh, 13px)',
   color: 'var(--muted)',
   fontWeight: 700,
   letterSpacing: '0.06em',
   textTransform: 'uppercase',
-  marginBottom: 8,
+  marginBottom: 'clamp(4px, 0.8dvh, 8px)',
 }
 
 const inputStyle = {
   flex: 1,
   minWidth: 0,
-  height: 'clamp(44px, 6dvh, 56px)',
+  height: 'clamp(40px, 5.5dvh, 52px)',
   background: 'var(--surface)',
   border: '1.5px solid var(--border)',
   borderRadius: 'var(--radius-sm)',
   color: 'var(--text)',
-  fontSize: 'clamp(14px, 2dvh, 18px)',
+  fontSize: 'clamp(14px, 1.8dvh, 18px)',
   padding: '0 clamp(12px, 2vw, 16px)',
   outline: 'none',
 }

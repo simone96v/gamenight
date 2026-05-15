@@ -173,18 +173,21 @@ const blobDefs = (prefix) => {
   )
 }
 
+const BLOB_SIZE = 'min(clamp(160px, 40vw, 280px), clamp(160px, 30dvh, 280px))'
+const BLOB_SIZE_LG = 'min(clamp(180px, 46vw, 300px), clamp(180px, 34dvh, 300px))'
+
 const BottomBlob = ({ expr }) => (
   <div style={{
     position: 'fixed',
     bottom: 'clamp(-60px, -9dvh, -35px)',
-    right: 'clamp(-80px, -12vw, -50px)',
+    right: 'clamp(-70px, -10vw, -40px)',
     zIndex: 1,
     pointerEvents: 'none',
     lineHeight: 0,
   }}>
     <svg
       viewBox="0 0 300 300"
-      style={{ width: 'clamp(200px, 45vw, 320px)', height: 'auto' }}
+      style={{ width: BLOB_SIZE, height: 'auto' }}
       aria-hidden="true"
     >
       {blobDefs('bb')}
@@ -198,14 +201,14 @@ const TopBlob = ({ expr }) => (
   <div style={{
     position: 'fixed',
     top: 'clamp(-60px, -9dvh, -35px)',
-    left: 'clamp(-80px, -12vw, -50px)',
+    left: 'clamp(-70px, -10vw, -40px)',
     zIndex: 1,
     pointerEvents: 'none',
     lineHeight: 0,
   }}>
     <svg
       viewBox="0 0 300 300"
-      style={{ width: 'clamp(200px, 45vw, 320px)', height: 'auto' }}
+      style={{ width: BLOB_SIZE, height: 'auto' }}
       aria-hidden="true"
     >
       {blobDefs('tb')}
@@ -219,14 +222,14 @@ const TopRightBlob = ({ expr }) => (
   <div style={{
     position: 'fixed',
     top: 'clamp(-70px, -10dvh, -40px)',
-    right: 'clamp(-90px, -14vw, -55px)',
+    right: 'clamp(-80px, -12vw, -45px)',
     zIndex: 1,
     pointerEvents: 'none',
     lineHeight: 0,
   }}>
     <svg
       viewBox="0 0 300 300"
-      style={{ width: 'clamp(230px, 52vw, 360px)', height: 'auto' }}
+      style={{ width: BLOB_SIZE_LG, height: 'auto' }}
       aria-hidden="true"
     >
       {blobDefs('tr')}
@@ -240,14 +243,14 @@ const BottomLeftBlob = ({ expr }) => (
   <div style={{
     position: 'fixed',
     bottom: 'clamp(-70px, -10dvh, -40px)',
-    left: 'clamp(-90px, -14vw, -55px)',
+    left: 'clamp(-80px, -12vw, -45px)',
     zIndex: 1,
     pointerEvents: 'none',
     lineHeight: 0,
   }}>
     <svg
       viewBox="0 0 300 300"
-      style={{ width: 'clamp(230px, 52vw, 360px)', height: 'auto' }}
+      style={{ width: BLOB_SIZE_LG, height: 'auto' }}
       aria-hidden="true"
     >
       {blobDefs('bl')}
