@@ -128,6 +128,11 @@ const TriviaLobbyScreen = () => {
     updateSessionSetting({ questionsPerRound: n })
   }
 
+  const handleRoundsChange = (n) => {
+    setTotalRounds(n)
+    updateSessionSetting({ totalRounds: n })
+  }
+
   // Host esce.
   const handleExit = async () => {
     setAwaitingGC(true)
@@ -291,7 +296,7 @@ const TriviaLobbyScreen = () => {
           ))}
         </motion.div>
 
-        {/* Settings row compatta */}
+        {/* Settings */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -299,13 +304,23 @@ const TriviaLobbyScreen = () => {
           style={S.settingsCard}
         >
           <div style={S.settingRow}>
+            <span style={S.settingLabel}>Round</span>
+            <Stepper
+              value={totalRounds}
+              onDecrement={() => isHost && handleRoundsChange(totalRounds - 1)}
+              onIncrement={() => isHost && handleRoundsChange(totalRounds + 1)}
+              disabled={!isHost || launching || !!spinTarget || roundIdx > 0}
+              min={1} max={5}
+            />
+          </div>
+          <div style={{ ...S.settingRow, marginTop: 'clamp(6px, 1dvh, 10px)' }}>
             <span style={S.settingLabel}>Domande</span>
             <Stepper
               value={questionsPerRound}
               onDecrement={() => isHost && handleQuestionsChange(questionsPerRound - 1)}
               onIncrement={() => isHost && handleQuestionsChange(questionsPerRound + 1)}
               disabled={!isHost || launching || !!spinTarget || roundIdx > 0}
-              min={3} max={15}
+              min={1} max={15}
             />
           </div>
         </motion.div>
