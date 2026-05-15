@@ -1,8 +1,4 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import AppHeader from '../../../components/AppHeader'
-import GameHUD from '../../../components/GameHUD'
-import IconButton from '../../../components/ui/IconButton'
-import RoundBadge from '../../../components/ui/RoundBadge'
 import { GAME_COLORS } from '../../../theme/gameColors'
 import BlobJumpGame from './BlobJumpGame'
 import BlobJumpDeath from './BlobJumpDeath'
@@ -16,18 +12,12 @@ const IS_TOUCH = typeof window !== 'undefined' && ('ontouchstart' in window || n
 const BlobJumpPlaying = ({
   seed,
   blobColor,
-  roundDuration,
-  timeLeft,
   isExpired,
   scoreSubmitted,
   onSubmitScore,
   onUpdateScore,
   players,
   localPlayerId,
-  isHost,
-  currentRoundIdx,
-  totalRounds,
-  onExit,
 }) => {
   const [score, setScore] = useState(0)
   const [dead, setDead] = useState(false)
@@ -90,46 +80,15 @@ const BlobJumpPlaying = ({
     }
   }, [isExpired, scoreSubmitted, dead, onSubmitScore])
 
-  const endless = roundDuration <= 0
-  const running = !dead && !isExpired
-
   return (
     <div style={styles.container}>
-      {!endless && (
-        <>
-          <AppHeader
-            accentColor={C.accent}
-            leading={isHost && <IconButton ariaLabel="Esci" onClick={onExit}>←</IconButton>}
-            actions={
-              <RoundBadge
-                n={currentRoundIdx + 1}
-                total={totalRounds}
-                game="blobjump"
-              />
-            }
-          />
-          <GameHUD
-            questionNumber={currentRoundIdx + 1}
-            totalQuestions={totalRounds}
-            timeLeft={timeLeft}
-            total={roundDuration}
-            players={playersWithLive}
-            localPlayerId={localPlayerId}
-            phase="question"
-            accentColor={C.accent}
-            showTimer={running}
-            scoreSuffix="m"
-          />
-        </>
-      )}
-
       <div style={styles.gameArea}>
         <BlobJumpGame
           ref={gameRef}
           seed={seed}
           blobColor={blobColor}
-          duration={endless ? 0 : roundDuration}
-          forceStop={isExpired}
+          duration={0}
+          forceStop={false}
           onScoreUpdate={handleScore}
           onDeath={handleDeath}
           onTimeUp={handleTimeUp}
@@ -145,13 +104,6 @@ const BlobJumpPlaying = ({
           <BlobJumpDeath
             score={score}
             blobColor={blobColor}
-          />
-        )}
-        {!endless && isExpired && !dead && scoreSubmitted && (
-          <BlobJumpDeath
-            score={score}
-            blobColor={blobColor}
-            waitingMessage="Tempo scaduto!"
           />
         )}
       </div>

@@ -54,8 +54,6 @@ const BlobJump = () => {
     const newSeed = Math.floor(Math.random() * 2147483647)
     const now = new Date().toISOString()
     const resetPlayers = (s.players || []).map((p) => ({ ...p, score: 0 }))
-    const totalRounds = s.gameState?.totalRounds ?? 3
-    const roundDuration = s.gameState?.roundDuration ?? 60
 
     if (s.mode === 'online' && s.roomCode) {
       const fullState = {
@@ -65,8 +63,8 @@ const BlobJump = () => {
         activeGame: 'blobjump',
         currentSeed: newSeed,
         currentRoundIdx: 0,
-        totalRounds,
-        roundDuration,
+        totalRounds: 1,
+        roundDuration: 0,
         roundScores: {},
         totalScores: {},
       }
@@ -77,8 +75,8 @@ const BlobJump = () => {
         gameState: {
           currentSeed: newSeed,
           currentRoundIdx: 0,
-          totalRounds,
-          roundDuration,
+          totalRounds: 1,
+          roundDuration: 0,
           roundScores: {},
           totalScores: {},
         },
@@ -108,18 +106,12 @@ const BlobJump = () => {
         <BlobJumpPlaying
           seed={bj.currentSeed}
           blobColor={bj.blobColor}
-          roundDuration={bj.roundDuration}
-          timeLeft={bj.timeLeft}
           isExpired={bj.isExpired}
           scoreSubmitted={bj.scoreSubmitted}
           onSubmitScore={bj.submitScore}
           onUpdateScore={bj.updateScorePeriodic}
           players={bj.players}
           localPlayerId={bj.localPlayerId}
-          isHost={bj.isHost}
-          currentRoundIdx={bj.currentRoundIdx}
-          totalRounds={bj.totalRounds}
-          onExit={handleChangeGame}
         />
       </Suspense>
     )
