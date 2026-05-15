@@ -64,9 +64,6 @@ const QuestionPhase = ({
       />
 
       <div style={bodyStyle}>
-        {/* Category chip */}
-        {category && <CategoryChip category={category} />}
-
         <QuestionCard question={currentQuestion} />
 
         <div style={gridStyle}>
@@ -131,37 +128,6 @@ const QuestionPhase = ({
     </div>
   )
 }
-
-const CategoryChip = ({ category }) => (
-  <motion.div
-    initial={{ opacity: 0, y: -6 }}
-    animate={{ opacity: 1, y: 0 }}
-    style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: 6,
-      flexShrink: 0,
-    }}
-  >
-    <span style={{
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: 6,
-      background: category.color,
-      color: '#fff',
-      padding: '5px 14px',
-      borderRadius: 999,
-      fontSize: 'clamp(12px, 1.5dvh, 14px)',
-      fontWeight: 800,
-      letterSpacing: '0.02em',
-      boxShadow: `0 2px 10px ${category.color}44`,
-    }}>
-      <span style={{ fontSize: 'clamp(14px, 1.8dvh, 18px)' }}>{category.emoji}</span>
-      {category.label}
-    </span>
-  </motion.div>
-)
 
 const containerStyle = {
   display: 'flex',

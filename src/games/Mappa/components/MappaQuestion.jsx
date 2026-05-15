@@ -62,7 +62,6 @@ const MappaQuestion = ({
           animate={{ opacity: 1, y: 0 }}
           style={S.questionCard}
         >
-          <span style={S.questionEmoji}>📍</span>
           <h2 style={S.questionText}>{question.question}</h2>
         </motion.div>
 
@@ -173,10 +172,6 @@ const S = {
     border: '1px solid var(--border)',
     boxShadow: 'var(--shadow-sm)',
     padding: 'clamp(12px, 1.8dvh, 18px) clamp(14px, 3vw, 20px)',
-  },
-  questionEmoji: {
-    fontSize: 'clamp(20px, 2.8dvh, 28px)',
-    flexShrink: 0,
   },
   questionText: {
     margin: 0,
