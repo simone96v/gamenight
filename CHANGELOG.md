@@ -5,6 +5,19 @@ Tutti i cambiamenti notabili a BlobParty sono documentati qui.
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.1.0/), e questo
 progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [0.2.4] — 2026-05-16
+
+### Fixed — Reset categorie su "Rigioca" e "Cambia gioco" in Emoji Quiz
+Le categorie giocate non si resettavano in alcuni casi quando il giocatore
+tornava in lobby:
+- Dopo "Rigioca" (handleReplay già lo faceva, ma rinforzato).
+- Dopo "Cambia gioco" + rientro nel gioco da `/solo/games`: la sessione
+  rimaneva stale con `categoriesPlayed` popolato → ora viene azzerata.
+- Difensivo: l'init effect della lobby riconosce stato stale
+  (categoriesPlayed non vuoto, spinTarget pendente, launching stuck) con
+  roundIdx=0 e fa il reset automaticamente. La logica mid-session
+  (roundIdx>0) preserva categoriesPlayed per il flusso multi-round.
+
 ## [0.2.3] — 2026-05-16
 
 ### Changed — Copy del bottone "fine partita" in solo

@@ -82,23 +82,40 @@ const EmojiQuizLobbyScreen = () => {
   // Preload del pool.
   useEffect(() => { preloadEmojiQuizPool() }, [])
 
-  // Init session se mancante.
+  // Init / reset della sessione in lobby.
+  //
+  // Regola:
+  //   - Se la sessione non esiste → crea fresh (categoriesPlayed = []).
+  //   - Se esiste con roundIdx > 0 → siamo mid-session (es. dopo "Prossimo round"),
+  //     preserviamo categoriesPlayed così la ruota esclude quelle già giocate.
+  //   - Altrimenti (roundIdx = 0, session esistente con stato stale) → reset
+  //     categoriesPlayed e spinTarget, preservando le impostazioni utente.
+  //
+  // Questo garantisce che "Rigioca", "Cambia gioco" e qualsiasi rientro pulito
+  // in lobby restituiscano una ruota con tutte le categorie disponibili.
   useEffect(() => {
     if (!canControl) return
-    if (gameState?.eqSession) return
+    const cur = gameState?.eqSession
+    if (cur && (cur.roundIdx ?? 0) > 0) return // mid-session, lascia stare
+
+    const needsReset = !cur
+      || (cur.categoriesPlayed ?? []).length > 0
+      || cur.spinTarget != null
+      || cur.launching === true
+
+    if (!needsReset) return
+
     const s = useSession.getState()
-    const newGameState = {
-      ...s.gameState,
-      eqSession: {
-        roundIdx: 0,
-        totalRounds: DEFAULT_TOTAL_ROUNDS,
-        questionsPerRound: DEFAULT_QUESTIONS,
-        categoriesPlayed: [],
-        currentCategory: null,
-        spinTarget: null,
-        launching: false,
-      },
+    const newSession = {
+      roundIdx: 0,
+      totalRounds: cur?.totalRounds ?? DEFAULT_TOTAL_ROUNDS,
+      questionsPerRound: cur?.questionsPerRound ?? DEFAULT_QUESTIONS,
+      categoriesPlayed: [],
+      currentCategory: null,
+      spinTarget: null,
+      launching: false,
     }
+    const newGameState = { ...s.gameState, eqSession: newSession }
     useSession.setState({ gameState: newGameState })
     if (s.mode === 'online' && s.roomCode) {
       pushRoom(s.roomCode, s.currentPhase, {

@@ -21,9 +21,26 @@ const EmojiQuiz = () => {
   const setAwaitingGC = useSession((s) => s.setAwaitingGameChange)
 
   // "Esci" / "Cambia gioco": riporta tutti su /games (online) o /solo/games (local).
+  // Resetta anche eqSession così un eventuale rientro nel gioco riparte fresh.
   const handleChangeGame = useCallback(async () => {
     const s = useSession.getState()
     if (s.mode !== 'online') {
+      // Solo: pulisci lo stato di gioco prima di uscire.
+      useSession.setState({
+        gameState: {
+          ...s.gameState,
+          eqSession: null,
+          eqDeck: [],
+          eqRoundIdx: 0,
+          eqRoundAnswers: {},
+          eqHintUsed: {},
+          eqRoundResult: null,
+          eqRoundLog: [],
+          eqScores: {},
+          eqStreaks: {},
+          eqCorrectCount: {},
+        },
+      })
       navigate('/solo/games', { replace: true })
       return
     }
