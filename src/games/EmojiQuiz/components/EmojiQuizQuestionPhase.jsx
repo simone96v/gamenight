@@ -10,6 +10,7 @@ import GameHUD from '../../../components/GameHUD'
 import IconButton from '../../../components/ui/IconButton'
 import RoundBadge from '../../../components/ui/RoundBadge'
 import EmojiQuizCard from './EmojiQuizCard'
+import { HINT_CAP } from '../scoring'
 import { accentBtnStyle } from '../../../theme/gameColors'
 import { usePlayerAccent } from '../../../hooks/usePlayerAccent'
 
@@ -128,7 +129,7 @@ const EmojiQuizQuestionPhase = ({
             background: hintUsed ? 'rgba(245, 158, 11, 0.10)' : 'var(--surface)',
           }}
         >
-          {hintUsed ? '💡 Indizio usato · punti ridotti' : '💡 Usa un indizio (−punti)'}
+          {hintUsed ? `💡 Indizio usato · max ${HINT_CAP} pt` : `💡 Usa un indizio (max ${HINT_CAP} pt)`}
         </motion.button>
 
         {/* Status row */}

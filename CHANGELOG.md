@@ -5,6 +5,17 @@ Tutti i cambiamenti notabili a BlobParty sono documentati qui.
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.1.0/), e questo
 progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [0.2.5] — 2026-05-16
+
+### Changed
+- Bottone indizio in Emoji Quiz: copy esplicito sul costo. Prima diceva
+  "💡 Usa un indizio (−punti)" / "💡 Indizio usato · punti ridotti" —
+  vago. Ora dice **"💡 Usa un indizio (max 350 pt)"** / **"💡 Indizio
+  usato · max 350 pt"** dove 350 è la costante `HINT_CAP` da `scoring.js`,
+  cioè il cap massimo dei punti del round con indizio usato (vs 800 senza).
+  Cap dinamico — se domani cambiamo `HINT_CAP`, il bottone si aggiorna
+  automaticamente.
+
 ## [0.2.4] — 2026-05-16
 
 ### Fixed — Reset categorie su "Rigioca" e "Cambia gioco" in Emoji Quiz
