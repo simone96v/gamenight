@@ -5,6 +5,13 @@ Tutti i cambiamenti notabili a BlobParty sono documentati qui.
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.1.0/), e questo
 progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [0.2.6] — 2026-05-16
+
+### Changed
+- Mappa lobby: label "Quanti round?" → **"Quante domande?"**. In Mappa
+  ogni round = una sola domanda (un luogo da indovinare), quindi
+  "domande" è più accurato.
+
 ## [0.2.5] — 2026-05-16
 
 ### Changed

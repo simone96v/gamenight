@@ -173,7 +173,7 @@ const MappaLobbyScreen = () => {
           transition={{ delay: 0.1 }}
           style={S.settingsCard}
         >
-          <span style={S.settingLabel}>Quanti round?</span>
+          <span style={S.settingLabel}>Quante domande?</span>
           <div style={S.optionsRow}>
             {ROUND_OPTIONS.map((n) => (
               <motion.button
