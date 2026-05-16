@@ -9,6 +9,57 @@ import { usePlayerAccent } from '../../../hooks/usePlayerAccent'
 import { useSession } from '../../../stores/useSession'
 import { pushRoom } from '../../../lib/room'
 
+// ── Half-screen touch zone ──────────────────────────────────
+const HalfZone = ({ side, gameRef, disabled }) => {
+  const onStart = useCallback((e) => {
+    e.preventDefault()
+    if (disabled) return
+    gameRef.current?.getEngine()?.input?.setExternalDirection(side)
+  }, [side, disabled, gameRef])
+
+  const onEnd = useCallback((e) => {
+    e.preventDefault()
+    gameRef.current?.getEngine()?.input?.clearExternalDirection()
+  }, [gameRef])
+
+  return (
+    <div
+      onTouchStart={onStart}
+      onTouchEnd={onEnd}
+      onTouchCancel={onEnd}
+      onMouseDown={onStart}
+      onMouseUp={onEnd}
+      onMouseLeave={onEnd}
+      style={{
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        ...(side < 0 ? { left: 0, right: '50%' } : { left: '50%', right: 0 }),
+        zIndex: 5,
+        touchAction: 'none',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        WebkitTapHighlightColor: 'transparent',
+        display: 'flex',
+        alignItems: 'flex-end',
+        justifyContent: side < 0 ? 'flex-start' : 'flex-end',
+        padding: 'clamp(16px, 3dvh, 28px) clamp(20px, 5vw, 32px)',
+        cursor: 'pointer',
+      }}
+    >
+      <span style={{
+        fontSize: 'clamp(22px, 4dvh, 32px)',
+        fontWeight: 900,
+        color: 'rgba(0,0,0,0.13)',
+        pointerEvents: 'none',
+        userSelect: 'none',
+      }}>
+        {side < 0 ? '←' : '→'}
+      </span>
+    </div>
+  )
+}
+
 // ── Main component ────────────────────────────────────────
 const BlobJumpPlaying = ({
   seed,
@@ -82,45 +133,7 @@ const BlobJumpPlaying = ({
   }, [navigate, setAwaitingGC])
 
   const accentLight = useMemo(() => BLOB_GRADIENTS[blobColor]?.[0] || blobColor, [blobColor])
-  const gameAreaRef = useRef(null)
-  const deadRef = useRef(false)
-  useEffect(() => { deadRef.current = dead }, [dead])
-
-  // Native touch listeners on the game area — non-passive, full-screen coverage
-  useEffect(() => {
-    const el = gameAreaRef.current
-    if (!el) return
-
-    const getDir = (x) => x < window.innerWidth / 2 ? -1 : 1
-
-    const onStart = (e) => {
-      e.preventDefault()
-      if (deadRef.current) return
-      const dir = getDir(e.touches[0].clientX)
-      gameRef.current?.getEngine()?.input?.setExternalDirection(dir)
-    }
-    const onMove = (e) => {
-      e.preventDefault()
-      if (deadRef.current) return
-      const dir = getDir(e.touches[0].clientX)
-      gameRef.current?.getEngine()?.input?.setExternalDirection(dir)
-    }
-    const onEnd = (e) => {
-      e.preventDefault()
-      gameRef.current?.getEngine()?.input?.clearExternalDirection()
-    }
-
-    el.addEventListener('touchstart', onStart, { passive: false })
-    el.addEventListener('touchmove', onMove, { passive: false })
-    el.addEventListener('touchend', onEnd, { passive: false })
-    el.addEventListener('touchcancel', onEnd, { passive: false })
-    return () => {
-      el.removeEventListener('touchstart', onStart)
-      el.removeEventListener('touchmove', onMove)
-      el.removeEventListener('touchend', onEnd)
-      el.removeEventListener('touchcancel', onEnd)
-    }
-  }, [seed])
+  const ctrlDisabled = dead || !!isExpired
 
   return (
     <div style={S.container}>
@@ -131,7 +144,7 @@ const BlobJumpPlaying = ({
       />
 
       {/* ── Game area (fullscreen below header) ── */}
-      <div ref={gameAreaRef} style={S.gameArea}>
+      <div style={S.gameArea}>
         <BlobJumpGame
           ref={gameRef}
           seed={seed}
@@ -152,13 +165,11 @@ const BlobJumpPlaying = ({
           </div>
         </div>
 
-        {/* Direction hints */}
-        <div style={S.hints}>
-          <span style={S.hintArrow}>←</span>
-          <span style={S.hintArrow}>→</span>
-        </div>
+        {/* Left / right half-screen touch zones */}
+        <HalfZone side={-1} gameRef={gameRef} disabled={ctrlDisabled} />
+        <HalfZone side={1}  gameRef={gameRef} disabled={ctrlDisabled} />
 
-        {/* Death overlay */}
+        {/* Death overlay — rendered on top (zIndex > 5) */}
         {dead && (
           <BlobJumpDeath
             score={score}
@@ -190,10 +201,6 @@ const S = {
     justifyContent: 'center',
     overflow: 'hidden',
     minHeight: 0,
-    touchAction: 'none',
-    userSelect: 'none',
-    WebkitUserSelect: 'none',
-    WebkitTapHighlightColor: 'transparent',
   },
   hud: {
     position: 'absolute',
@@ -236,23 +243,6 @@ const S = {
     fontSize: 14,
     fontWeight: 700,
     color: 'rgba(255,255,255,0.48)',
-  },
-  hints: {
-    position: 'absolute',
-    bottom: 'clamp(16px, 3dvh, 28px)',
-    left: 0,
-    right: 0,
-    display: 'flex',
-    justifyContent: 'space-between',
-    padding: '0 clamp(20px, 5vw, 36px)',
-    pointerEvents: 'none',
-    zIndex: 10,
-  },
-  hintArrow: {
-    fontSize: 'clamp(22px, 4dvh, 32px)',
-    fontWeight: 900,
-    color: 'rgba(0,0,0,0.15)',
-    userSelect: 'none',
   },
 }
 
