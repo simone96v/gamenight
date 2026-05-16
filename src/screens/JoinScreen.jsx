@@ -248,7 +248,7 @@ const labelStyle = {
 }
 
 const inputStyle = {
-  flex: 1,
+  width: '100%',
   minWidth: 0,
   height: 'clamp(40px, 5.5dvh, 52px)',
   background: 'var(--surface)',
@@ -258,6 +258,7 @@ const inputStyle = {
   fontSize: 'clamp(14px, 1.8dvh, 18px)',
   padding: '0 clamp(12px, 2vw, 16px)',
   outline: 'none',
+  boxSizing: 'border-box',
 }
 
 export default JoinScreen
