@@ -41,6 +41,8 @@ export default defineConfig({
         ],
       },
       workbox: {
+        skipWaiting: true,
+        clientsClaim: true,
         // Cache-first per asset statici (JS, CSS, icone, font)
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         runtimeCaching: [

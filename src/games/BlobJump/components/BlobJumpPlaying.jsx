@@ -82,13 +82,13 @@ const BlobJumpPlaying = ({
   }, [navigate, setAwaitingGC])
 
   const accentLight = useMemo(() => BLOB_GRADIENTS[blobColor]?.[0] || blobColor, [blobColor])
-  const touchRef = useRef(null)
+  const gameAreaRef = useRef(null)
   const deadRef = useRef(false)
   useEffect(() => { deadRef.current = dead }, [dead])
 
-  // Native touch listeners on the overlay — guaranteed non-passive
+  // Native touch listeners on the game area — non-passive, full-screen coverage
   useEffect(() => {
-    const el = touchRef.current
+    const el = gameAreaRef.current
     if (!el) return
 
     const getDir = (x) => x < window.innerWidth / 2 ? -1 : 1
@@ -131,7 +131,7 @@ const BlobJumpPlaying = ({
       />
 
       {/* ── Game area (fullscreen below header) ── */}
-      <div style={S.gameArea}>
+      <div ref={gameAreaRef} style={S.gameArea}>
         <BlobJumpGame
           ref={gameRef}
           seed={seed}
@@ -152,8 +152,8 @@ const BlobJumpPlaying = ({
           </div>
         </div>
 
-        {/* Full-screen touch overlay for left/right control */}
-        <div ref={touchRef} style={S.touchOverlay}>
+        {/* Direction hints */}
+        <div style={S.hints}>
           <span style={S.hintArrow}>←</span>
           <span style={S.hintArrow}>→</span>
         </div>
@@ -190,6 +190,10 @@ const S = {
     justifyContent: 'center',
     overflow: 'hidden',
     minHeight: 0,
+    touchAction: 'none',
+    userSelect: 'none',
+    WebkitUserSelect: 'none',
+    WebkitTapHighlightColor: 'transparent',
   },
   hud: {
     position: 'absolute',
@@ -233,24 +237,21 @@ const S = {
     fontWeight: 700,
     color: 'rgba(255,255,255,0.48)',
   },
-  touchOverlay: {
+  hints: {
     position: 'absolute',
-    inset: 0,
+    bottom: 'clamp(16px, 3dvh, 28px)',
+    left: 0,
+    right: 0,
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    padding: 'clamp(16px, 3dvh, 28px) clamp(20px, 5vw, 36px)',
-    zIndex: 5,
-    touchAction: 'none',
-    userSelect: 'none',
-    WebkitUserSelect: 'none',
-    WebkitTapHighlightColor: 'transparent',
+    padding: '0 clamp(20px, 5vw, 36px)',
+    pointerEvents: 'none',
+    zIndex: 10,
   },
   hintArrow: {
     fontSize: 'clamp(22px, 4dvh, 32px)',
     fontWeight: 900,
     color: 'rgba(0,0,0,0.15)',
-    pointerEvents: 'none',
     userSelect: 'none',
   },
 }
