@@ -5,6 +5,7 @@ import { useSession } from '../../stores/useSession'
 import { pushRoom } from '../../lib/room'
 import CountdownOverlay from '../../components/CountdownOverlay'
 import Spinner from '../../components/ui/Spinner'
+import SoloResultScreen from '../../components/SoloResultScreen'
 
 const retryImport = (fn) => fn().catch(() => new Promise((r) => setTimeout(r, 1500)).then(fn))
 
@@ -140,6 +141,23 @@ const BlobJump = () => {
   }
 
   if (bj.currentPhase === 'blobjump_final') {
+    // Single-player: schermata risultato semplice.
+    if (!bj.isOnline) {
+      const me = bj.players.find((p) => p.id === bj.localPlayerId)
+      const height = bj.totalScores?.[bj.localPlayerId] ?? me?.score ?? 0
+      return (
+        <SoloResultScreen
+          player={me}
+          gameEmoji="🦘"
+          gameName="Blob Jump"
+          primaryValue={height}
+          primaryLabel="metri"
+          advancing={replaying}
+          onReplay={handleReplay}
+          onChangeGame={handleChangeGame}
+        />
+      )
+    }
     return (
       <Suspense fallback={<Loading />}>
         <BlobJumpFinal

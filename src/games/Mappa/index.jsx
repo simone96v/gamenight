@@ -4,6 +4,7 @@ import { useMappa } from './useMappa'
 import { useSession } from '../../stores/useSession'
 import { pushRoom } from '../../lib/room'
 import Spinner from '../../components/ui/Spinner'
+import SoloResultScreen from '../../components/SoloResultScreen'
 import { loadMappaDeck } from '../../lib/mappaDeck'
 
 const retryImport = (fn) => fn().catch(() => new Promise((r) => setTimeout(r, 1500)).then(fn))
@@ -145,6 +146,25 @@ const Mappa = () => {
   }
 
   if (mappa.currentPhase === 'mappa_final') {
+    // Single-player: schermata risultato semplice.
+    if (!mappa.isOnline) {
+      const me = mappa.players.find((p) => p.id === mappa.localPlayerId)
+      return (
+        <SoloResultScreen
+          player={me}
+          gameEmoji="🗺️"
+          gameName="Indovina Dove"
+          primaryValue={me?.score ?? 0}
+          primaryLabel="punti"
+          stats={mappa.totalQuestions > 0 ? [
+            { label: 'Luoghi', value: mappa.totalQuestions },
+          ] : []}
+          advancing={replaying}
+          onReplay={handleReplay}
+          onChangeGame={handleChangeGame}
+        />
+      )
+    }
     return (
       <Suspense fallback={<Loading />}>
         <MappaFinal

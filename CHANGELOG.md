@@ -5,6 +5,33 @@ Tutti i cambiamenti notabili a BlobParty sono documentati qui.
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.1.0/), e questo
 progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [0.2.2] — 2026-05-16
+
+### Changed — Schermata di fine partita semplificata in single-player
+
+In modalità solo (`mode === 'local'`) la classifica finale era ridondante (un solo
+giocatore). Sostituita con `SoloResultScreen` in tutti i giochi:
+- **Emoji Quiz**: punti totali + stat "Indovinate" + numero round (se >1)
+- **Trivia**: punti totali + stat "Corrette" + numero round (se sessionMode)
+- **Mappa (Indovina Dove)**: punti totali + stat "Luoghi"
+- **Blob Jump**: metri raggiunti
+- **Sentenza / NeverHaveI**: non hanno modalità solo, nessuna modifica
+
+La schermata mostra:
+- Emoji del gioco + titolo
+- Blob del giocatore con il suo nome
+- Numero principale gigante + etichetta (punti / metri / ...)
+- Stat chip secondari (opzionali)
+- Due bottoni: **🎮 Cambia gioco** (secondario) + **🔄 Rigioca** (primario, accent)
+
+La classifica completa con podio resta in multiplayer.
+
+### Internal
+- Nuovo componente condiviso `src/components/SoloResultScreen.jsx` usa CSS
+  variables + `usePlayerAccent` → coerente con light/dark mode + colore del player.
+- Branching in ogni `index.jsx`: `if (!isOnline) return <SoloResultScreen ... />`
+  prima del fallback alla `FinalPhase` multiplayer.
+
 ## [0.2.1] — 2026-05-16
 
 ### Fixed

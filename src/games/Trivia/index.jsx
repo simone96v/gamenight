@@ -10,6 +10,7 @@ import BlobLoader from '../../components/BlobLoader'
 import QuestionPhase from './phases/QuestionPhase'
 import RevealPhase from './phases/RevealPhase'
 import FinalPhase from './phases/FinalPhase'
+import SoloResultScreen from '../../components/SoloResultScreen'
 import { useSession } from '../../stores/useSession'
 import { pushRoom } from '../../lib/room'
 
@@ -125,6 +126,33 @@ const Trivia = () => {
   }
 
   if (trivia.currentPhase === 'final') {
+    // Single-player: schermata risultato semplice.
+    if (!trivia.isOnline) {
+      const me = trivia.players.find((p) => p.id === trivia.localPlayerId)
+      const score = me?.score ?? 0
+      const correct = me?.correct_count ?? 0
+      const session = trivia.gameState?.triviaSession
+      const isSessionMode = !!session && (session.totalRounds ?? 1) > 1
+      const totalQs = isSessionMode
+        ? (session.totalRounds * (session.questionsPerRound ?? 0))
+        : (trivia.totalQuestions ?? 0)
+      return (
+        <SoloResultScreen
+          player={me}
+          gameEmoji="🧠"
+          gameName="Trivia"
+          primaryValue={score}
+          primaryLabel="punti"
+          stats={totalQs > 0 ? [
+            { label: 'Corrette', value: `${correct}/${totalQs}` },
+            ...(isSessionMode ? [{ label: 'Round', value: session.totalRounds }] : []),
+          ] : []}
+          advancing={trivia.advancing}
+          onReplay={trivia.hostReplay}
+          onChangeGame={handleChangeGame}
+        />
+      )
+    }
     return (
       <FinalPhase
         players={trivia.players}
