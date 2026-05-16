@@ -97,6 +97,21 @@ export const GAMES = [
     compatibility: { multi: true, single: true, excludedCategories: ['couple'] },
     component: lazy(() => import('../games/BlobJump')),
   },
+  {
+    id: 'scramble',
+    name: 'Scramble',
+    emoji: '🔤',
+    tagline: 'Componi più parole di tutti',
+    description: 'Sette lettere, sessanta secondi. Tocca in ordine, componi parole, fai punti.',
+    difficulty: 2,
+    minPlayers: 2,
+    maxPlayers: 8,
+    locked: false,
+    bg: 'linear-gradient(145deg, #5EEAD4 0%, #14B8A6 60%, #0F766E 100%)',
+    shadow: 'rgba(20, 184, 166, 0.40)',
+    compatibility: { multi: true, single: true, excludedCategories: [] },
+    component: lazy(() => import('../games/Scramble')),
+  },
 ]
 
 export const getGame = (id) => GAMES.find((g) => g.id === id)

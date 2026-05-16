@@ -5,6 +5,25 @@ Tutti i cambiamenti notabili a BlobParty sono documentati qui.
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.1.0/), e questo
 progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [0.3.0] — 2026-05-16
+
+### Added
+- **Scramble**: nuovo mini-gioco da 3 round × 60s. Tessere da 7 lettere distinte,
+  tocca in ordine per comporre parole italiane, premi Invia. Punteggio
+  progressivo per lunghezza (3→1, 4→3, 5→6, 6→10, 7→15) con bonus ×2 per
+  pangram (parola di 7 lettere che usa tutte le tessere).
+- **Dizionario italiano integrato** (~70k parole 3–7 lettere) caricato come
+  asset statico in `public/scramble/italian_3_7.txt`. Validazione locale O(1)
+  via `Set`, e riconvalida host-side a fine round per anti-cheat in multi.
+- **Bot Blobby** in modalità single-player: precomputa le parole formabili dal
+  rack, ne sottomette 6–10 a intervalli crescenti durante i 60s.
+- **Modalità multiplayer host-controlled**: i rack vengono generati dall'host
+  da seed, le parole dei client vengono inviate via `rpcCastVote` con merge
+  atomico in `scrambleWords`, l'host riconvalida tutto a fine round e scrive i
+  punteggi ufficiali.
+- **Palette `scramble`** (teal `#14B8A6` → `#5EEAD4`) aggiunta a
+  `src/theme/gameColors.js`.
+
 ## [0.2.7] — 2026-05-16
 
 ### Fixed

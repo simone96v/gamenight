@@ -15,6 +15,7 @@ const LOBBY_ROUTES = {
   mappa: '/mappa-lobby',
   trivia: '/trivia-lobby',
   emojiquiz: '/emojiquiz-lobby',
+  scramble: '/scramble-lobby',
 }
 
 const SoloGamesScreen = () => {

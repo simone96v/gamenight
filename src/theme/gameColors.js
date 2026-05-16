@@ -47,6 +47,15 @@ const GAME_COLORS = {
     badgeBorder: 'rgba(124, 58, 237, 0.18)',
     hoverGlow: '0 8px 20px rgba(124, 58, 237, 0.4)',
   },
+  scramble: {
+    accent: '#14B8A6',
+    accentLight: '#5EEAD4',
+    gradient: 'linear-gradient(135deg, #14B8A6 0%, #5EEAD4 100%)',
+    shadow: 'rgba(20, 184, 166, 0.35)',
+    shadowLight: 'rgba(20, 184, 166, 0.18)',
+    badgeBorder: 'rgba(20, 184, 166, 0.18)',
+    hoverGlow: '0 8px 20px rgba(20, 184, 166, 0.4)',
+  },
 }
 
 // ── Dynamic palette from any hex color (same shape as GAME_COLORS entries) ──

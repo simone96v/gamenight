@@ -24,6 +24,7 @@ const MappaLobbyScreen = lazy(() => import('./screens/MappaLobbyScreen'))
 const SentenzaLobbyScreen = lazy(() => import('./screens/SentenzaLobbyScreen'))
 const BlobJumpLobbyScreen = lazy(() => import('./screens/BlobJumpLobbyScreen'))
 const EmojiQuizLobbyScreen = lazy(() => import('./screens/EmojiQuizLobbyScreen'))
+const ScrambleLobbyScreen = lazy(() => import('./screens/ScrambleLobbyScreen'))
 const RoundEndScreen = lazy(() => import('./screens/RoundEndScreen'))
 const ScoreboardScreen = lazy(() => import('./screens/ScoreboardScreen'))
 const SoloSetupScreen = lazy(() => import('./screens/SoloSetupScreen'))
@@ -60,6 +61,7 @@ function App() {
             <Route path="/sentenza-lobby" element={<SentenzaLobbyScreen />} />
             <Route path="/blobjump-lobby" element={<BlobJumpLobbyScreen />} />
             <Route path="/emojiquiz-lobby" element={<EmojiQuizLobbyScreen />} />
+            <Route path="/scramble-lobby" element={<ScrambleLobbyScreen />} />
             <Route path="/game/:gameId" element={<GameScreen />} />
             <Route path="/round-end" element={<RoundEndScreen />} />
             <Route path="/scoreboard" element={<ScoreboardScreen />} />
