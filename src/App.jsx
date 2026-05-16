@@ -8,6 +8,7 @@ import { ConnectionContext } from './contexts/connection'
 import ErrorBoundary from './components/ErrorBoundary'
 import LiquidBackground from './components/LiquidBackground'
 import HomeScreen from './screens/HomeScreen'
+import IosPwaPrompt from './components/IosPwaPrompt'
 
 const ModeScreen = lazy(() => import('./screens/ModeScreen'))
 const CreatePartyScreen = lazy(() => import('./screens/CreatePartyScreen'))
@@ -22,6 +23,7 @@ const TriviaLobbyScreen = lazy(() => import('./screens/TriviaLobbyScreen'))
 const MappaLobbyScreen = lazy(() => import('./screens/MappaLobbyScreen'))
 const SentenzaLobbyScreen = lazy(() => import('./screens/SentenzaLobbyScreen'))
 const BlobJumpLobbyScreen = lazy(() => import('./screens/BlobJumpLobbyScreen'))
+const EmojiQuizLobbyScreen = lazy(() => import('./screens/EmojiQuizLobbyScreen'))
 const RoundEndScreen = lazy(() => import('./screens/RoundEndScreen'))
 const ScoreboardScreen = lazy(() => import('./screens/ScoreboardScreen'))
 const SoloSetupScreen = lazy(() => import('./screens/SoloSetupScreen'))
@@ -39,6 +41,7 @@ function App() {
     <ErrorBoundary>
       <ConnectionContext.Provider value={status}>
         <LiquidBackground />
+        <IosPwaPrompt />
         <Suspense>
           <Routes>
             <Route path="/" element={<HomeScreen />} />
@@ -56,6 +59,7 @@ function App() {
             <Route path="/mappa-lobby" element={<MappaLobbyScreen />} />
             <Route path="/sentenza-lobby" element={<SentenzaLobbyScreen />} />
             <Route path="/blobjump-lobby" element={<BlobJumpLobbyScreen />} />
+            <Route path="/emojiquiz-lobby" element={<EmojiQuizLobbyScreen />} />
             <Route path="/game/:gameId" element={<GameScreen />} />
             <Route path="/round-end" element={<RoundEndScreen />} />
             <Route path="/scoreboard" element={<ScoreboardScreen />} />

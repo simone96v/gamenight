@@ -121,6 +121,25 @@ const GamesScreen = () => {
         return
       }
 
+      if (winnerId === 'emojiquiz') {
+        const fullState = {
+          players: (session.players || []).map((p) => ({ ...p, score: 0 })),
+          currentIdx: 0,
+          round: 0,
+          activeGame: 'emojiquiz',
+          selectedGame: winnerId,
+          selectedCategory: session.gameState?.selectedCategory ?? null,
+          categoryVotes: session.gameState?.categoryVotes ?? {},
+        }
+        const pushRes = await pushRoom(roomCode, 'emojiquiz_lobby', fullState)
+        if (pushRes.error) {
+          showError('generic')
+          setLaunching(false)
+          return
+        }
+        return
+      }
+
       if (winnerId === 'sentenza') {
         const fullState = {
           players: (session.players || []).map((p) => ({ ...p, score: 0 })),
