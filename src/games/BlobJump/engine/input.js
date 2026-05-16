@@ -62,7 +62,7 @@ export class InputManager {
     if (Math.abs(this._keyDir) < 0.01) this._keyDir = 0
   }
 
-  // ── Keyboard ──────────────────────────────────────────
+  // ── Keyboard ─────────────────────────────────────────
 
   _setupKeyboard() {
     const onDown = (e) => {
@@ -80,7 +80,6 @@ export class InputManager {
       window.removeEventListener('keyup', onUp)
     })
   }
-
 
   destroy() {
     this._cleanup.forEach((fn) => fn())

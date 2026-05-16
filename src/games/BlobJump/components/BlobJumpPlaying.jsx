@@ -82,21 +82,45 @@ const BlobJumpPlaying = ({
   }, [navigate, setAwaitingGC])
 
   const accentLight = useMemo(() => BLOB_GRADIENTS[blobColor]?.[0] || blobColor, [blobColor])
-  const ctrlDisabled = dead || !!isExpired
+  const touchRef = useRef(null)
+  const deadRef = useRef(false)
+  useEffect(() => { deadRef.current = dead }, [dead])
 
-  // Full-screen touch zones: tap left/right half to move
-  const handleTouchStart = useCallback((e) => {
-    if (ctrlDisabled) return
-    e.preventDefault()
-    const x = e.touches[0].clientX
-    const dir = x < window.innerWidth / 2 ? -1 : 1
-    gameRef.current?.getEngine()?.input?.setExternalDirection(dir)
-  }, [ctrlDisabled])
+  // Native touch listeners on the overlay — guaranteed non-passive
+  useEffect(() => {
+    const el = touchRef.current
+    if (!el) return
 
-  const handleTouchEnd = useCallback((e) => {
-    e.preventDefault()
-    gameRef.current?.getEngine()?.input?.clearExternalDirection()
-  }, [])
+    const getDir = (x) => x < window.innerWidth / 2 ? -1 : 1
+
+    const onStart = (e) => {
+      e.preventDefault()
+      if (deadRef.current) return
+      const dir = getDir(e.touches[0].clientX)
+      gameRef.current?.getEngine()?.input?.setExternalDirection(dir)
+    }
+    const onMove = (e) => {
+      e.preventDefault()
+      if (deadRef.current) return
+      const dir = getDir(e.touches[0].clientX)
+      gameRef.current?.getEngine()?.input?.setExternalDirection(dir)
+    }
+    const onEnd = (e) => {
+      e.preventDefault()
+      gameRef.current?.getEngine()?.input?.clearExternalDirection()
+    }
+
+    el.addEventListener('touchstart', onStart, { passive: false })
+    el.addEventListener('touchmove', onMove, { passive: false })
+    el.addEventListener('touchend', onEnd, { passive: false })
+    el.addEventListener('touchcancel', onEnd, { passive: false })
+    return () => {
+      el.removeEventListener('touchstart', onStart)
+      el.removeEventListener('touchmove', onMove)
+      el.removeEventListener('touchend', onEnd)
+      el.removeEventListener('touchcancel', onEnd)
+    }
+  }, [seed])
 
   return (
     <div style={S.container}>
@@ -129,13 +153,7 @@ const BlobJumpPlaying = ({
         </div>
 
         {/* Full-screen touch overlay for left/right control */}
-        <div
-          style={S.touchOverlay}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-          onTouchCancel={handleTouchEnd}
-        >
+        <div ref={touchRef} style={S.touchOverlay}>
           <span style={S.hintArrow}>←</span>
           <span style={S.hintArrow}>→</span>
         </div>
