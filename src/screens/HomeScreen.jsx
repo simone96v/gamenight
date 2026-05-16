@@ -27,8 +27,11 @@ const useOptions = () => {
       emoji: '🎮',
       title: 'Gioca da solo',
       description: 'Allenati o gioca per conto tuo.',
-      bg: 'linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)',
-      shadow: 'rgba(6, 182, 212, 0.35)',
+      bg: 'var(--surface)',
+      shadow: 'rgba(0, 0, 0, 0.04)',
+      border: '1.5px solid var(--border-strong)',
+      textColor: 'var(--text)',
+      subtleTitle: true,
     },
     {
       id: 'join',
