@@ -4,9 +4,8 @@ import GradientTitle from '../../../components/ui/GradientTitle'
 import Button from '../../../components/ui/Button'
 import RoundBadge from '../../../components/ui/RoundBadge'
 import PlayerAvatar from '../../../components/PlayerAvatar'
-import { GAME_COLORS, accentBtnStyle } from '../../../theme/gameColors'
-
-const C = GAME_COLORS.blobjump
+import { accentBtnStyle } from '../../../theme/gameColors'
+import { usePlayerAccent } from '../../../hooks/usePlayerAccent'
 
 const BlobJumpResults = ({
   players,
@@ -18,6 +17,7 @@ const BlobJumpResults = ({
   advancing,
   onAdvance,
 }) => {
+  const C = usePlayerAccent()
   const sorted = [...(players || [])].sort(
     (a, b) => (roundScores[b.id] ?? 0) - (roundScores[a.id] ?? 0),
   )
@@ -35,7 +35,7 @@ const BlobJumpResults = ({
           <RoundBadge
             n={currentRoundIdx + 1}
             total={totalRounds}
-            game="blobjump"
+            accentColor={C.accent}
           />
           <GradientTitle as="h2" size="lg" gradient={C.gradient}>
             Risultati
@@ -126,7 +126,7 @@ const BlobJumpResults = ({
               width="full"
               onClick={onAdvance}
               disabled={advancing}
-              style={accentBtnStyle('blobjump')}
+              style={accentBtnStyle(C.accent)}
             >
               {advancing
                 ? '...'

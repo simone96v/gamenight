@@ -1,6 +1,13 @@
 import { motion } from 'framer-motion'
 import { BLOB_GRADIENTS, GRAY_GRADIENT } from '../utils/colors'
-import { renderAccessory } from '../utils/accessories'
+
+// 3 subtle organic shapes for fluid morph animation (300x300 viewBox, ~r145)
+const BLOB_SHAPES = [
+  'M150,8 C232,2 298,72 294,150 C298,232 228,298 150,294 C68,298 2,228 6,150 C2,68 72,2 150,8Z',
+  'M148,5 C228,6 296,66 296,148 C296,234 234,296 152,296 C66,296 4,234 4,152 C4,66 66,4 148,5Z',
+  'M152,7 C234,4 298,70 294,152 C298,230 230,294 148,298 C70,298 4,232 6,148 C4,70 70,4 152,7Z',
+]
+const BLOB_MORPH_VALUES = BLOB_SHAPES.join(';') + ';' + BLOB_SHAPES[0]
 
 const BlobEyes = ({ expr, lx, rx, ey, prefix, rotate = 0 }) => {
   const pupilDx = expr === 'look-left' ? -9 : expr === 'look-right' ? 9 : 0
@@ -43,6 +50,8 @@ const BlobEyes = ({ expr, lx, rx, ey, prefix, rotate = 0 }) => {
   )
 }
 
+export { BlobEyes, BLOB_SHAPES, BLOB_MORPH_VALUES }
+
 const Blob = ({
   color,
   expr = 'normal',
@@ -52,7 +61,6 @@ const Blob = ({
   id = 'blob',
   animate = true,
   name,
-  accessory,
 }) => {
   const [c1, c2, c3] = BLOB_GRADIENTS[color] || GRAY_GRADIENT
   const prefix = id
@@ -93,9 +101,17 @@ const Blob = ({
             <stop offset="100%" stopColor="#F0ECF9" />
           </radialGradient>
         </defs>
-        <circle cx="150" cy="150" r="145" fill={`url(#${prefix}-grad)`} />
+        <path d={BLOB_SHAPES[0]} fill={`url(#${prefix}-grad)`}>
+          <animate
+            attributeName="d"
+            dur="8s"
+            repeatCount="indefinite"
+            values={BLOB_MORPH_VALUES}
+            calcMode="spline"
+            keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1"
+          />
+        </path>
         <BlobEyes expr={expr} lx={115} rx={185} ey={140} prefix={prefix} rotate={rotate} />
-        {accessory && renderAccessory(accessory)}
       </svg>
       {name && (
         <div style={{

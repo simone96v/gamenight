@@ -5,9 +5,9 @@ import Button from '../../../components/ui/Button'
 import RoundBadge from '../../../components/ui/RoundBadge'
 import GameHUD from '../../../components/GameHUD'
 import MapView from './MapView'
-import { accentBtnStyle, GAME_COLORS } from '../../../theme/gameColors'
-
-const MAPPA = GAME_COLORS.mappa
+import MiniBlob from '../../../components/MiniBlob'
+import { accentBtnStyle } from '../../../theme/gameColors'
+import { usePlayerAccent } from '../../../hooks/usePlayerAccent'
 
 const MappaQuestion = ({
   question,
@@ -26,11 +26,13 @@ const MappaQuestion = ({
   onConfirm,
   onExit,
 }) => {
+  const C = usePlayerAccent()
+
   if (!question) return null
 
   const canConfirm = !!localPin && !confirmed && !isExpired
   const myPlayer = players?.find((p) => p.id === localPlayerId)
-  const myColor = myPlayer?.color ?? MAPPA.accent
+  const myColor = myPlayer?.color ?? C.accent
 
   const pins = localPin
     ? [{ lat: localPin.lat, lng: localPin.lng, color: myColor, id: 'me', animated: true }]
@@ -40,7 +42,7 @@ const MappaQuestion = ({
     <div style={S.container}>
       <AppHeader
         leading={isHost && <IconButton ariaLabel="Esci" onClick={onExit}>←</IconButton>}
-        actions={<RoundBadge n={questionNumber} total={totalQuestions} game="mappa" />}
+        actions={<RoundBadge n={questionNumber} total={totalQuestions} accentColor={C.accent} />}
       />
 
       <GameHUD
@@ -51,7 +53,7 @@ const MappaQuestion = ({
         players={players}
         localPlayerId={localPlayerId}
         phase="question"
-        accentColor={MAPPA.accent}
+        accentColor={C.accent}
       />
 
       <div style={S.body}>
@@ -107,15 +109,18 @@ const MappaQuestion = ({
               </motion.p>
             )}
             {!confirmed && !isExpired && !localPin && (
-              <motion.p
+              <motion.div
                 key="hint"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                style={{ ...S.statusText, color: 'var(--muted)' }}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
               >
-                Tocca la mappa per piazzare il pin 📍
-              </motion.p>
+                <MiniBlob color="#F43F5E" expr="normal" size={28} id="mappa-hint-blob" />
+                <p style={{ ...S.statusText, color: 'var(--muted)', margin: 0 }}>
+                  Tocca la mappa per piazzare il pin
+                </p>
+              </motion.div>
             )}
             {!confirmed && !isExpired && localPin && (
               <motion.p
@@ -123,7 +128,7 @@ const MappaQuestion = ({
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                style={{ ...S.statusText, color: MAPPA.accent }}
+                style={{ ...S.statusText, color: C.accent }}
               >
                 Pin posizionato — conferma!
               </motion.p>
@@ -135,9 +140,9 @@ const MappaQuestion = ({
             width="full"
             disabled={!canConfirm}
             onClick={onConfirm}
-            style={canConfirm ? accentBtnStyle('mappa') : undefined}
+            style={canConfirm ? accentBtnStyle(C.accent) : undefined}
           >
-            {confirmed ? '✅ Confermato' : 'Conferma 📍'}
+            {confirmed ? '✅ Confermato' : 'Conferma'}
           </Button>
         </div>
       </div>

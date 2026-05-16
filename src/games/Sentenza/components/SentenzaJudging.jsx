@@ -8,9 +8,8 @@ import PromptCard from './PromptCard'
 import ProofCard from './ProofCard'
 import Button from '../../../components/ui/Button'
 import { haptic } from '../../../utils/haptic'
-import { GAME_COLORS, accentBtnStyle } from '../../../theme/gameColors'
-
-const ACCENT = GAME_COLORS.sentenza.accent
+import { accentBtnStyle } from '../../../theme/gameColors'
+import { usePlayerAccent } from '../../../hooks/usePlayerAccent'
 
 const SentenzaJudging = ({
   prompt,
@@ -25,6 +24,7 @@ const SentenzaJudging = ({
   onVerdict,
   onExit,
 }) => {
+  const C = usePlayerAccent()
   const [selectedId, setSelectedId] = useState(null)
   const [submitted, setSubmitted] = useState(false)
 
@@ -38,9 +38,9 @@ const SentenzaJudging = ({
   return (
     <div style={S.container}>
       <AppHeader
-        accentColor="#6366F1"
+        accentColor={C.accent}
         leading={isHost && <IconButton ariaLabel="Esci" onClick={onExit}>←</IconButton>}
-        actions={<RoundBadge n={currentRound} total={totalRounds} game="sentenza" />}
+        actions={<RoundBadge n={currentRound} total={totalRounds} accentColor={C.accent} />}
       />
       <GameHUD
         questionNumber={currentRound}
@@ -50,14 +50,14 @@ const SentenzaJudging = ({
         players={players}
         localPlayerId={localPlayerId}
         phase="question"
-        accentColor={ACCENT}
+        accentColor={C.accent}
         scoreSuffix="⚖️"
       />
 
       <div style={S.body}>
         <PromptCard text={prompt} compact />
 
-        <p style={S.instruction}>👑 Tu sei il Giudice — scegli la prova migliore:</p>
+        <p style={{ ...S.instruction, color: C.accent }}>👑 Tu sei il Giudice — scegli la prova migliore:</p>
 
         <div style={S.list}>
           {proofs.map((p, i) => (
@@ -85,7 +85,7 @@ const SentenzaJudging = ({
                   variant="primary"
                   width="full"
                   onClick={handleVerdict}
-                  style={accentBtnStyle('sentenza')}
+                  style={accentBtnStyle(C.accent)}
                 >
                   Emetti la Sentenza! 👑
                 </Button>
@@ -117,7 +117,6 @@ const S = {
   instruction: {
     fontSize: 'clamp(13px, 1.7dvh, 15px)',
     fontWeight: 800,
-    color: ACCENT,
     margin: 0,
   },
   list: {

@@ -1,4 +1,4 @@
-﻿import { useMemo } from 'react'
+import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import AppHeader from '../../../components/AppHeader'
 import IconButton from '../../../components/ui/IconButton'
@@ -10,6 +10,7 @@ import MapView from './MapView'
 import { haversine, calcScore } from '../geo'
 import { haptic } from '../../../utils/haptic'
 import { accentBtnStyle } from '../../../theme/gameColors'
+import { usePlayerAccent } from '../../../hooks/usePlayerAccent'
 
 const MappaReveal = ({
   question,
@@ -24,6 +25,7 @@ const MappaReveal = ({
   onAdvance,
   onExit,
 }) => {
+  const C = usePlayerAccent()
   const expr = useMiniExpr()
   const answer = question?.answer
 
@@ -64,16 +66,16 @@ const MappaReveal = ({
   return (
     <div style={S.container}>
       <AppHeader
-        accentColor="#059669"
-        leading={isHost && <IconButton ariaLabel="Esci" onClick={onExit}>â†</IconButton>}
-        actions={<RoundBadge n={questionNumber} total={totalQuestions} game="mappa" />}
+        accentColor={C.accent}
+        leading={isHost && <IconButton ariaLabel="Esci" onClick={onExit}>←</IconButton>}
+        actions={<RoundBadge n={questionNumber} total={totalQuestions} accentColor={C.accent} />}
       />
 
       <div style={S.body}>
-        <GameSection emoji="ðŸ—ºï¸" title={question.question} delay={0}>
+        <GameSection emoji="🗺️" title={question.question} delay={0}>
           <div style={S.answerRow}>
-            <span style={S.answerPin}>ðŸ“</span>
-            <span style={S.answerName}>{answer?.name ?? 'Posizione sconosciuta'}</span>
+            <MiniBlob color="#F43F5E" expr="happy" size={28} id="mappa-answer" />
+            <span style={{ ...S.answerName, color: C.accent }}>{answer?.name ?? 'Posizione sconosciuta'}</span>
           </div>
         </GameSection>
 
@@ -106,16 +108,16 @@ const MappaReveal = ({
                   ...S.myPoints,
                   color: myResult.roundScore >= 80 ? 'var(--success)' : 'var(--text)',
                 }}>
-                  +{myResult.roundScore} {myResult.roundScore >= 100 ? 'ðŸŽ¯' : myResult.distance < 10 ? 'ðŸ”¥' : ''}
+                  +{myResult.roundScore} {myResult.roundScore >= 100 ? '🎯' : myResult.distance < 10 ? '🔥' : ''}
                 </span>
               </>
             ) : (
-              <span style={S.myDistance}>Nessun pin â€” 0 punti</span>
+              <span style={S.myDistance}>Nessun pin — 0 punti</span>
             )}
           </motion.div>
         )}
 
-        <GameSection emoji="ðŸ†" title="Classifica" delay={0.2} style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <GameSection emoji="🏆" title="Classifica" delay={0.2} style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <div style={S.leaderboard}>
             {results.map((r, i) => (
               <motion.div
@@ -125,12 +127,12 @@ const MappaReveal = ({
                 transition={{ delay: 0.25 + i * 0.06 }}
                 style={{
                   ...S.lbRow,
-                  borderColor: r.id === localPlayerId ? '#059669' : 'transparent',
-                  background: r.id === localPlayerId ? 'rgba(5, 150, 105, 0.08)' : 'var(--bg)',
+                  borderColor: r.id === localPlayerId ? C.accent : 'transparent',
+                  background: r.id === localPlayerId ? `${C.accent}14` : 'var(--bg)',
                 }}
               >
-                <span style={S.lbRank}>{i === 0 ? 'ðŸ¥‡' : i === 1 ? 'ðŸ¥ˆ' : i === 2 ? 'ðŸ¥‰' : `${i + 1}.`}</span>
-                <MiniBlob color={r.color} expr={i === 0 ? 'happy' : expr} accessory={r.accessory} size={28} id={`mr-${i}`} />
+                <span style={S.lbRank}>{i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`}</span>
+                <MiniBlob color={r.color} expr={i === 0 ? 'happy' : expr} size={28} id={`mr-${i}`} />
                 <span style={S.lbName}>{r.name}</span>
                 <span style={S.lbFill} />
                 {r.hasPin ? (
@@ -140,7 +142,7 @@ const MappaReveal = ({
                   </>
                 ) : (
                   <span style={{ ...S.lbDist, color: 'var(--muted)' }}>
-                    {r.auto ? 'â°' : 'â€”'}
+                    {r.auto ? '⏰' : '—'}
                   </span>
                 )}
               </motion.div>
@@ -155,16 +157,16 @@ const MappaReveal = ({
               width="full"
               onClick={onAdvance}
               disabled={advancing}
-              style={accentBtnStyle('mappa')}
+              style={accentBtnStyle(C.accent)}
             >
               {advancing
                 ? '...'
                 : hasMoreQuestions
-                  ? 'Avanti tutta! â†’'
-                  : 'Classifica finale ðŸ†'}
+                  ? 'Avanti tutta! →'
+                  : 'Classifica finale 🏆'}
             </Button>
           ) : (
-            <p style={S.waitText}>Aspettando il boss... ðŸ‘‘</p>
+            <p style={S.waitText}>Aspettando il boss... 👑</p>
           )}
         </div>
       </div>
@@ -196,14 +198,9 @@ const S = {
     gap: 8,
     marginTop: 4,
   },
-  answerPin: {
-    fontSize: 'clamp(16px, 2dvh, 20px)',
-    flexShrink: 0,
-  },
   answerName: {
     fontWeight: 800,
     fontSize: 'clamp(14px, 1.8dvh, 17px)',
-    color: '#059669',
   },
   myScoreCard: {
     display: 'flex',
@@ -282,4 +279,3 @@ const S = {
 }
 
 export default MappaReveal
-

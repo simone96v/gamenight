@@ -4,9 +4,9 @@ import GradientTitle from '../../../components/ui/GradientTitle'
 import Button from '../../../components/ui/Button'
 import PlayerAvatar from '../../../components/PlayerAvatar'
 import GameSection from '../../../components/ui/GameSection'
-import { GAME_COLORS, accentBtnStyle } from '../../../theme/gameColors'
+import { accentBtnStyle } from '../../../theme/gameColors'
+import { usePlayerAccent } from '../../../hooks/usePlayerAccent'
 
-const ACCENT = GAME_COLORS.sentenza.accent
 const PODIUM_EMOJIS = ['🥇', '🥈', '🥉']
 
 const SentenzaFinal = ({
@@ -17,11 +17,12 @@ const SentenzaFinal = ({
   onReplay,
   onChangeGame,
 }) => {
+  const C = usePlayerAccent()
   const sorted = [...players].sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
 
   return (
     <div style={S.container}>
-      <AppHeader accentColor="#6366F1" />
+      <AppHeader accentColor={C.accent} />
 
       <div style={S.body}>
         <motion.div
@@ -32,7 +33,7 @@ const SentenzaFinal = ({
           <GradientTitle
             as="h2"
             size="lg"
-            gradient={GAME_COLORS.sentenza.gradient}
+            gradient={C.gradient}
           >
             ⚖️ Giudice Supremo
           </GradientTitle>
@@ -58,7 +59,7 @@ const SentenzaFinal = ({
                   <span style={{ fontSize: isFirst ? 32 : 24 }}>{PODIUM_EMOJIS[rank]}</span>
                   <PlayerAvatar player={p} showScore={false} size={isFirst ? 'lg' : 'md'} />
                   <span style={S.podiumName}>{p.name}</span>
-                  <span style={S.podiumScore}>{p.score ?? 0}</span>
+                  <span style={{ ...S.podiumScore, color: C.accent }}>{p.score ?? 0}</span>
                 </motion.div>
               )
             })}
@@ -75,15 +76,15 @@ const SentenzaFinal = ({
                 transition={{ delay: 0.4 + i * 0.05 }}
                 style={{
                   ...S.row,
-                  border: p.id === localPlayerId ? `1.5px solid ${ACCENT}` : '1.5px solid transparent',
-                  background: p.id === localPlayerId ? `${ACCENT}1a` : 'var(--bg)',
+                  border: p.id === localPlayerId ? `1.5px solid ${C.accent}` : '1.5px solid transparent',
+                  background: p.id === localPlayerId ? `${C.accent}1a` : 'var(--bg)',
                 }}
               >
-                <span style={S.rank}>#{i + 1}</span>
+                <span style={{ ...S.rank, color: C.accent }}>#{i + 1}</span>
                 <div style={{ ...S.dot, backgroundColor: p.color }} />
                 <span style={S.name}>{p.name}</span>
                 <span style={S.rounds}>{p.roundsWon ?? 0}⚖️</span>
-                <span style={S.score}>{p.score ?? 0}</span>
+                <span style={{ ...S.score, color: C.accent }}>{p.score ?? 0}</span>
               </motion.div>
             ))}
           </div>
@@ -100,7 +101,7 @@ const SentenzaFinal = ({
                 width="full"
                 onClick={onReplay}
                 disabled={advancing}
-                style={accentBtnStyle('sentenza')}
+                style={accentBtnStyle(C.accent)}
               >
                 {advancing ? '...' : '🔄 Rigioca'}
               </Button>
@@ -158,7 +159,6 @@ const S = {
   podiumScore: {
     fontSize: 'clamp(14px, 1.8dvh, 18px)',
     fontWeight: 800,
-    color: ACCENT,
   },
   leaderboard: {
     display: 'flex',
@@ -180,7 +180,6 @@ const S = {
   rank: {
     fontSize: 'clamp(13px, 1.6dvh, 16px)',
     fontWeight: 800,
-    color: ACCENT,
     minWidth: 28,
     textAlign: 'center',
   },
@@ -202,7 +201,6 @@ const S = {
   },
   score: {
     fontWeight: 800,
-    color: ACCENT,
     fontSize: 'clamp(15px, 1.8dvh, 19px)',
     minWidth: 40,
     textAlign: 'right',

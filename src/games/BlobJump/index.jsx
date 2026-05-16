@@ -66,6 +66,7 @@ const BlobJump = () => {
         totalRounds: 1,
         roundDuration: 0,
         roundScores: {},
+        roundFinished: {},
         totalScores: {},
       }
       await pushRoom(s.roomCode, 'blobjump_countdown', fullState, now)
@@ -78,6 +79,7 @@ const BlobJump = () => {
           totalRounds: 1,
           roundDuration: 0,
           roundScores: {},
+          roundFinished: {},
           totalScores: {},
         },
         currentPhase: 'blobjump_countdown',
@@ -112,6 +114,9 @@ const BlobJump = () => {
           onUpdateScore={bj.updateScorePeriodic}
           players={bj.players}
           localPlayerId={bj.localPlayerId}
+          isOnline={bj.isOnline}
+          isHost={bj.isHost}
+          onGoToClassifica={bj.goToClassifica}
         />
       </Suspense>
     )

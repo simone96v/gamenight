@@ -1,4 +1,4 @@
-// HomeScreen — hero + CTA "Crea party" / "Ho già un codice" + blob che sbucano.
+// HomeScreen — hero + CTA "Crea party" / "Ho già un codice" + 4 blob agli angoli.
 
 import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import GradientTitle from '../components/ui/GradientTitle'
 import OptionCard from '../components/ui/OptionCard'
 import ErrorBanner from '../components/ErrorBanner'
+import Blob from '../components/Blob'
 import { useSettings } from '../stores/useSettings'
 
 const useOptions = () => {
@@ -78,8 +79,7 @@ const StatPill = ({ emoji, label, delay }) => (
   </motion.div>
 )
 
-// Sequenza espressioni — blob guardano verso il centro.
-// Top-left guarda a destra, bottom-right guarda a sinistra.
+// Sequenza espressioni — top-left guarda a destra, bottom-right guarda a sinistra.
 const EXPR_SEQUENCE = [
   { top: 'look-right', bottom: 'look-left',  dur: 2500 },
   { top: 'blink',      bottom: 'look-left',  dur: 150 },
@@ -119,162 +119,13 @@ const useExpressions = () => {
   return { topExpr, bottomExpr }
 }
 
-// Occhi SVG con espressioni — posizioni relative al centro (lx, rx, ey).
-const BlobEyes = ({ expr, lx, rx, ey, prefix, rotate = 0 }) => {
-  const pupilDx = expr === 'look-left' ? -9 : expr === 'look-right' ? 9 : 0
-  const pupilDy = expr === 'look-left' ? -3 : expr === 'look-right' ? -3 : 0
-  const cx = (lx + rx) / 2
-  const wrap = (children) =>
-    rotate ? <g transform={`rotate(${rotate}, ${cx}, ${ey})`}>{children}</g> : <>{children}</>
-
-  if (expr === 'blink') {
-    return wrap(
-      <>
-        <ellipse cx={lx} cy={ey} rx="24" ry="4" fill="#fff" opacity="0.9" />
-        <ellipse cx={rx} cy={ey} rx="24" ry="4" fill="#fff" opacity="0.9" />
-      </>
-    )
-  }
-
-  if (expr === 'happy') {
-    return wrap(
-      <>
-        <path d={`M${lx - 22} ${ey + 3} Q${lx} ${ey - 22}, ${lx + 22} ${ey + 3}`}
-          fill="none" stroke="#fff" strokeWidth="6" strokeLinecap="round" />
-        <path d={`M${rx - 22} ${ey + 3} Q${rx} ${ey - 22}, ${rx + 22} ${ey + 3}`}
-          fill="none" stroke="#fff" strokeWidth="6" strokeLinecap="round" />
-      </>
-    )
-  }
-
-  return wrap(
-    <>
-      <ellipse cx={lx} cy={ey} rx="26" ry="28" fill={`url(#${prefix}-eye-l)`} />
-      <circle cx={lx + 3 + pupilDx} cy={ey + 4 + pupilDy} r="12" fill="#6D28D9" />
-      <circle cx={lx + 5 + pupilDx} cy={ey + 1 + pupilDy} r="4.5" fill="#1E1B4B" />
-      <circle cx={lx + 9 + pupilDx} cy={ey - 3 + pupilDy} r="2.8" fill="rgba(255,255,255,0.9)" />
-      <ellipse cx={rx} cy={ey} rx="26" ry="28" fill={`url(#${prefix}-eye-r)`} />
-      <circle cx={rx + 3 + pupilDx} cy={ey + 4 + pupilDy} r="12" fill="#6D28D9" />
-      <circle cx={rx + 5 + pupilDx} cy={ey + 1 + pupilDy} r="4.5" fill="#1E1B4B" />
-      <circle cx={rx + 9 + pupilDx} cy={ey - 3 + pupilDy} r="2.8" fill="rgba(255,255,255,0.9)" />
-    </>
-  )
-}
-
-const BLOB_COLORS = {
-  tb: ['#C4B5FD', '#A78BFA', '#8B5CF6'],
-  tr: ['#FDE68A', '#FBBF24', '#F59E0B'],
-  bl: ['#6EE7B7', '#34D399', '#10B981'],
-  bb: ['#FDA4AF', '#FB7185', '#F43F5E'],
-}
-
-const blobDefs = (prefix) => {
-  const [c1, c2, c3] = BLOB_COLORS[prefix] || BLOB_COLORS.tb
-  return (
-    <defs>
-      <linearGradient id={`${prefix}-grad`} x1="0%" y1="0%" x2="100%" y2="80%">
-        <stop offset="0%" stopColor={c1} />
-        <stop offset="40%" stopColor={c2} />
-        <stop offset="100%" stopColor={c3} />
-      </linearGradient>
-      <radialGradient id={`${prefix}-eye-l`} cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stopColor="#fff" />
-        <stop offset="100%" stopColor="#F0ECF9" />
-      </radialGradient>
-      <radialGradient id={`${prefix}-eye-r`} cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stopColor="#fff" />
-        <stop offset="100%" stopColor="#F0ECF9" />
-      </radialGradient>
-    </defs>
-  )
-}
-
-const BLOB_SIZE = 'min(clamp(160px, 40vw, 280px), clamp(160px, 30dvh, 280px))'
-const BLOB_SIZE_LG = 'min(clamp(180px, 46vw, 300px), clamp(180px, 34dvh, 300px))'
-
-const BottomBlob = ({ expr }) => (
-  <div style={{
-    position: 'fixed',
-    bottom: 'clamp(-60px, -9dvh, -35px)',
-    right: 'clamp(-70px, -10vw, -40px)',
-    zIndex: 1,
-    pointerEvents: 'none',
-    lineHeight: 0,
-  }}>
-    <svg
-      viewBox="0 0 300 300"
-      style={{ width: BLOB_SIZE, height: 'auto' }}
-      aria-hidden="true"
-    >
-      {blobDefs('bb')}
-      <circle cx="150" cy="150" r="145" fill="url(#bb-grad)" />
-      <BlobEyes expr={expr} lx={115} rx={185} ey={140} prefix="bb" rotate={-45} />
-    </svg>
-  </div>
-)
-
-const TopBlob = ({ expr }) => (
-  <div style={{
-    position: 'fixed',
-    top: 'clamp(-60px, -9dvh, -35px)',
-    left: 'clamp(-70px, -10vw, -40px)',
-    zIndex: 1,
-    pointerEvents: 'none',
-    lineHeight: 0,
-  }}>
-    <svg
-      viewBox="0 0 300 300"
-      style={{ width: BLOB_SIZE, height: 'auto' }}
-      aria-hidden="true"
-    >
-      {blobDefs('tb')}
-      <circle cx="150" cy="150" r="145" fill="url(#tb-grad)" />
-      <BlobEyes expr={expr} lx={115} rx={185} ey={140} prefix="tb" rotate={-45} />
-    </svg>
-  </div>
-)
-
-const TopRightBlob = ({ expr }) => (
-  <div style={{
-    position: 'fixed',
-    top: 'clamp(-70px, -10dvh, -40px)',
-    right: 'clamp(-80px, -12vw, -45px)',
-    zIndex: 1,
-    pointerEvents: 'none',
-    lineHeight: 0,
-  }}>
-    <svg
-      viewBox="0 0 300 300"
-      style={{ width: BLOB_SIZE_LG, height: 'auto' }}
-      aria-hidden="true"
-    >
-      {blobDefs('tr')}
-      <circle cx="150" cy="150" r="145" fill="url(#tr-grad)" />
-      <BlobEyes expr={expr} lx={115} rx={185} ey={140} prefix="tr" rotate={45} />
-    </svg>
-  </div>
-)
-
-const BottomLeftBlob = ({ expr }) => (
-  <div style={{
-    position: 'fixed',
-    bottom: 'clamp(-70px, -10dvh, -40px)',
-    left: 'clamp(-80px, -12vw, -45px)',
-    zIndex: 1,
-    pointerEvents: 'none',
-    lineHeight: 0,
-  }}>
-    <svg
-      viewBox="0 0 300 300"
-      style={{ width: BLOB_SIZE_LG, height: 'auto' }}
-      aria-hidden="true"
-    >
-      {blobDefs('bl')}
-      <circle cx="150" cy="150" r="145" fill="url(#bl-grad)" />
-      <BlobEyes expr={expr} lx={115} rx={185} ey={140} prefix="bl" rotate={45} />
-    </svg>
-  </div>
-)
+// Dimensione: min(28vw, 20dvh) — si adatta sia alla larghezza che all'altezza.
+// Offset 25%: max(-7vw, -5dvh) — corrisponde esattamente a -25% del lato che
+// determina la dimensione, garantendo 75% dentro e occhi sempre visibili.
+const BLOB_SIZE    = 'min(clamp(100px, 28vw, 240px), clamp(100px, 20dvh, 240px))'
+const BLOB_SIZE_LG = 'min(clamp(110px, 32vw, 260px), clamp(110px, 22dvh, 260px))'
+const OFFSET_SM    = 'clamp(-60px, max(-7vw, -5dvh), -16px)'
+const OFFSET_LG    = 'clamp(-65px, max(-8vw, -5.5dvh), -18px)'
 
 const ThemeToggle = () => {
   const theme = useSettings((s) => s.theme)
@@ -349,7 +200,7 @@ const HomeScreen = () => {
           zIndex: 2,
         }}
       >
-        {/* HERO — solo testo, niente blob */}
+        {/* HERO */}
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -404,7 +255,7 @@ const HomeScreen = () => {
           ))}
         </div>
 
-        {/* Theme toggle — bottom center */}
+        {/* Theme toggle */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -413,13 +264,45 @@ const HomeScreen = () => {
         >
           <ThemeToggle />
         </motion.div>
-
       </div>
 
-      <TopBlob expr={topExpr} />
-      <TopRightBlob expr={bottomExpr} />
-      <BottomLeftBlob expr={topExpr} />
-      <BottomBlob expr={bottomExpr} />
+      {/* 4 blob agli angoli */}
+      <Blob
+        color="#8B5CF6"
+        expr={topExpr}
+        id="tb"
+        size={BLOB_SIZE}
+        animate={false}
+        rotate={-45}
+        style={{ top: OFFSET_SM, left: OFFSET_SM }}
+      />
+      <Blob
+        color="#F59E0B"
+        expr={bottomExpr}
+        id="tr"
+        size={BLOB_SIZE_LG}
+        animate={false}
+        rotate={45}
+        style={{ top: OFFSET_LG, right: OFFSET_LG }}
+      />
+      <Blob
+        color="#10B981"
+        expr={topExpr}
+        id="bl"
+        size={BLOB_SIZE_LG}
+        animate={false}
+        rotate={45}
+        style={{ bottom: OFFSET_LG, left: OFFSET_LG }}
+      />
+      <Blob
+        color="#F43F5E"
+        expr={bottomExpr}
+        id="bb"
+        size={BLOB_SIZE}
+        animate={false}
+        rotate={-45}
+        style={{ bottom: OFFSET_SM, right: OFFSET_SM }}
+      />
     </motion.div>
   )
 }

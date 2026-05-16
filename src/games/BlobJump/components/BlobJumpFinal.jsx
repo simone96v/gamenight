@@ -4,10 +4,10 @@ import GradientTitle from '../../../components/ui/GradientTitle'
 import Button from '../../../components/ui/Button'
 import PlayerAvatar from '../../../components/PlayerAvatar'
 import GameSection from '../../../components/ui/GameSection'
-import { GAME_COLORS, accentBtnStyle } from '../../../theme/gameColors'
+import { accentBtnStyle } from '../../../theme/gameColors'
+import { usePlayerAccent } from '../../../hooks/usePlayerAccent'
 
 const PODIUM_EMOJIS = ['🥇', '🥈', '🥉']
-const C = GAME_COLORS.blobjump
 
 const BlobJumpFinal = ({
   players,
@@ -18,6 +18,7 @@ const BlobJumpFinal = ({
   onReplay,
   onChangeGame,
 }) => {
+  const C = usePlayerAccent()
   const sorted = [...(players || [])].sort(
     (a, b) => (totalScores[b.id] ?? b.score ?? 0) - (totalScores[a.id] ?? a.score ?? 0),
   )
@@ -97,7 +98,7 @@ const BlobJumpFinal = ({
               <Button variant="secondary" width="full" onClick={onChangeGame} disabled={advancing}>
                 🎮 Cambia gioco
               </Button>
-              <Button variant="primary" width="full" onClick={onReplay} disabled={advancing} style={accentBtnStyle('blobjump')}>
+              <Button variant="primary" width="full" onClick={onReplay} disabled={advancing} style={accentBtnStyle(C.accent)}>
                 {advancing ? '...' : '🔄 Gioca ancora'}
               </Button>
             </div>

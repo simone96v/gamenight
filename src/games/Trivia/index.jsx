@@ -57,6 +57,11 @@ const Trivia = () => {
     setAwaitingGameChange(false)
   }
 
+  // Transitional: hostReplay sets phase to trivia_lobby → useEffect navigates
+  if (trivia.currentPhase === 'trivia_lobby') {
+    return <BlobLoader text="Caricamento..." />
+  }
+
   // Countdown overlay full-screen
   if (trivia.currentPhase === 'countdown') {
     return (
@@ -134,11 +139,7 @@ const Trivia = () => {
   }
 
   // Fallback (transitional states)
-  return (
-    <div className="flex items-center justify-center" style={{ flex: 1 }}>
-      <Spinner size="lg" />
-    </div>
-  )
+  return <BlobLoader text="Caricamento..." />
 }
 
 export default Trivia

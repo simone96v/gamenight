@@ -82,9 +82,9 @@ const realBlobSvg = (size = 46) => {
   return `<svg width="${size}" height="${size}" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="bg-${uid}" x1="0%" y1="0%" x2="100%" y2="80%">
-        <stop offset="0%" stop-color="#6EE7B7"/>
-        <stop offset="40%" stop-color="#34D399"/>
-        <stop offset="100%" stop-color="#10B981"/>
+        <stop offset="0%" stop-color="#FDA4AF"/>
+        <stop offset="40%" stop-color="#FB7185"/>
+        <stop offset="100%" stop-color="#F43F5E"/>
       </linearGradient>
     </defs>
     <circle cx="150" cy="150" r="145" fill="url(#bg-${uid})" stroke="#fff" stroke-width="10"/>

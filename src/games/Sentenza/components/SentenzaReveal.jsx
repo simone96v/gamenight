@@ -7,9 +7,8 @@ import GameSection from '../../../components/ui/GameSection'
 import PromptCard from './PromptCard'
 import ProofCard from './ProofCard'
 import Button from '../../../components/ui/Button'
-import { GAME_COLORS, accentBtnStyle } from '../../../theme/gameColors'
-
-const ACCENT = GAME_COLORS.sentenza.accent
+import { accentBtnStyle } from '../../../theme/gameColors'
+import { usePlayerAccent } from '../../../hooks/usePlayerAccent'
 
 const SentenzaReveal = ({
   prompt,
@@ -27,14 +26,15 @@ const SentenzaReveal = ({
   onNext,
   onExit,
 }) => {
+  const C = usePlayerAccent()
   const hasWinner = !!winnerName
 
   return (
     <div style={S.container}>
       <AppHeader
-        accentColor="#6366F1"
+        accentColor={C.accent}
         leading={isHost && <IconButton ariaLabel="Esci" onClick={onExit}>←</IconButton>}
-        actions={<RoundBadge n={currentRound} total={totalRounds} game="sentenza" />}
+        actions={<RoundBadge n={currentRound} total={totalRounds} accentColor={C.accent} />}
       />
       <GameHUD
         questionNumber={currentRound}
@@ -44,7 +44,7 @@ const SentenzaReveal = ({
         players={players}
         localPlayerId={localPlayerId}
         phase="reveal"
-        accentColor={ACCENT}
+        accentColor={C.accent}
         showTimer={false}
         scoreSuffix="⚖️"
       />
@@ -120,7 +120,7 @@ const SentenzaReveal = ({
               width="full"
               onClick={onNext}
               disabled={advancing}
-              style={accentBtnStyle('sentenza')}
+              style={accentBtnStyle(C.accent)}
             >
               {advancing
                 ? '...'

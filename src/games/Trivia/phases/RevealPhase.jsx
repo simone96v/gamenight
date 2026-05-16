@@ -10,6 +10,8 @@ import RoundBadge from '../../../components/ui/RoundBadge'
 import QuestionCard from '../components/QuestionCard'
 import AnswerTile from '../components/AnswerTile'
 import ScorePopup from '../components/ScorePopup'
+import { accentBtnStyle } from '../../../theme/gameColors'
+import { usePlayerAccent } from '../../../hooks/usePlayerAccent'
 
 const RevealPhase = ({
   currentQuestion,
@@ -28,6 +30,7 @@ const RevealPhase = ({
   onAdvance,
   onExit,
 }) => {
+  const C = usePlayerAccent()
   const myChosen = myRoundResult?.chosen ?? localAnswer
   const myPoints = myRoundResult?.points ?? 0
   const isCorrect = myRoundResult?.correct ?? false
@@ -52,7 +55,7 @@ const RevealPhase = ({
     <div style={containerStyle}>
       <AppHeader
         leading={isHost && <IconButton ariaLabel="Esci" onClick={onExit}>←</IconButton>}
-        actions={<RoundBadge n={questionNumber} total={totalQuestions} game="trivia" />}
+        actions={<RoundBadge n={questionNumber} total={totalQuestions} accentColor={C.accent} />}
       />
       <GameHUD
         questionNumber={questionNumber}
@@ -93,7 +96,7 @@ const RevealPhase = ({
 
         <div style={footerStyle}>
           {isHost ? (
-            <Button variant="primary" width="full" onClick={onAdvance} disabled={advancing}>
+            <Button variant="primary" width="full" onClick={onAdvance} disabled={advancing} style={accentBtnStyle(C.accent)}>
               {advancing ? '...' : hasMoreQuestions ? 'Avanti tutta! →' : 'Chi ha vinto?! 🏆'}
             </Button>
           ) : (

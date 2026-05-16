@@ -8,13 +8,13 @@ import GradientTitle from '../components/ui/GradientTitle'
 import { useSession } from '../stores/useSession'
 import { pushRoom } from '../lib/room'
 import { initSentenzaState } from '../games/Sentenza/useSentenza'
-import { GAME_COLORS, accentBtnStyle } from '../theme/gameColors'
-
-const C = GAME_COLORS.sentenza
+import { accentBtnStyle } from '../theme/gameColors'
+import { usePlayerAccent } from '../hooks/usePlayerAccent'
 
 const ROUND_OPTIONS = [5, 8, 12]
 
 const SentenzaLobbyScreen = () => {
+  const C = usePlayerAccent()
   const navigate = useNavigate()
   const isHost = useSession((s) => s.isHost)
   const players = useSession((s) => s.players)
@@ -118,7 +118,7 @@ const SentenzaLobbyScreen = () => {
   return (
     <div style={S.container}>
       <AppHeader
-        accentColor="#6366F1"
+        accentColor={C.accent}
         leading={isHost && <IconButton ariaLabel="Indietro" onClick={handleBack}>←</IconButton>}
       />
 
@@ -128,7 +128,7 @@ const SentenzaLobbyScreen = () => {
           animate={{ opacity: 1, y: 0 }}
           style={{ textAlign: 'center' }}
         >
-          <GradientTitle as="h2" size="lg">
+          <GradientTitle as="h2" size="lg" gradient={C.gradient}>
             ⚖️ Sentenza
           </GradientTitle>
           <p style={S.subtitle}>Il Giudice ha sempre ragione. Completa la frase con la carta più assurda.</p>
@@ -204,7 +204,7 @@ const SentenzaLobbyScreen = () => {
               width="full"
               onClick={handleStart}
               disabled={launching || tooFew}
-              style={tooFew ? undefined : accentBtnStyle('sentenza')}
+              style={tooFew ? undefined : accentBtnStyle(C.accent)}
             >
               {launching ? '⏳ Caricamento...' : '⚖️ Inizia!'}
             </Button>

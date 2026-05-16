@@ -171,7 +171,7 @@ const CategoryWheel = ({
           width: 0, height: 0,
           borderLeft: '14px solid transparent',
           borderRight: '14px solid transparent',
-          borderTop: '22px solid #1F2937',
+          borderTop: '22px solid #374151',
           zIndex: 2,
           filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
         }} />
@@ -199,40 +199,39 @@ const CategoryWheel = ({
             const largeArc = segAngle > 180 ? 1 : 0
             const path = `M ${CX} ${CY} L ${x1} ${y1} A ${R} ${R} 0 ${largeArc} 1 ${x2} ${y2} Z`
 
+            // Colored accent arc at the outer edge
+            const arcR = R - 3
+            const ax1 = CX + arcR * Math.cos(a1)
+            const ay1 = CY + arcR * Math.sin(a1)
+            const ax2 = CX + arcR * Math.cos(a2)
+            const ay2 = CY + arcR * Math.sin(a2)
+            const accentArc = `M ${ax1} ${ay1} A ${arcR} ${arcR} 0 ${largeArc} 1 ${ax2} ${ay2}`
+
             const labelAngle = (i * segAngle + segAngle / 2 - 90) * Math.PI / 180
-            const lr = R * (segCount > 6 ? 0.62 : 0.6)
+            const lr = R * 0.56
             const lx = CX + lr * Math.cos(labelAngle)
             const ly = CY + lr * Math.sin(labelAngle)
             const textRotation = i * segAngle + segAngle / 2
+            const emojiSize = segCount > 6 ? 28 : 36
+            const baseFill = i % 2 === 0 ? '#F9FAFB' : '#F1F3F5'
 
             return (
               <g key={cat.id}>
-                <path d={path} fill={cat.color} stroke="#fff" strokeWidth={segCount > 6 ? 2 : 3} />
+                <path d={path} fill={baseFill} stroke="#E5E7EB" strokeWidth={1.5} />
+                <path d={accentArc} fill="none" stroke={cat.color} strokeWidth={6} strokeLinecap="round" />
                 <g transform={`translate(${lx} ${ly}) rotate(${textRotation})`}>
                   <text
-                    x="0" y={segCount > 6 ? -4 : -6}
+                    x="0" y={emojiSize * 0.35}
                     textAnchor="middle"
-                    fill="#fff"
-                    fontSize={segCount > 6 ? 20 : 26}
-                    style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }}
+                    fontSize={emojiSize}
                   >
                     {cat.emoji}
-                  </text>
-                  <text
-                    x="0" y={segCount > 6 ? 12 : 16}
-                    textAnchor="middle"
-                    fill="#fff"
-                    fontSize={segCount > 6 ? 8 : 11}
-                    fontWeight={800}
-                    style={{ letterSpacing: '0.04em' }}
-                  >
-                    {cat.label.toUpperCase()}
                   </text>
                 </g>
               </g>
             )
           })}
-          <circle cx={CX} cy={CY} r={20} fill="#fff" stroke="#1F2937" strokeWidth={3} />
+          <circle cx={CX} cy={CY} r={22} fill="#fff" stroke="#E5E7EB" strokeWidth={2} />
           <circle cx={CX} cy={CY} r={8} fill="#1F2937" />
         </motion.svg>
       </div>

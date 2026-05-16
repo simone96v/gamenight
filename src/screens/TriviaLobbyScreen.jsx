@@ -1,15 +1,15 @@
-﻿// Lobby di gioco Trivia (session-mode).
+// Lobby di gioco Trivia (session-mode).
 // Mostra:
 //   - settings: numero domande per round + numero round (host only edit)
 //   - wheel categorie SINCRONIZZATA tra host e tutti i client
 //
 // Flow:
 //   1. Host configura settings (sync via gameState)
-//   2. Host preme Spin â†’ sceglie vincitore â†’ pusha spinTarget su DB
+//   2. Host preme Spin -> sceglie vincitore -> pusha spinTarget su DB
 //   3. TUTTI i client (host incluso) vedono la wheel animare via Realtime
 //   4. Al termine animazione, host carica deck dal pool statico e lancia il game
 
-import { useEffect, useMemo, useCallback } from 'react'
+import { useEffect, useMemo, useCallback, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import AppHeader from '../components/AppHeader'
@@ -24,6 +24,7 @@ import { useSettings } from '../stores/useSettings'
 import { pushRoom, rpcStartGame } from '../lib/room'
 import { getDeck, preloadPool } from '../lib/aiQuestions'
 import { TRIVIA_CATEGORIES } from '../games/Trivia/constants'
+import { usePlayerAccent } from '../hooks/usePlayerAccent'
 
 const ALL_CATEGORIES = TRIVIA_CATEGORIES
 
@@ -39,6 +40,7 @@ const TriviaLobbyScreen = () => {
   const showError      = useSession((s) => s.showError)
   const setAwaitingGC  = useSession((s) => s.setAwaitingGameChange)
 
+  const C = usePlayerAccent()
   const isSolo = mode === 'local'
   const canControl = isHost || isSolo
   const expr = useMiniExpr()
@@ -55,13 +57,17 @@ const TriviaLobbyScreen = () => {
   const questionsPerRound = session?.questionsPerRound ?? triviaQuestionsLocal
   const categoriesPlayed  = session?.categoriesPlayed ?? []
 
-  // spinTarget arriva dal DB â€” tutti i client lo vedono via Realtime
+  // spinTarget arriva dal DB — tutti i client lo vedono via Realtime
   const spinTarget = session?.spinTarget ?? null
 
   // launching sincronizzato via gameState per TUTTI i client
   const launching = session?.launching ?? false
+  const launchingRef = useRef(false)
+  // Sincronizza ref con stato — e resetta al mount (round 2+)
+  useEffect(() => { launchingRef.current = launching }, [launching])
+  useEffect(() => { launchingRef.current = false }, [])
 
-  // Spinner determinato da roomCode + roundIdx â€” tutti i client lo calcolano uguale.
+  // Spinner determinato da roomCode + roundIdx — tutti i client lo calcolano uguale.
   const currentSpinner = useMemo(() => {
     if (players.length === 0) return null
     const seed = (roomCode || '').split('').reduce((acc, c) => acc * 31 + c.charCodeAt(0), 0)
@@ -72,13 +78,13 @@ const TriviaLobbyScreen = () => {
   const isSpinner = localPlayerId === currentSpinner
   const spinnerPlayer = players.find((p) => p.id === currentSpinner)
 
-  // Categorie ancora "spinnabili" (escluse quelle giÃ  giocate).
+  // Categorie ancora "spinnabili" (escluse quelle gia giocate).
   const availableCategories = useMemo(
     () => ALL_CATEGORIES.filter((c) => !categoriesPlayed.includes(c.id)),
     [categoriesPlayed],
   )
 
-  // Preload pool statico appena si entra nella lobby â€” cosÃ¬ getDeck Ã¨ istantaneo.
+  // Preload pool statico appena si entra nella lobby — cosi getDeck e istantaneo.
   useEffect(() => { preloadPool() }, [])
 
   // Init session: se gameState non ha triviaSession, host/solo la crea.
@@ -107,7 +113,7 @@ const TriviaLobbyScreen = () => {
         ...newGameState,
       })
     }
-    // Il pool statico Ã¨ cachato a livello di modulo, niente da svuotare.
+    // Il pool statico e cachato a livello di modulo, niente da svuotare.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canControl])
 
@@ -162,15 +168,15 @@ const TriviaLobbyScreen = () => {
     setAwaitingGC(false)
   }
 
-  // Spinner clicca Spin â†’ sceglie vincitore â†’ pusha spinTarget su DB.
+  // Spinner clicca Spin -> sceglie vincitore -> pusha spinTarget su DB.
   const handleRequestSpin = useCallback(() => {
-    if (!isSpinner || launching || spinTarget) return
+    if (!isSpinner || launchingRef.current || spinTarget) return
     if (availableCategories.length === 0) return
 
     const winIdx = Math.floor(Math.random() * availableCategories.length)
     const winner = availableCategories[winIdx]
 
-    // Push spinTarget su DB â†’ Realtime lo propaga a tutti
+    // Push spinTarget su DB -> Realtime lo propaga a tutti
     const s = useSession.getState()
     const newSession = {
       ...(s.gameState?.triviaSession ?? {}),
@@ -187,7 +193,7 @@ const TriviaLobbyScreen = () => {
         ...newGameState,
       })
     }
-  }, [isSpinner, launching, spinTarget, availableCategories])
+  }, [isSpinner, spinTarget, availableCategories])
 
   // Helper: setta launching su gameState e pusha a tutti i client.
   const setLaunching = useCallback((value) => {
@@ -206,15 +212,22 @@ const TriviaLobbyScreen = () => {
     }
   }, [])
 
-  // Animazione completata â€” carica domande dal pool statico (istantaneo).
+  // Animazione completata — carica domande dal pool statico (istantaneo).
   const handleSpinEnd = useCallback(async (category) => {
-    if (!canControl || launching) return
+    // Usa ref per il guard — evita stale closure dopo re-render
+    if (!canControl || launchingRef.current) return
+    launchingRef.current = true
 
-    // 1. Setta launching=true localmente + push a tutti i client in un solo pushRoom
+    // Leggi stato fresco (non closure) per evitare dati stale su round 2+
     const s = useSession.getState()
+    const freshSession = s.gameState?.triviaSession ?? {}
+    const freshCategoriesPlayed = freshSession.categoriesPlayed ?? []
+    const freshRoundIdx = freshSession.roundIdx ?? 0
+    const freshQuestionsPerRound = freshSession.questionsPerRound ?? questionsPerRound
+
     const launchSession = {
-      ...(s.gameState?.triviaSession ?? {}),
-      categoriesPlayed: [...categoriesPlayed, category.id],
+      ...freshSession,
+      categoriesPlayed: [...freshCategoriesPlayed, category.id],
       currentCategory: category.id,
       spinTarget: null,
       launching: true,
@@ -223,25 +236,19 @@ const TriviaLobbyScreen = () => {
     useSession.setState({ gameState: launchGameState })
 
     try {
-      const deckData = await getDeck(category.id, questionsPerRound)
-      const resetScores = roundIdx === 0
+      const deckData = await getDeck(category.id, freshQuestionsPerRound)
+      const resetScores = freshRoundIdx === 0
 
       if (s.mode === 'online' && s.roomCode) {
-        // Online: pushRoom + rpcStartGame in parallelo
-        const [, startResult] = await Promise.all([
-          pushRoom(s.roomCode, s.currentPhase, {
-            players: s.players,
-            currentIdx: s.currentIdx,
-            round: s.round,
-            activeGame: s.activeGame,
-            ...launchGameState,
-          }),
-          rpcStartGame(roomCode, deckData, timerDuration, resetScores),
-        ])
+        // Online: solo rpcStartGame — NON pushRoom in parallelo.
+        // pushRoom sovrascriveva la fase del server (trivia_lobby + launching:true)
+        // causando un race condition col countdown settato da rpcStartGame.
+        const startResult = await rpcStartGame(s.roomCode, deckData, timerDuration, resetScores)
         if (startResult.error) {
           console.error('[trivia-lobby] startGame:', startResult.error)
           showError('generic')
           setLaunching(false)
+          launchingRef.current = false
         }
       } else {
         // Local/solo: setup game state directly
@@ -271,10 +278,11 @@ const TriviaLobbyScreen = () => {
       console.error('[trivia-lobby] handleSpinEnd:', err)
       showError('generic')
       setLaunching(false)
+      launchingRef.current = false
     }
-  }, [canControl, launching, questionsPerRound, categoriesPlayed, roundIdx, roomCode, timerDuration, showError, setLaunching, navigate])
+  }, [canControl, questionsPerRound, timerDuration, showError, setLaunching, navigate])
 
-  const roundTitles = ['ðŸŽ¬ Round 1', 'ðŸŽ¯ Round 2', 'ðŸ† Round Finale']
+  const roundTitles = ['🎬 Round 1', '🎯 Round 2', '🏆 Round Finale']
   const roundTitle = roundTitles[roundIdx] ?? `Round ${roundIdx + 1}`
 
   if (launching) {
@@ -285,10 +293,10 @@ const TriviaLobbyScreen = () => {
     <div className="screen screen-narrow">
       <AppHeader
         leading={canControl && (
-          <IconButton ariaLabel="Esci" onClick={handleExit}>â†</IconButton>
+          <IconButton ariaLabel="Esci" onClick={handleExit}>←</IconButton>
         )}
         actions={
-          <div style={S.roundBadge}>
+          <div style={{ ...S.roundBadge, color: C.accent, borderColor: `${C.accent}30` }}>
             {roundIdx + 1}/{totalRounds}
           </div>
         }
@@ -306,7 +314,7 @@ const TriviaLobbyScreen = () => {
           animate={{ opacity: 1, y: 0 }}
           style={{ textAlign: 'center' }}
         >
-          <GradientTitle as="h1" size="lg">{roundTitle}</GradientTitle>
+          <GradientTitle as="h1" size="lg" gradient={C.gradient}>{roundTitle}</GradientTitle>
           <p style={S.subtitle}>
             {categoriesPlayed.length === 0
               ? 'La ruota decide la categoria!'
@@ -323,7 +331,7 @@ const TriviaLobbyScreen = () => {
         >
           {players.map((p, i) => (
             <div key={p.id} style={S.playerChip}>
-              <MiniBlob color={p.color} expr={expr} accessory={p.accessory} size={24} id={`tl-${i}`} />
+              <MiniBlob color={p.color} expr={expr} size={24} id={`tl-${i}`} />
               <span style={S.playerName}>{p.name}</span>
             </div>
           ))}
@@ -358,7 +366,7 @@ const TriviaLobbyScreen = () => {
           </div>
         </motion.div>
 
-        {/* Wheel â€” sincronizzata via spinTarget */}
+        {/* Wheel — sincronizzata via spinTarget */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -394,7 +402,7 @@ const Stepper = ({ value, onDecrement, onIncrement, disabled, min, max }) => {
         transition={{ type: 'spring', stiffness: 400, damping: 22 }}
         style={{ ...S.stepBtn, opacity: decDisabled ? 0.4 : 1 }}
       >
-        âˆ’
+        {'−'}
       </motion.button>
       <span style={S.stepValue}>{value}</span>
       <motion.button
@@ -497,4 +505,3 @@ const S = {
 }
 
 export default TriviaLobbyScreen
-

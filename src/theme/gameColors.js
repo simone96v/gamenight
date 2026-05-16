@@ -1,3 +1,6 @@
+import { BLOB_GRADIENTS, hexToRgb } from '../utils/colors'
+
+// ── Per-game fallback palettes (used only when no player color is available) ──
 const GAME_COLORS = {
   mappa: {
     accent: '#059669',
@@ -46,6 +49,24 @@ const GAME_COLORS = {
   },
 }
 
+// ── Dynamic palette from any hex color (same shape as GAME_COLORS entries) ──
+function playerPalette(color) {
+  const c = color || '#8B5CF6'
+  const grad = BLOB_GRADIENTS[c]
+  const light = grad?.[0] || c
+  const [r, g, b] = hexToRgb(c)
+  return {
+    accent: c,
+    accentLight: light,
+    gradient: `linear-gradient(135deg, ${c} 0%, ${light} 100%)`,
+    shadow: `rgba(${r},${g},${b},0.35)`,
+    shadowLight: `rgba(${r},${g},${b},0.18)`,
+    badgeBorder: `rgba(${r},${g},${b},0.18)`,
+    hoverGlow: `0 8px 20px rgba(${r},${g},${b},0.4)`,
+  }
+}
+
+// ── Button styles ──
 const RAINBOW_BTN = {
   background:
     'linear-gradient(var(--accent), var(--accent)) padding-box, linear-gradient(90deg, #8B5CF6, #3B82F6, #10B981, #F59E0B, #F43F5E, #EC4899) border-box',
@@ -54,8 +75,24 @@ const RAINBOW_BTN = {
   boxShadow: '0 8px 24px rgba(0, 0, 0, 0.25)',
 }
 
-const accentBtnStyle = () => RAINBOW_BTN
+/**
+ * Generate a button style tinted with a specific color.
+ * Pass a hex color string (e.g. '#8B5CF6') for a player-colored button.
+ * Pass nothing or null for the default rainbow button.
+ */
+const accentBtnStyle = (color) => {
+  if (!color) return RAINBOW_BTN
+  const grad = BLOB_GRADIENTS[color]
+  const light = grad?.[0] || color
+  const [r, g, b] = hexToRgb(color)
+  return {
+    background: `linear-gradient(135deg, ${color}, ${light})`,
+    color: '#fff',
+    border: 'none',
+    boxShadow: `0 8px 24px rgba(${r},${g},${b},0.35)`,
+  }
+}
 
 const SPRING = { type: 'spring', stiffness: 400, damping: 22 }
 
-export { GAME_COLORS, accentBtnStyle, SPRING }
+export { GAME_COLORS, playerPalette, accentBtnStyle, SPRING }

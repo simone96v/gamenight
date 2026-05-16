@@ -1,4 +1,4 @@
-﻿import { useState, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import AppHeader from '../components/AppHeader'
@@ -8,13 +8,13 @@ import GradientTitle from '../components/ui/GradientTitle'
 import MiniBlob, { useMiniExpr } from '../components/MiniBlob'
 import { useSession } from '../stores/useSession'
 import { pushRoom } from '../lib/room'
-import { GAME_COLORS, accentBtnStyle } from '../theme/gameColors'
-
-const C = GAME_COLORS.mappa
+import { accentBtnStyle } from '../theme/gameColors'
+import { usePlayerAccent } from '../hooks/usePlayerAccent'
 
 const ROUND_OPTIONS = [5, 10, 25, 50]
 
 const MappaLobbyScreen = () => {
+  const C = usePlayerAccent()
   const navigate = useNavigate()
   const isHost = useSession((s) => s.isHost)
   const mode = useSession((s) => s.mode)
@@ -149,8 +149,8 @@ const MappaLobbyScreen = () => {
   return (
     <div style={S.container}>
       <AppHeader
-        accentColor="#059669"
-        leading={canControl && <IconButton ariaLabel="Indietro" onClick={handleBack}>â†</IconButton>}
+        accentColor={C.accent}
+        leading={canControl && <IconButton ariaLabel="Indietro" onClick={handleBack}>←</IconButton>}
       />
 
       <div style={S.body}>
@@ -159,8 +159,8 @@ const MappaLobbyScreen = () => {
           animate={{ opacity: 1, y: 0 }}
           style={{ textAlign: 'center' }}
         >
-          <GradientTitle as="h2" size="lg">
-            ðŸ“ Indovina Dove
+          <GradientTitle as="h2" size="lg" gradient={C.gradient}>
+            🗺️ Indovina Dove
           </GradientTitle>
           <p style={S.subtitle}>Piazza il pin sulla mappa d'Italia!</p>
         </motion.div>
@@ -220,7 +220,7 @@ const MappaLobbyScreen = () => {
           <div style={S.playersList}>
             {players.map((p, i) => (
               <div key={p.id} style={S.playerChip}>
-                <MiniBlob color={p.color} expr={expr} accessory={p.accessory} size={28} id={`ml-${i}`} />
+                <MiniBlob color={p.color} expr={expr} size={28} id={`ml-${i}`} />
                 <span style={S.playerName}>{p.name}</span>
               </div>
             ))}
@@ -234,12 +234,12 @@ const MappaLobbyScreen = () => {
               width="full"
               onClick={handleStart}
               disabled={launching}
-              style={accentBtnStyle('mappa')}
+              style={accentBtnStyle(C.accent)}
             >
-              {launching ? 'â³ Caricamento...' : 'ðŸ—ºï¸ Inizia!'}
+              {launching ? '⏳ Caricamento...' : '🗺️ Inizia!'}
             </Button>
           ) : (
-            <p style={S.waitText}>Aspettando il boss... ðŸ‘‘</p>
+            <p style={S.waitText}>Aspettando il boss... 👑</p>
           )}
         </div>
       </div>
@@ -335,4 +335,3 @@ const S = {
 }
 
 export default MappaLobbyScreen
-

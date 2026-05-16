@@ -1,4 +1,4 @@
-﻿// Fase finale: podio top-3 con blob + corona + leaderboard + MVP awards + footer host.
+// Fase finale: podio top-3 con blob + corona + leaderboard + MVP awards + footer host.
 // UI coerente con la homepage: mini blob con gradiente e occhi animati.
 
 import { motion } from 'framer-motion'
@@ -7,8 +7,10 @@ import Button from '../../../components/ui/Button'
 import MiniBlob, { useMiniExpr } from '../../../components/MiniBlob'
 import GameSection from '../../../components/ui/GameSection'
 import MvpAwards from '../components/MvpAwards'
+import { accentBtnStyle } from '../../../theme/gameColors'
+import { usePlayerAccent } from '../../../hooks/usePlayerAccent'
 
-/* â”€â”€ Corona SVG inline â”€â”€ */
+/* ── Corona SVG inline ── */
 const Crown = ({ size = 28 }) => (
   <svg viewBox="0 0 100 80" width={size} height={size * 0.8} style={{ display: 'block' }}>
     <polygon
@@ -25,7 +27,7 @@ const Crown = ({ size = 28 }) => (
   </svg>
 )
 
-/* â”€â”€ Podium blob con corona opzionale â”€â”€ */
+/* ── Podium blob con corona opzionale ── */
 const PodiumBlob = ({ player, rank, expr, blobSize, delay }) => {
   const isFirst = rank === 0
   const rankColors = ['#FBBF24', '#C0C0C0', '#CD7F32']
@@ -72,7 +74,7 @@ const PodiumBlob = ({ player, rank, expr, blobSize, delay }) => {
           color={player.color}
           expr={expr}
           size={blobSize}
-          accessory={player.accessory}
+
           id={`podium-${rank}`}
         />
       </motion.div>
@@ -136,6 +138,7 @@ const FinalPhase = ({
   onChangeGame,
   session,
 }) => {
+  const C = usePlayerAccent()
   const sorted = [...players].sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
   const isSessionMode = !!session && (session.totalRounds ?? 1) > 1
   const hasMoreRounds = isSessionMode && (session.roundIdx + 1) < session.totalRounds
@@ -151,7 +154,7 @@ const FinalPhase = ({
           animate={{ opacity: 1, y: 0 }}
           style={{ textAlign: 'center', flexShrink: 0 }}
         >
-          <GradientTitle as="h2" size="lg">
+          <GradientTitle as="h2" size="lg" gradient={C.gradient}>
             {hasMoreRounds
               ? `Round ${roundNumber}/${session.totalRounds}`
               : 'Classifica Finale'}
@@ -168,7 +171,7 @@ const FinalPhase = ({
           )}
         </motion.div>
 
-        {/* Podium top 3 â€” ordine visivo: 2nd, 1st, 3rd */}
+        {/* Podium top 3 — ordine visivo: 2nd, 1st, 3rd */}
         {sorted.length >= 2 && (
           <div style={podiumStyle}>
             {[1, 0, 2].map((rank) => {
@@ -191,7 +194,7 @@ const FinalPhase = ({
 
         {/* Classifica completa */}
         <GameSection
-          emoji="ðŸ“Š"
+          emoji="📊"
           title="Classifica"
           delay={0.3}
           style={{
@@ -213,19 +216,19 @@ const FinalPhase = ({
                   transition={{ delay: 0.4 + i * 0.05 }}
                   style={{
                     ...leaderRowStyle,
-                    border: isLocal ? '1.5px solid var(--accent)' : '1.5px solid transparent',
-                    background: isLocal ? 'rgba(124, 58, 237, 0.08)' : 'var(--bg)',
+                    border: isLocal ? `1.5px solid ${C.accent}` : '1.5px solid transparent',
+                    background: isLocal ? `${C.accent}14` : 'var(--bg)',
                   }}
                 >
                   {/* Rank */}
-                  <span style={rankStyle}>#{i + 1}</span>
+                  <span style={{ ...rankStyle, color: C.accent }}>#{i + 1}</span>
 
                   {/* Mini blob */}
                   <MiniBlob
                     color={p.color}
                     expr={expr}
                     size={28}
-                    accessory={p.accessory}
+
                     id={`lb-${i}`}
                   />
 
@@ -254,7 +257,7 @@ const FinalPhase = ({
                   {/* Punteggio */}
                   <span style={{
                     fontWeight: 800,
-                    color: 'var(--accent)',
+                    color: C.accent,
                     fontSize: 'clamp(15px, 1.8dvh, 19px)',
                     minWidth: 40,
                     textAlign: 'right',
@@ -278,7 +281,7 @@ const FinalPhase = ({
               <Button variant="secondary" width="full" onClick={onChangeGame} disabled={advancing}>
                 Cambia gioco
               </Button>
-              <Button variant="primary" width="full" onClick={onReplay} disabled={advancing}>
+              <Button variant="primary" width="full" onClick={onReplay} disabled={advancing} style={accentBtnStyle(C.accent)}>
                 {advancing
                   ? '...'
                   : hasMoreRounds
@@ -295,7 +298,7 @@ const FinalPhase = ({
   )
 }
 
-/* â”€â”€ Styles â”€â”€ */
+/* ── Styles ── */
 
 const containerStyle = {
   display: 'flex',
@@ -367,4 +370,3 @@ const waitingTextStyle = {
 }
 
 export default FinalPhase
-

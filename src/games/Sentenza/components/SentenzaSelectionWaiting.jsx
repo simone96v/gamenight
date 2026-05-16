@@ -4,9 +4,7 @@ import GameHUD from '../../../components/GameHUD'
 import IconButton from '../../../components/ui/IconButton'
 import RoundBadge from '../../../components/ui/RoundBadge'
 import PromptCard from './PromptCard'
-import { GAME_COLORS } from '../../../theme/gameColors'
-
-const ACCENT = GAME_COLORS.sentenza.accent
+import { usePlayerAccent } from '../../../hooks/usePlayerAccent'
 
 const SentenzaSelectionWaiting = ({
   prompt,
@@ -21,14 +19,15 @@ const SentenzaSelectionWaiting = ({
   isHost,
   onExit,
 }) => {
+  const C = usePlayerAccent()
   const submittedSet = new Set(submittedIds)
 
   return (
     <div style={S.container}>
       <AppHeader
-        accentColor="#6366F1"
+        accentColor={C.accent}
         leading={isHost && <IconButton ariaLabel="Esci" onClick={onExit}>←</IconButton>}
-        actions={<RoundBadge n={currentRound} total={totalRounds} game="sentenza" />}
+        actions={<RoundBadge n={currentRound} total={totalRounds} accentColor={C.accent} />}
       />
       <GameHUD
         questionNumber={currentRound}
@@ -38,7 +37,7 @@ const SentenzaSelectionWaiting = ({
         players={hudPlayers}
         localPlayerId={localPlayerId}
         phase="question"
-        accentColor={ACCENT}
+        accentColor={C.accent}
         scoreSuffix="⚖️"
       />
 

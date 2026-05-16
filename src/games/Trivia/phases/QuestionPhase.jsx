@@ -9,6 +9,8 @@ import RoundBadge from '../../../components/ui/RoundBadge'
 import QuestionCard from '../components/QuestionCard'
 import AnswerTile from '../components/AnswerTile'
 import { haptic } from '../../../utils/haptic'
+import { accentBtnStyle } from '../../../theme/gameColors'
+import { usePlayerAccent } from '../../../hooks/usePlayerAccent'
 
 const spring = { type: 'spring', stiffness: 400, damping: 22 }
 
@@ -28,6 +30,7 @@ const QuestionPhase = ({
   onAnswer,
   onExit,
 }) => {
+  const C = usePlayerAccent()
   const hasAnswered = localAnswer !== null
   const [selected, setSelected] = useState(null)
 
@@ -51,7 +54,7 @@ const QuestionPhase = ({
     <div style={containerStyle}>
       <AppHeader
         leading={isHost && <IconButton ariaLabel="Esci" onClick={onExit}>←</IconButton>}
-        actions={<RoundBadge n={questionNumber} total={totalQuestions} game="trivia" />}
+        actions={<RoundBadge n={questionNumber} total={totalQuestions} accentColor={C.accent} />}
       />
       <GameHUD
         questionNumber={questionNumber}
@@ -96,7 +99,7 @@ const QuestionPhase = ({
                 whileTap={{ y: 1, scale: 0.97 }}
                 onClick={handleConfirm}
                 disabled={submitting}
-                style={confirmBtnStyle}
+                style={{ ...confirmBtnStyle, ...accentBtnStyle(C.accent) }}
               >
                 {submitting ? '...' : 'Conferma'}
               </motion.button>

@@ -1,4 +1,4 @@
-﻿import { useCallback, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import AppHeader from '../components/AppHeader'
@@ -8,11 +8,11 @@ import GradientTitle from '../components/ui/GradientTitle'
 import MiniBlob, { useMiniExpr } from '../components/MiniBlob'
 import { useSession } from '../stores/useSession'
 import { pushRoom } from '../lib/room'
-import { GAME_COLORS, accentBtnStyle } from '../theme/gameColors'
-
-const C = GAME_COLORS.blobjump
+import { accentBtnStyle } from '../theme/gameColors'
+import { usePlayerAccent } from '../hooks/usePlayerAccent'
 
 const BlobJumpLobbyScreen = () => {
+  const C = usePlayerAccent()
   const navigate = useNavigate()
   const isHost = useSession((s) => s.isHost)
   const mode = useSession((s) => s.mode)
@@ -46,8 +46,9 @@ const BlobJumpLobbyScreen = () => {
         currentSeed: seed,
         currentRoundIdx: 0,
         totalRounds: rounds,
-        roundDuration: 0, // 0 = endless â€” game ends only on death
+        roundDuration: 0, // 0 = endless — game ends only on death
         roundScores: {},
+        roundFinished: {},
         totalScores: {},
       }
 
@@ -66,6 +67,7 @@ const BlobJumpLobbyScreen = () => {
             totalRounds: rounds,
             roundDuration: 0,
             roundScores: {},
+            roundFinished: {},
             totalScores: {},
           },
           currentPhase: 'blobjump_countdown',
@@ -82,6 +84,7 @@ const BlobJumpLobbyScreen = () => {
             totalRounds: rounds,
             roundDuration: 0,
             roundScores: {},
+            roundFinished: {},
             totalScores: {},
           },
           currentPhase: 'blobjump_countdown',
@@ -124,7 +127,7 @@ const BlobJumpLobbyScreen = () => {
     <div style={S.container}>
       <AppHeader
         accentColor={C.accent}
-        leading={canControl && <IconButton ariaLabel="Indietro" onClick={handleBack}>â†</IconButton>}
+        leading={canControl && <IconButton ariaLabel="Indietro" onClick={handleBack}>←</IconButton>}
       />
 
       <div style={S.body}>
@@ -133,10 +136,10 @@ const BlobJumpLobbyScreen = () => {
           animate={{ opacity: 1, y: 0 }}
           style={{ textAlign: 'center' }}
         >
-          <GradientTitle as="h2" size="lg">
-            ðŸ¦˜ Blob Jump
+          <GradientTitle as="h2" size="lg" gradient={C.gradient}>
+            🦘 Blob Jump
           </GradientTitle>
-          <p style={S.subtitle}>Salta piÃ¹ in alto degli altri!</p>
+          <p style={S.subtitle}>Salta più in alto degli altri!</p>
         </motion.div>
 
 
@@ -150,7 +153,7 @@ const BlobJumpLobbyScreen = () => {
           <div style={S.playersList}>
             {players.map((p, i) => (
               <div key={p.id} style={S.playerChip}>
-                <MiniBlob color={p.color} expr={expr} accessory={p.accessory} size={28} id={`bjl-${i}`} />
+                <MiniBlob color={p.color} expr={expr} size={28} id={`bjl-${i}`} />
                 <span style={S.playerName}>{p.name}</span>
               </div>
             ))}
@@ -164,12 +167,12 @@ const BlobJumpLobbyScreen = () => {
               width="full"
               onClick={handleStart}
               disabled={launching}
-              style={accentBtnStyle('blobjump')}
+              style={accentBtnStyle(C.accent)}
             >
-              {launching ? 'â³ Caricamento...' : 'ðŸ¦˜ Via!'}
+              {launching ? '⏳ Caricamento...' : '🦘 Via!'}
             </Button>
           ) : (
-            <p style={S.waitText}>Aspettando il boss... ðŸ‘‘</p>
+            <p style={S.waitText}>Aspettando il boss... 👑</p>
           )}
         </div>
       </div>
@@ -253,4 +256,3 @@ const S = {
 }
 
 export default BlobJumpLobbyScreen
-

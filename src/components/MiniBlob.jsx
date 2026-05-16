@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { BLOB_GRADIENTS } from '../utils/colors'
-import { renderAccessory } from '../utils/accessories'
+import { BLOB_SHAPES } from './Blob'
 
 const MINI_EXPR_SEQ = [
   { expr: 'normal',     dur: 2500 },
@@ -72,7 +72,7 @@ const MiniBlobEyes = ({ expr, lx, rx, ey, id }) => {
   )
 }
 
-const MiniBlob = ({ color, expr = 'normal', size = 42, id = 'mb', accessory }) => {
+const MiniBlob = ({ color, expr = 'normal', size = 42, id = 'mb' }) => {
   const [c1, c2, c3] = BLOB_GRADIENTS[color] || ['#E5E7EB', '#D1D5DB', '#9CA3AF']
   return (
     <svg viewBox="0 0 300 300" width={size} height={size} style={{ flexShrink: 0, overflow: 'visible' }}>
@@ -87,9 +87,8 @@ const MiniBlob = ({ color, expr = 'normal', size = 42, id = 'mb', accessory }) =
           <stop offset="100%" stopColor="#F0ECF9" />
         </radialGradient>
       </defs>
-      <circle cx="150" cy="150" r="145" fill={`url(#${id}-g)`} />
+      <path d={BLOB_SHAPES[0]} fill={`url(#${id}-g)`} />
       <MiniBlobEyes expr={expr} lx={115} rx={185} ey={140} id={id} />
-      {accessory && renderAccessory(accessory)}
     </svg>
   )
 }

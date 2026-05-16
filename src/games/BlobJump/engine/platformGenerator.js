@@ -140,7 +140,18 @@ function _appendPlatforms(rng, platforms, count, globalStartIdx) {
     const prev = platforms[platforms.length - 1]
     const prevCenterX = prev.x + prev.width / 2
     const maxHReach = MAX_HORIZONTAL_REACH * 0.7 // conservative
-    let x = rng() * (GAME_WIDTH - width)
+
+    // Zigzag bias: 65% chance to place platform on the opposite horizontal half.
+    // This encourages lateral movement and prevents clustering on one side.
+    let x
+    if (rng() < 0.65) {
+      const targetCenter = prevCenterX < GAME_WIDTH / 2
+        ? GAME_WIDTH * 0.52 + rng() * GAME_WIDTH * 0.42   // bias toward right half
+        : rng() * GAME_WIDTH * 0.48                         // bias toward left half
+      x = Math.max(0, Math.min(GAME_WIDTH - width, targetCenter - width / 2))
+    } else {
+      x = rng() * (GAME_WIDTH - width)
+    }
 
     // Check if the new platform center is within horizontal reach
     const newCenterX = x + width / 2

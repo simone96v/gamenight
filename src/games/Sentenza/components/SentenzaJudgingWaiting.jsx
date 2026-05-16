@@ -6,9 +6,7 @@ import RoundBadge from '../../../components/ui/RoundBadge'
 import PromptCard from './PromptCard'
 import ProofCard from './ProofCard'
 import JudgeBanner from './JudgeBanner'
-import { GAME_COLORS } from '../../../theme/gameColors'
-
-const ACCENT = GAME_COLORS.sentenza.accent
+import { usePlayerAccent } from '../../../hooks/usePlayerAccent'
 
 const SentenzaJudgingWaiting = ({
   prompt,
@@ -23,12 +21,14 @@ const SentenzaJudgingWaiting = ({
   localPlayerId,
   isHost,
   onExit,
-}) => (
+}) => {
+  const C = usePlayerAccent()
+  return (
   <div style={S.container}>
     <AppHeader
-      accentColor="#6366F1"
+      accentColor={C.accent}
       leading={isHost && <IconButton ariaLabel="Esci" onClick={onExit}>←</IconButton>}
-      actions={<RoundBadge n={currentRound} total={totalRounds} game="sentenza" />}
+      actions={<RoundBadge n={currentRound} total={totalRounds} accentColor={C.accent} />}
     />
     <GameHUD
       questionNumber={currentRound}
@@ -38,7 +38,7 @@ const SentenzaJudgingWaiting = ({
       players={players}
       localPlayerId={localPlayerId}
       phase="question"
-      accentColor={ACCENT}
+      accentColor={C.accent}
       scoreSuffix="⚖️"
     />
 
@@ -73,7 +73,8 @@ const SentenzaJudgingWaiting = ({
       </motion.div>
     </div>
   </div>
-)
+  )
+}
 
 const S = {
   container: {

@@ -8,7 +8,6 @@ import Button from '../components/ui/Button'
 import IconButton from '../components/ui/IconButton'
 import GradientTitle from '../components/ui/GradientTitle'
 import ColorPicker from '../components/ColorPicker'
-import AccessoryPicker from '../components/AccessoryPicker'
 import { useSession } from '../stores/useSession'
 import { createRoom, addPlayerToRoom } from '../lib/room'
 
@@ -16,7 +15,6 @@ const CreatePartyScreen = () => {
   const navigate = useNavigate()
   const [name, setName] = useState('')
   const [selectedColor, setSelectedColor] = useState(null)
-  const [selectedAccessory, setSelectedAccessory] = useState(null)
   const [creating, setCreating] = useState(false)
   const setOnlineMode = useSession((s) => s.setOnlineMode)
   const resetSession = useSession((s) => s.resetSession)
@@ -49,7 +47,6 @@ const CreatePartyScreen = () => {
       id: playerId,
       name: name.trim(),
       color: selectedColor,
-      accessory: selectedAccessory,
       isHost: true,
     })
     if (addError) {
@@ -108,8 +105,6 @@ const CreatePartyScreen = () => {
 
         <ColorPicker selected={selectedColor} onSelect={setSelectedColor} />
 
-        <AccessoryPicker selected={selectedAccessory} onSelect={setSelectedAccessory} />
-
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -123,7 +118,6 @@ const CreatePartyScreen = () => {
             placeholder="Es. Marco"
             style={inputStyle}
             maxLength={12}
-            autoFocus
           />
         </motion.div>
 
@@ -151,12 +145,11 @@ const CreatePartyScreen = () => {
       <Blob
         color={selectedColor}
         expr={blobExpr}
-        accessory={selectedAccessory}
         id="create-blob"
-        size="min(clamp(160px, 40vw, 260px), clamp(120px, 22dvh, 260px))"
+        size="min(clamp(200px, 52vw, 320px), clamp(180px, 30dvh, 320px))"
         animate={false}
         style={{
-          bottom: 'clamp(-80px, -12dvh, -45px)',
+          bottom: 'clamp(-40px, -6dvh, -20px)',
           left: '50%',
           transform: 'translateX(-50%)',
         }}

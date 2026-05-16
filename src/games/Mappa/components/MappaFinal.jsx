@@ -1,16 +1,14 @@
-﻿// Classifica finale Mappa â€” con MiniBlob + corona, coerente con Trivia FinalPhase.
+// Classifica finale Mappa — con MiniBlob + corona, coerente con Trivia FinalPhase.
 
 import { motion } from 'framer-motion'
 import AppHeader from '../../../components/AppHeader'
 import GradientTitle from '../../../components/ui/GradientTitle'
 import Button from '../../../components/ui/Button'
 import MiniBlob, { useMiniExpr } from '../../../components/MiniBlob'
-import GameSection from '../../../components/ui/GameSection'
-import { GAME_COLORS, accentBtnStyle } from '../../../theme/gameColors'
+import { accentBtnStyle } from '../../../theme/gameColors'
+import { usePlayerAccent } from '../../../hooks/usePlayerAccent'
 
-const C = GAME_COLORS.mappa
-
-/* â”€â”€ Corona SVG â”€â”€ */
+/* ── Corona SVG ── */
 const Crown = ({ size = 28 }) => (
   <svg viewBox="0 0 100 80" width={size} height={size * 0.8} style={{ display: 'block' }}>
     <polygon
@@ -27,7 +25,7 @@ const Crown = ({ size = 28 }) => (
   </svg>
 )
 
-/* â”€â”€ Podium blob â”€â”€ */
+/* ── Podium blob ── */
 const PodiumBlob = ({ player, rank, expr, blobSize, delay }) => {
   const isFirst = rank === 0
   const rankColors = ['#FBBF24', '#C0C0C0', '#CD7F32']
@@ -63,7 +61,7 @@ const PodiumBlob = ({ player, rank, expr, blobSize, delay }) => {
         animate={isFirst ? { scale: [1, 1.06, 1] } : {}}
         transition={isFirst ? { repeat: Infinity, duration: 2.5, ease: 'easeInOut' } : {}}
       >
-        <MiniBlob color={player.color} expr={expr} accessory={player.accessory} size={blobSize} id={`mp-${rank}`} />
+        <MiniBlob color={player.color} expr={expr} size={blobSize} id={`mp-${rank}`} />
       </motion.div>
 
       <span style={{
@@ -123,6 +121,7 @@ const MappaFinal = ({
   onReplay,
   onChangeGame,
 }) => {
+  const C = usePlayerAccent()
   const sorted = [...(players || [])].sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
   const expr = useMiniExpr()
 
@@ -162,33 +161,29 @@ const MappaFinal = ({
         )}
 
         {/* Leaderboard */}
-        <GameSection emoji="ðŸ“Š" title="Tutti i risultati" delay={0.3}
-          style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
-        >
-          <div style={S.leaderboard}>
-            {sorted.map((p, i) => {
-              const isLocal = p.id === localPlayerId
-              return (
-                <motion.div
-                  key={p.id}
-                  initial={{ opacity: 0, x: -16 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.4 + i * 0.05 }}
-                  style={{
-                    ...S.lbRow,
-                    border: isLocal ? `1.5px solid ${C.accent}` : '1.5px solid transparent',
-                    background: isLocal ? `${C.accent}14` : 'var(--bg)',
-                  }}
-                >
-                  <span style={{ ...S.lbRank, color: C.accent }}>#{i + 1}</span>
-                  <MiniBlob color={p.color} expr={expr} accessory={p.accessory} size={28} id={`mlb-${i}`} />
-                  <span style={S.lbName}>{p.name}</span>
-                  <span style={{ ...S.lbScore, color: C.accent }}>{p.score ?? 0}</span>
-                </motion.div>
-              )
-            })}
-          </div>
-        </GameSection>
+        <div style={S.leaderboard}>
+          {sorted.map((p, i) => {
+            const isLocal = p.id === localPlayerId
+            return (
+              <motion.div
+                key={p.id}
+                initial={{ opacity: 0, x: -16 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 + i * 0.05 }}
+                style={{
+                  ...S.lbRow,
+                  border: isLocal ? `1.5px solid ${C.accent}` : '1.5px solid transparent',
+                  background: isLocal ? `${C.accent}14` : 'var(--bg)',
+                }}
+              >
+                <span style={{ ...S.lbRank, color: C.accent }}>#{i + 1}</span>
+                <MiniBlob color={p.color} expr={expr} size={28} id={`mlb-${i}`} />
+                <span style={S.lbName}>{p.name}</span>
+                <span style={{ ...S.lbScore, color: C.accent }}>{p.score ?? 0}</span>
+              </motion.div>
+            )
+          })}
+        </div>
 
         {/* Footer */}
         <div style={S.footer}>
@@ -197,7 +192,7 @@ const MappaFinal = ({
               <Button variant="secondary" width="full" onClick={onChangeGame} disabled={advancing}>
                 Cambia gioco
               </Button>
-              <Button variant="primary" width="full" onClick={onReplay} disabled={advancing} style={accentBtnStyle('mappa')}>
+              <Button variant="primary" width="full" onClick={onReplay} disabled={advancing} style={accentBtnStyle(C.accent)}>
                 {advancing ? '...' : 'Gioca ancora'}
               </Button>
             </div>
@@ -295,5 +290,3 @@ const S = {
 }
 
 export default MappaFinal
-
-

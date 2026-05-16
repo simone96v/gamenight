@@ -1,4 +1,4 @@
-﻿import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import AppHeader from '../components/AppHeader'
@@ -122,7 +122,7 @@ const LobbyScreen = () => {
             }
             resetSession()
             navigate('/', { replace: true })
-          }}>â†</IconButton>
+          }}>←</IconButton>
         }
         actions={null}
       />
@@ -159,7 +159,7 @@ const LobbyScreen = () => {
             <div style={inviteOrbStyle('bottom-left')} />
 
             <div style={{ position: 'relative', textAlign: 'center', zIndex: 1 }}>
-              <div style={codeLabelStyle}>ðŸŽŸï¸ Codice party</div>
+              <div style={codeLabelStyle}>🎟️ Codice party</div>
               <div style={codeNumberStyle}>{roomCode}</div>
               <div style={codeHintStyle}>Condividilo con gli amici per farli entrare</div>
             </div>
@@ -173,7 +173,7 @@ const LobbyScreen = () => {
                   onClick={() => setShowShareModal(true)}
                   style={shareBtnStyle}
                 >
-                  <span style={{ fontSize: 18 }}>ðŸ“¤</span>
+                  <span style={{ fontSize: 18 }}>📤</span>
                   <span>Condividi</span>
                 </motion.button>
               </div>
@@ -190,7 +190,7 @@ const LobbyScreen = () => {
             style={nameInputBoxStyle}
           >
             <div style={{ fontSize: 'clamp(11px, 1.4dvh, 13px)', color: 'var(--muted)', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>
-              ðŸŽ¨ {isHost ? 'Scegli il tuo blob (host)' : 'Scegli il tuo blob'}
+              🎨 {isHost ? 'Scegli il tuo blob (host)' : 'Scegli il tuo blob'}
             </div>
             <div style={{ display: 'flex', gap: 'clamp(6px, 1.5vw, 10px)', justifyContent: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
               {AVATAR_COLORS.map((c) => {
@@ -224,14 +224,14 @@ const LobbyScreen = () => {
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         color: '#fff', fontWeight: 800, fontSize: 14,
                         textShadow: '0 1px 3px rgba(0,0,0,0.4)',
-                      }}>âœ•</span>
+                      }}>✕</span>
                     )}
                   </motion.button>
                 )
               })}
             </div>
             <div style={{ fontSize: 'clamp(11px, 1.4dvh, 13px)', color: 'var(--muted)', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>
-              âœï¸ {isHost ? 'Il tuo nome (host)' : 'Il tuo nome'}
+              ✍️ {isHost ? 'Il tuo nome (host)' : 'Il tuo nome'}
             </div>
             <form onSubmit={(e) => { e.preventDefault(); handleAdd() }} style={{ display: 'flex', gap: 8 }}>
               <input
@@ -258,7 +258,7 @@ const LobbyScreen = () => {
         {players.length > 0 && (
           <div style={{ flexShrink: 0 }}>
             <div style={playerListLabelStyle}>
-              <span>ðŸ‘¥ Giocatori</span>
+              <span>👥 Giocatori</span>
               <span style={{ color: 'var(--accent)', fontWeight: 800 }}>{players.length}/8</span>
             </div>
             <motion.div
@@ -283,13 +283,13 @@ const LobbyScreen = () => {
                   onClick={() => (isHost && !p.is_host ? handleRemove(p.id) : undefined)}
                   style={{ ...playerRowStyle, cursor: isHost && !p.is_host ? 'pointer' : 'default' }}
                 >
-                  <MiniBlob color={p.color} expr={blobExpr} accessory={p.accessory} id={`mb-${p.id}`} />
+                  <MiniBlob color={p.color} expr={blobExpr} id={`mb-${p.id}`} />
                   <span style={playerNameStyle}>
                     {p.name?.slice(0, 12)}
                   </span>
-                  {p.is_host && <span style={hostPillStyle}>ðŸ‘‘ HOST</span>}
+                  {p.is_host && <span style={hostPillStyle}>👑 HOST</span>}
                   {isHost && !p.is_host && (
-                    <span style={removeHintStyle}>âœ•</span>
+                    <span style={removeHintStyle}>✕</span>
                   )}
                 </motion.div>
               ))}
@@ -322,17 +322,17 @@ const LobbyScreen = () => {
                 pointerEvents: (!canStart || starting) ? 'none' : 'auto',
               }}
             >
-              {starting ? '...' : 'Avanti â€” votate il gioco â†’'}
+              {starting ? '...' : 'Avanti — votate il gioco →'}
             </Button>
           </>
         )}
 
         {!isHost && (
-          <p style={waitingStyle}>Aspettando che il capo si decida... ðŸ‘‘</p>
+          <p style={waitingStyle}>Aspettando che il capo si decida... 👑</p>
         )}
 
         {isHost && players.length < 2 && hostHasJoined && (
-          <p style={waitingStyle}>Hai bisogno di almeno un nemico ðŸ˜ˆ</p>
+          <p style={waitingStyle}>Hai bisogno di almeno un nemico 😈</p>
         )}
       </div>
 
@@ -552,4 +552,3 @@ const waitingStyle = {
 }
 
 export default LobbyScreen
-

@@ -27,3 +27,9 @@ export const BLOB_GRADIENTS = {
 }
 
 export const GRAY_GRADIENT = ['#E5E7EB', '#D1D5DB', '#9CA3AF']
+
+/** Convert hex (#RRGGBB) to [r, g, b] array. */
+export function hexToRgb(hex) {
+  const n = parseInt(hex.replace('#', ''), 16)
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255]
+}

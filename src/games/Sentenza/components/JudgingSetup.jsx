@@ -4,9 +4,7 @@ import GameHUD from '../../../components/GameHUD'
 import IconButton from '../../../components/ui/IconButton'
 import RoundBadge from '../../../components/ui/RoundBadge'
 import PromptCard from './PromptCard'
-import { GAME_COLORS } from '../../../theme/gameColors'
-
-const ACCENT = GAME_COLORS.sentenza.accent
+import { usePlayerAccent } from '../../../hooks/usePlayerAccent'
 
 const JudgingSetup = ({
   judgeName,
@@ -18,12 +16,14 @@ const JudgingSetup = ({
   localPlayerId,
   isHost,
   onExit,
-}) => (
+}) => {
+  const C = usePlayerAccent()
+  return (
   <div style={S.container}>
     <AppHeader
-      accentColor="#6366F1"
+      accentColor={C.accent}
       leading={isHost && <IconButton ariaLabel="Esci" onClick={onExit}>←</IconButton>}
-      actions={<RoundBadge n={round} total={totalRounds} game="sentenza" />}
+      actions={<RoundBadge n={round} total={totalRounds} accentColor={C.accent} />}
     />
     <GameHUD
       questionNumber={round}
@@ -33,7 +33,7 @@ const JudgingSetup = ({
       players={players}
       localPlayerId={localPlayerId}
       phase="setup"
-      accentColor={ACCENT}
+      accentColor={C.accent}
       showTimer={false}
       scoreSuffix="⚖️"
     />
@@ -81,7 +81,8 @@ const JudgingSetup = ({
       </motion.div>
     </div>
   </div>
-)
+  )
+}
 
 const initialsOf = (name) => {
   const parts = String(name ?? '').trim().split(/\s+/).filter(Boolean)

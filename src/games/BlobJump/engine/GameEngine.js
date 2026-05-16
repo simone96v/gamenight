@@ -4,19 +4,37 @@ import { generatePlatforms, extendPlatforms } from './platformGenerator'
 import { InputManager } from './input'
 import { BLOB_GRADIENTS } from '../../../utils/colors'
 
-const BG_COLORS = [
-  { stop: 0, color: [243, 237, 255] },
-  { stop: 0.25, color: [219, 234, 254] },
-  { stop: 0.55, color: [165, 180, 252] },
-  { stop: 0.8, color: [88, 80, 150] },
-  { stop: 1, color: [30, 27, 75] },
-]
+// Paper background constants
+const PAPER_BG     = '#F8F6F0'
+const PAPER_LINE   = 'rgba(155,148,135,0.18)'
+const PAPER_MARGIN = 'rgba(210,70,70,0.09)'
 
-const PLATFORM_STYLES = {
-  normal: { fill: '#8B5CF6', stroke: '#7C3AED', glow: null },
-  moving: { fill: '#22D3EE', stroke: '#06B6D4', glow: 'rgba(34,211,238,0.35)' },
-  fragile: { fill: '#FB923C', stroke: '#EA580C', glow: null },
-  spring: { fill: '#F43F5E', stroke: '#E11D48', glow: 'rgba(244,63,94,0.3)' },
+// Default platform styles (overridden per-instance from blob color)
+const DEFAULT_PLATFORM_STYLES = {
+  normal:  { fill: '#141414', stroke: '#000000', glow: null },
+  moving:  { fill: '#0891B2', stroke: '#075985', glow: 'rgba(8,145,178,0.45)' },
+  fragile: { fill: '#EA580C', stroke: '#9A3412', glow: null },
+  spring:  { fill: '#E11D48', stroke: '#9F1239', glow: 'rgba(225,29,72,0.4)' },
+}
+
+function darkenHex(hex, amount) {
+  const rgb = hexToRgb(hex)
+  return `rgb(${Math.max(0, rgb[0] - amount)},${Math.max(0, rgb[1] - amount)},${Math.max(0, rgb[2] - amount)})`
+}
+
+function hexWithAlpha(hex, alpha) {
+  const rgb = hexToRgb(hex)
+  return `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${alpha})`
+}
+
+function buildPlatformStyles(blobGrad) {
+  const [light, mid, dark] = blobGrad
+  return {
+    normal:  { fill: dark, stroke: darkenHex(dark, 35), glow: null },
+    moving:  { fill: '#6B7280', stroke: '#4B5563', glow: 'rgba(107,114,128,0.35)' },
+    fragile: { fill: '#9CA3AF', stroke: '#6B7280', glow: null },
+    spring:  { fill: '#D1D5DB', stroke: '#9CA3AF', glow: 'rgba(209,213,219,0.35)' },
+  }
 }
 
 function lerpColor(colors, t) {
@@ -49,6 +67,7 @@ export class GameEngine {
 
     const grad = BLOB_GRADIENTS[this.blobColor]
     this.blobGrad = grad || [this.blobColor, this.blobColor, this.blobColor]
+    this.platformStyles = buildPlatformStyles(this.blobGrad)
 
     this.rng = createRNG(seed)
     this.platforms = generatePlatforms(this.rng, 200)
@@ -85,13 +104,6 @@ export class GameEngine {
     this.trailParticles = []
     this.breakParticles = []
     this.landingParticles = []
-    this.bgParticles = this._generateBgParticles()
-    this.stars = this._generateStars()
-    this.clouds = this._generateClouds()
-    this.mountains = this._generateMountains()
-    this.floatingIslands = this._generateFloatingIslands()
-    this.aurora = this._generateAurora()
-    this.moon = this._generateMoon()
 
     this.springCompress = {}
     this.screenShake = 0
@@ -99,9 +111,6 @@ export class GameEngine {
     // Danger zone warning (near bottom of camera)
     this.dangerAlpha = 0
 
-    // Endless mode: visual progress is based on a fixed reference height (background
-    // transitions from day → night over the first ~5000m). Platforms generate infinitely.
-    this.totalHeight = 70000
     // Track the lowest index still relevant (platforms below camera are skipped)
     this.visibleStartIdx = 0
   }
@@ -520,13 +529,13 @@ export class GameEngine {
         rotation: Math.random() * Math.PI * 2,
         rotSpeed: (Math.random() - 0.5) * 12,
         life: 0.5 + Math.random() * 0.5,
-        color: PLATFORM_STYLES.fragile.fill,
+        color: this.platformStyles.fragile.fill,
       })
     }
   }
 
   _spawnLandingParticles(x, platformY, type, count) {
-    const color = PLATFORM_STYLES[type]?.fill || PLATFORM_STYLES.normal.fill
+    const color = this.platformStyles[type]?.fill || this.platformStyles.normal.fill
     for (let i = 0; i < count; i++) {
       const angle = Math.PI + (Math.random() - 0.5) * Math.PI * 0.8
       const speed = 40 + Math.random() * 100
@@ -560,7 +569,6 @@ export class GameEngine {
     const ctx = this.ctx
     const cam = this.cameraY
 
-    // Apply screen shake
     ctx.save()
     if (this.screenShake > 0) {
       const sx = (Math.random() - 0.5) * this.screenShake * 2
@@ -570,15 +578,8 @@ export class GameEngine {
 
     ctx.clearRect(-5, -5, GAME_WIDTH + 10, GAME_HEIGHT + 10)
 
-    const progress = Math.min(1, this.maxHeight / (this.totalHeight * 0.7))
-    this._drawBackground(ctx, progress)
-    this._drawMountains(ctx, cam, progress)
-    this._drawClouds(ctx, cam, progress)
-    this._drawMoon(ctx, cam, progress)
-    this._drawFloatingIslands(ctx, cam, progress)
-    this._drawBgParticles(ctx, cam, progress)
-    this._drawStars(ctx, cam, progress)
-    this._drawAurora(ctx, cam, progress)
+    // Paper background with ruled lines
+    this._drawBackground(ctx)
 
     // Draw platforms (only visible range)
     for (let i = this.visibleStartIdx; i < this.platforms.length; i++) {
@@ -601,23 +602,39 @@ export class GameEngine {
       this._drawDangerVignette(ctx)
     }
 
-    // Milestone flash
+    // Milestone flash — subtle dark pulse on paper
     if (this.milestoneFlash > 0) {
-      ctx.fillStyle = `rgba(255,255,255,${this.milestoneFlash * 0.15})`
+      ctx.fillStyle = `rgba(0,0,0,${this.milestoneFlash * 0.07})`
       ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT)
     }
 
     ctx.restore()
   }
 
-  _drawBackground(ctx, progress) {
-    const bgColor = lerpColor(BG_COLORS, progress)
-    const bgTop = lerpColor(BG_COLORS, Math.min(1, progress + 0.15))
-    const grad = ctx.createLinearGradient(0, 0, 0, GAME_HEIGHT)
-    grad.addColorStop(0, `rgb(${bgTop[0]},${bgTop[1]},${bgTop[2]})`)
-    grad.addColorStop(1, `rgb(${bgColor[0]},${bgColor[1]},${bgColor[2]})`)
-    ctx.fillStyle = grad
+  _drawBackground(ctx) {
+    // Paper base
+    ctx.fillStyle = PAPER_BG
     ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT)
+
+    // Horizontal ruled lines — fixed world positions, scroll with camera
+    const lineSpacing = 30
+    const lineOffset = ((this.cameraY % lineSpacing) + lineSpacing) % lineSpacing
+    ctx.strokeStyle = PAPER_LINE
+    ctx.lineWidth = 0.5
+    ctx.beginPath()
+    for (let ly = -lineOffset; ly <= GAME_HEIGHT + lineSpacing; ly += lineSpacing) {
+      ctx.moveTo(0, ly)
+      ctx.lineTo(GAME_WIDTH, ly)
+    }
+    ctx.stroke()
+
+    // Left margin line (notebook style)
+    ctx.strokeStyle = PAPER_MARGIN
+    ctx.lineWidth = 1.5
+    ctx.beginPath()
+    ctx.moveTo(30, 0)
+    ctx.lineTo(30, GAME_HEIGHT)
+    ctx.stroke()
   }
 
   _drawBgParticles(ctx, cam, progress) {
@@ -838,23 +855,23 @@ export class GameEngine {
 
   _drawDangerVignette(ctx) {
     const a = this.dangerAlpha
-    // Bottom edge red glow
-    const grad = ctx.createLinearGradient(0, GAME_HEIGHT * 0.7, 0, GAME_HEIGHT)
-    grad.addColorStop(0, 'rgba(239,68,68,0)')
-    grad.addColorStop(1, `rgba(239,68,68,${a})`)
+    // Bottom edge red glow — stronger opacity on light paper background
+    const grad = ctx.createLinearGradient(0, GAME_HEIGHT * 0.65, 0, GAME_HEIGHT)
+    grad.addColorStop(0, 'rgba(220,38,38,0)')
+    grad.addColorStop(1, `rgba(220,38,38,${a * 1.4})`)
     ctx.fillStyle = grad
-    ctx.fillRect(0, GAME_HEIGHT * 0.7, GAME_WIDTH, GAME_HEIGHT * 0.3)
+    ctx.fillRect(0, GAME_HEIGHT * 0.65, GAME_WIDTH, GAME_HEIGHT * 0.35)
     // Side glows
-    const sideGrad = ctx.createLinearGradient(0, 0, 20, 0)
-    sideGrad.addColorStop(0, `rgba(239,68,68,${a * 0.5})`)
-    sideGrad.addColorStop(1, 'rgba(239,68,68,0)')
+    const sideGrad = ctx.createLinearGradient(0, 0, 28, 0)
+    sideGrad.addColorStop(0, `rgba(220,38,38,${a * 0.6})`)
+    sideGrad.addColorStop(1, 'rgba(220,38,38,0)')
     ctx.fillStyle = sideGrad
-    ctx.fillRect(0, GAME_HEIGHT * 0.5, 20, GAME_HEIGHT * 0.5)
-    const sideGrad2 = ctx.createLinearGradient(GAME_WIDTH, 0, GAME_WIDTH - 20, 0)
-    sideGrad2.addColorStop(0, `rgba(239,68,68,${a * 0.5})`)
-    sideGrad2.addColorStop(1, 'rgba(239,68,68,0)')
+    ctx.fillRect(0, GAME_HEIGHT * 0.5, 28, GAME_HEIGHT * 0.5)
+    const sideGrad2 = ctx.createLinearGradient(GAME_WIDTH, 0, GAME_WIDTH - 28, 0)
+    sideGrad2.addColorStop(0, `rgba(220,38,38,${a * 0.6})`)
+    sideGrad2.addColorStop(1, 'rgba(220,38,38,0)')
     ctx.fillStyle = sideGrad2
-    ctx.fillRect(GAME_WIDTH - 20, GAME_HEIGHT * 0.5, 20, GAME_HEIGHT * 0.5)
+    ctx.fillRect(GAME_WIDTH - 28, GAME_HEIGHT * 0.5, 28, GAME_HEIGHT * 0.5)
   }
 
   _drawParticles(ctx, cam) {
@@ -897,7 +914,7 @@ export class GameEngine {
   }
 
   _drawPlatform(ctx, p, screenY, idx) {
-    const style = PLATFORM_STYLES[p.type] || PLATFORM_STYLES.normal
+    const style = this.platformStyles[p.type] || this.platformStyles.normal
     const r = PLATFORM.HEIGHT / 2
     const h = PLATFORM.HEIGHT
 
@@ -930,12 +947,12 @@ export class GameEngine {
 
     ctx.shadowBlur = 0
 
-    // Subtle top shine
-    ctx.strokeStyle = 'rgba(255,255,255,0.3)'
+    // Top edge highlight — white shimmer on dark platform surfaces
+    ctx.strokeStyle = 'rgba(255,255,255,0.18)'
     ctx.lineWidth = 1
     ctx.beginPath()
-    ctx.moveTo(p.x + r, screenY + 1.5)
-    ctx.lineTo(p.x + p.width - r, screenY + 1.5)
+    ctx.moveTo(p.x + r, screenY + 1)
+    ctx.lineTo(p.x + p.width - r, screenY + 1)
     ctx.stroke()
 
     // Spring coil with compression
@@ -961,7 +978,7 @@ export class GameEngine {
 
     // Fragile cracks
     if (p.type === 'fragile') {
-      ctx.strokeStyle = 'rgba(0,0,0,0.2)'
+      ctx.strokeStyle = 'rgba(0,0,0,0.35)'
       ctx.lineWidth = 1
       const cx = p.x + p.width / 2
       ctx.beginPath()
@@ -1107,8 +1124,8 @@ export class GameEngine {
     const eyeY = -r * 0.1
     const s = r * 0.22
 
-    ctx.strokeStyle = '#1E1B4B'
-    ctx.lineWidth = 2.5
+    ctx.strokeStyle = '#0f0c2e'
+    ctx.lineWidth = 2.8
     ctx.lineCap = 'round'
 
     for (const side of [-1, 1]) {

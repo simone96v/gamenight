@@ -56,19 +56,23 @@ export const useBlobJump = () => {
     setPhaseWithTimer('blobjump_playing')
   }, [currentPhase, isHost, setPhaseWithTimer])
 
-  // Submit score (called by game component)
+  // Submit score (called by game component on death)
   const submitScore = useCallback((score) => {
     if (scoreSubmitted) return
     setScoreSubmitted(true)
     haptic.medium()
 
     if (isOnline) {
+      // Write final score AND mark as finished (separate fields so periodic
+      // live-score updates don't trigger the "all finished" check).
       castVote('roundScores', score)
+      castVote('roundFinished', true)
     } else {
       const s = useSession.getState()
       const pid = s.localPlayerId ?? 'local'
       setGameState({
         roundScores: { ...(s.gameState?.roundScores ?? {}), [pid]: score },
+        roundFinished: { ...(s.gameState?.roundFinished ?? {}), [pid]: true },
       })
     }
   }, [scoreSubmitted, isOnline, castVote, setGameState])
@@ -96,18 +100,22 @@ export const useBlobJump = () => {
     const t = setTimeout(() => {
       const s = useSession.getState()
       const scores = s.gameState?.roundScores ?? {}
-      // Players who didn't submit get 0
+      const finished = s.gameState?.roundFinished ?? {}
+      // Players who didn't submit get 0; mark everyone as finished
       const finalScores = {}
+      const finalFinished = { ...finished }
       s.players.forEach((p) => {
         finalScores[p.id] = scores[p.id] ?? 0
+        finalFinished[p.id] = true
       })
-      setGameState({ roundScores: finalScores })
+      setGameState({ roundScores: finalScores, roundFinished: finalFinished })
       setPhase('blobjump_results')
     }, 1500)
     return () => clearTimeout(t)
   }, [currentPhase, isHost, isExpired, setGameState, setPhase])
 
-  // Host: early results when all players submitted
+  // Host: early results when all players have died (roundFinished, NOT roundScores
+  // which also gets periodic live updates).
   const allSubmittedRef = useRef(false)
   useEffect(() => {
     if (currentPhase !== 'blobjump_playing') {
@@ -115,13 +123,13 @@ export const useBlobJump = () => {
       return
     }
     if (!isHost || allSubmittedRef.current) return
-    const scores = gameState?.roundScores ?? {}
-    const allSubmitted = players.length > 0 && players.every((p) => scores[p.id] != null)
-    if (!allSubmitted) return
+    const finished = gameState?.roundFinished ?? {}
+    const allFinished = players.length > 0 && players.every((p) => finished[p.id])
+    if (!allFinished) return
     allSubmittedRef.current = true
     const t = setTimeout(() => setPhase('blobjump_results'), 800)
     return () => clearTimeout(t)
-  }, [currentPhase, isHost, gameState?.roundScores, players, setPhase])
+  }, [currentPhase, isHost, gameState?.roundFinished, players, setPhase])
 
   // Host advance: next round or final
   const hostAdvance = useCallback(() => {
@@ -156,10 +164,34 @@ export const useBlobJump = () => {
         currentRoundIdx: nextRound,
         currentSeed: newSeed,
         roundScores: {},
+        roundFinished: {},
       })
       setPhaseWithTimer('blobjump_countdown')
     }
   }, [isHost, advancing, setGameState, setPhase, setPhaseWithTimer])
+
+  // Go directly to final classifica (used by death screen button)
+  const goToClassifica = useCallback(() => {
+    const s = useSession.getState()
+    const scores = s.gameState?.roundScores ?? {}
+
+    // Compute final totals
+    const prevTotals = s.gameState?.totalScores ?? {}
+    const newTotals = { ...prevTotals }
+    s.players.forEach((p) => {
+      newTotals[p.id] = (prevTotals[p.id] ?? 0) + (scores[p.id] ?? 0)
+    })
+
+    // Update player scores for the leaderboard
+    const updatedPlayers = s.players.map((p) => ({
+      ...p,
+      score: newTotals[p.id] ?? 0,
+    }))
+    useSession.setState({ players: updatedPlayers })
+
+    setGameState({ totalScores: newTotals, currentRoundIdx: (s.gameState?.currentRoundIdx ?? 0) + 1 })
+    setPhase('blobjump_final')
+  }, [setGameState, setPhase])
 
   const localPlayer = players.find((p) => p.id === localPlayerId)
   const blobColor = localPlayer?.color ?? '#8B5CF6'
@@ -185,5 +217,6 @@ export const useBlobJump = () => {
     submitScore,
     updateScorePeriodic,
     hostAdvance,
+    goToClassifica,
   }
 }
