@@ -5,6 +5,18 @@ Tutti i cambiamenti notabili a BlobParty sono documentati qui.
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.1.0/), e questo
 progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [0.2.3] — 2026-05-16
+
+### Changed — Copy del bottone "fine partita" in solo
+Il bottone della reveal phase all'ultima domanda diceva "Chi ha vinto?! 🏆"
+(Trivia / Emoji Quiz) o "Classifica finale 🏆" (Mappa) anche in modalità solo,
+ma in solo non c'è un avversario. Sostituito con **"Scopri il tuo risultato 🎯"**
+quando `mode === 'local'`. Comportamento online invariato.
+
+Files toccati: `EmojiQuizRevealPhase.jsx`, `Trivia/phases/RevealPhase.jsx`,
+`Mappa/components/MappaReveal.jsx` (nuovo prop `isOnline` passato dai rispettivi
+`index.jsx`).
+
 ## [0.2.2] — 2026-05-16
 
 ### Changed — Schermata di fine partita semplificata in single-player

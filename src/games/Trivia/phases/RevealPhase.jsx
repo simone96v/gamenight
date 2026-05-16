@@ -24,6 +24,7 @@ const RevealPhase = ({
   myRoundResult,
   roundResults,
   isHost,
+  isOnline = true,
   hasMoreQuestions,
   advancing,
   category,
@@ -97,7 +98,11 @@ const RevealPhase = ({
         <div style={footerStyle}>
           {isHost ? (
             <Button variant="primary" width="full" onClick={onAdvance} disabled={advancing} style={accentBtnStyle(C.accent)}>
-              {advancing ? '...' : hasMoreQuestions ? 'Avanti tutta! →' : 'Chi ha vinto?! 🏆'}
+              {advancing
+                ? '...'
+                : hasMoreQuestions
+                  ? 'Avanti tutta! →'
+                  : (isOnline ? 'Chi ha vinto?! 🏆' : 'Scopri il tuo risultato 🎯')}
             </Button>
           ) : (
             <p style={waitingTextStyle}>Aspettando il boss... 👑</p>

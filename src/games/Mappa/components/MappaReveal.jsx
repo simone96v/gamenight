@@ -19,6 +19,7 @@ const MappaReveal = ({
   players,
   localPlayerId,
   isHost,
+  isOnline = true,
   pins,
   hasMoreQuestions,
   advancing,
@@ -163,7 +164,7 @@ const MappaReveal = ({
                 ? '...'
                 : hasMoreQuestions
                   ? 'Avanti tutta! →'
-                  : 'Classifica finale 🏆'}
+                  : (isOnline ? 'Classifica finale 🏆' : 'Scopri il tuo risultato 🎯')}
             </Button>
           ) : (
             <p style={S.waitText}>Aspettando il boss... 👑</p>

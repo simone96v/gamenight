@@ -116,6 +116,7 @@ const Trivia = () => {
         myRoundResult={trivia.myRoundResult}
         roundResults={trivia.roundResults}
         isHost={trivia.isHost}
+        isOnline={trivia.isOnline}
         hasMoreQuestions={trivia.hasMoreQuestions}
         advancing={trivia.advancing}
         category={trivia.currentCategory}

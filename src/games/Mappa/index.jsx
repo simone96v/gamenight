@@ -138,6 +138,7 @@ const Mappa = () => {
           pins={mappa.pins}
           hasMoreQuestions={mappa.hasMoreQuestions}
           advancing={mappa.advancing}
+          isOnline={mappa.isOnline}
           onAdvance={mappa.hostAdvance}
           onExit={handleChangeGame}
         />

@@ -24,6 +24,7 @@ const EmojiQuizRevealPhase = ({
   eqRoundResult,
   eqScores,
   isHost,
+  isOnline = true,
   hasMoreRounds,
   advancing,
   onAdvance,
@@ -143,7 +144,11 @@ const EmojiQuizRevealPhase = ({
         <div style={footerStyle}>
           {isHost ? (
             <Button variant="primary" width="full" onClick={onAdvance} disabled={advancing} style={accentBtnStyle(C.accent)}>
-              {advancing ? '...' : hasMoreRounds ? 'Avanti tutta! →' : 'Chi ha vinto?! 🏆'}
+              {advancing
+                ? '...'
+                : hasMoreRounds
+                  ? 'Avanti tutta! →'
+                  : (isOnline ? 'Chi ha vinto?! 🏆' : 'Scopri il tuo risultato 🎯')}
             </Button>
           ) : (
             <p style={waitingTextStyle}>Aspettando il boss... 👑</p>

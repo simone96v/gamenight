@@ -146,6 +146,7 @@ const EmojiQuiz = () => {
         eqRoundResult={eq.eqRoundResult}
         eqScores={eq.eqScores}
         isHost={eq.isHost}
+        isOnline={eq.isOnline}
         hasMoreRounds={eq.hasMoreRounds}
         advancing={false}
         onAdvance={eq.hostAdvance}
