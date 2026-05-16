@@ -8,6 +8,7 @@ import Button from '../components/ui/Button'
 import IconButton from '../components/ui/IconButton'
 import GradientTitle from '../components/ui/GradientTitle'
 import ColorPicker from '../components/ColorPicker'
+import AccessoryPicker from '../components/AccessoryPicker'
 import { addPlayerToRoom, getRoom } from '../lib/room'
 import { useSession } from '../stores/useSession'
 
@@ -19,6 +20,7 @@ const JoinScreen = () => {
   const [code, setCode] = useState(searchParams.get('code') || '')
   const [name, setName] = useState('')
   const [selectedColor, setSelectedColor] = useState(null)
+  const [selectedAccessory, setSelectedAccessory] = useState(null)
   const [takenColors, setTakenColors] = useState([])
   const [roomChecked, setRoomChecked] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -71,6 +73,7 @@ const JoinScreen = () => {
       id: playerId,
       name: name.trim(),
       color: selectedColor,
+      accessory: selectedAccessory,
     })
     if (error) {
       const errType = error.message === 'room_full' ? 'room_full' : 'room_not_found'
@@ -180,6 +183,14 @@ const JoinScreen = () => {
           />
         )}
 
+        {/* Accessory picker */}
+        {showForm && (
+          <AccessoryPicker
+            selected={selectedAccessory}
+            onSelect={setSelectedAccessory}
+          />
+        )}
+
         {/* Entra button */}
         {showForm && (
           <motion.div
@@ -204,6 +215,7 @@ const JoinScreen = () => {
       <Blob
         color={selectedColor}
         expr={blobExpr}
+        accessory={selectedAccessory}
         id="join-blob"
         size="min(clamp(160px, 40vw, 260px), clamp(120px, 22dvh, 260px))"
         animate={false}

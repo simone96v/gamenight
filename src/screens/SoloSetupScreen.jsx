@@ -10,12 +10,14 @@ import Blob from '../components/Blob'
 import Button from '../components/ui/Button'
 import GradientTitle from '../components/ui/GradientTitle'
 import ColorPicker from '../components/ColorPicker'
+import AccessoryPicker from '../components/AccessoryPicker'
 import { useSession } from '../stores/useSession'
 
 const SoloSetupScreen = () => {
   const navigate = useNavigate()
   const [name, setName] = useState('')
   const [selectedColor, setSelectedColor] = useState(null)
+  const [selectedAccessory, setSelectedAccessory] = useState(null)
   const resetSession = useSession((s) => s.resetSession)
 
   const canStart = name.trim().length > 0 && selectedColor
@@ -37,6 +39,7 @@ const SoloSetupScreen = () => {
         id: playerId,
         name: name.trim(),
         color: selectedColor,
+        accessory: selectedAccessory,
         score: 0,
         skip: false,
         isHost: true,
@@ -91,6 +94,8 @@ const SoloSetupScreen = () => {
 
         <ColorPicker selected={selectedColor} onSelect={setSelectedColor} />
 
+        <AccessoryPicker selected={selectedAccessory} onSelect={setSelectedAccessory} />
+
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -130,6 +135,7 @@ const SoloSetupScreen = () => {
       <Blob
         color={selectedColor}
         expr={blobExpr}
+        accessory={selectedAccessory}
         id="solo-blob"
         size="min(clamp(160px, 40vw, 260px), clamp(120px, 22dvh, 260px))"
         animate={false}

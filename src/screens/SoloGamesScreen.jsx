@@ -1,4 +1,4 @@
-// SoloGamesScreen — selezione gioco per modalità solo (no voting, click diretto).
+﻿// SoloGamesScreen â€” selezione gioco per modalitÃ  solo (no voting, click diretto).
 
 import { useCallback } from 'react'
 import { motion } from 'framer-motion'
@@ -46,7 +46,7 @@ const SoloGamesScreen = () => {
       <AppHeader
         leading={
           <IconButton ariaLabel="Indietro" onClick={() => navigate('/solo', { replace: true })}>
-            ←
+            â†
           </IconButton>
         }
       />
@@ -84,7 +84,7 @@ const SoloGamesScreen = () => {
                 gap: 8,
                 marginTop: 'clamp(8px, 1.2dvh, 12px)',
               }}>
-                <MiniBlob color={player.color} expr={expr} size={28} id="solo-hdr" />
+                <MiniBlob color={player.color} expr={expr} accessory={player.accessory} size={28} id="solo-hdr" />
                 <span style={{
                   fontSize: 'clamp(13px, 1.6dvh, 16px)',
                   fontWeight: 700,
@@ -205,10 +205,11 @@ const SoloGameCard = ({ game, index, onClick }) => (
         whiteSpace: 'nowrap',
         flexShrink: 0,
       }}>
-        🎮 1
+        ðŸŽ® 1
       </span>
     </div>
   </motion.button>
 )
 
 export default SoloGamesScreen
+

@@ -1,4 +1,4 @@
-// Fase finale: podio top-3 con blob + corona + leaderboard + MVP awards + footer host.
+﻿// Fase finale: podio top-3 con blob + corona + leaderboard + MVP awards + footer host.
 // UI coerente con la homepage: mini blob con gradiente e occhi animati.
 
 import { motion } from 'framer-motion'
@@ -8,7 +8,7 @@ import MiniBlob, { useMiniExpr } from '../../../components/MiniBlob'
 import GameSection from '../../../components/ui/GameSection'
 import MvpAwards from '../components/MvpAwards'
 
-/* ── Corona SVG inline ── */
+/* â”€â”€ Corona SVG inline â”€â”€ */
 const Crown = ({ size = 28 }) => (
   <svg viewBox="0 0 100 80" width={size} height={size * 0.8} style={{ display: 'block' }}>
     <polygon
@@ -25,7 +25,7 @@ const Crown = ({ size = 28 }) => (
   </svg>
 )
 
-/* ── Podium blob con corona opzionale ── */
+/* â”€â”€ Podium blob con corona opzionale â”€â”€ */
 const PodiumBlob = ({ player, rank, expr, blobSize, delay }) => {
   const isFirst = rank === 0
   const rankColors = ['#FBBF24', '#C0C0C0', '#CD7F32']
@@ -72,6 +72,7 @@ const PodiumBlob = ({ player, rank, expr, blobSize, delay }) => {
           color={player.color}
           expr={expr}
           size={blobSize}
+          accessory={player.accessory}
           id={`podium-${rank}`}
         />
       </motion.div>
@@ -167,7 +168,7 @@ const FinalPhase = ({
           )}
         </motion.div>
 
-        {/* Podium top 3 — ordine visivo: 2nd, 1st, 3rd */}
+        {/* Podium top 3 â€” ordine visivo: 2nd, 1st, 3rd */}
         {sorted.length >= 2 && (
           <div style={podiumStyle}>
             {[1, 0, 2].map((rank) => {
@@ -190,7 +191,7 @@ const FinalPhase = ({
 
         {/* Classifica completa */}
         <GameSection
-          emoji="📊"
+          emoji="ðŸ“Š"
           title="Classifica"
           delay={0.3}
           style={{
@@ -224,6 +225,7 @@ const FinalPhase = ({
                     color={p.color}
                     expr={expr}
                     size={28}
+                    accessory={p.accessory}
                     id={`lb-${i}`}
                   />
 
@@ -293,7 +295,7 @@ const FinalPhase = ({
   )
 }
 
-/* ── Styles ── */
+/* â”€â”€ Styles â”€â”€ */
 
 const containerStyle = {
   display: 'flex',
@@ -365,3 +367,4 @@ const waitingTextStyle = {
 }
 
 export default FinalPhase
+

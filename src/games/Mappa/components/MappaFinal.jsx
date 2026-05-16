@@ -1,4 +1,4 @@
-// Classifica finale Mappa — con MiniBlob + corona, coerente con Trivia FinalPhase.
+﻿// Classifica finale Mappa â€” con MiniBlob + corona, coerente con Trivia FinalPhase.
 
 import { motion } from 'framer-motion'
 import AppHeader from '../../../components/AppHeader'
@@ -10,7 +10,7 @@ import { GAME_COLORS, accentBtnStyle } from '../../../theme/gameColors'
 
 const C = GAME_COLORS.mappa
 
-/* ── Corona SVG ── */
+/* â”€â”€ Corona SVG â”€â”€ */
 const Crown = ({ size = 28 }) => (
   <svg viewBox="0 0 100 80" width={size} height={size * 0.8} style={{ display: 'block' }}>
     <polygon
@@ -27,7 +27,7 @@ const Crown = ({ size = 28 }) => (
   </svg>
 )
 
-/* ── Podium blob ── */
+/* â”€â”€ Podium blob â”€â”€ */
 const PodiumBlob = ({ player, rank, expr, blobSize, delay }) => {
   const isFirst = rank === 0
   const rankColors = ['#FBBF24', '#C0C0C0', '#CD7F32']
@@ -63,7 +63,7 @@ const PodiumBlob = ({ player, rank, expr, blobSize, delay }) => {
         animate={isFirst ? { scale: [1, 1.06, 1] } : {}}
         transition={isFirst ? { repeat: Infinity, duration: 2.5, ease: 'easeInOut' } : {}}
       >
-        <MiniBlob color={player.color} expr={expr} size={blobSize} id={`mp-${rank}`} />
+        <MiniBlob color={player.color} expr={expr} accessory={player.accessory} size={blobSize} id={`mp-${rank}`} />
       </motion.div>
 
       <span style={{
@@ -162,7 +162,7 @@ const MappaFinal = ({
         )}
 
         {/* Leaderboard */}
-        <GameSection emoji="📊" title="Tutti i risultati" delay={0.3}
+        <GameSection emoji="ðŸ“Š" title="Tutti i risultati" delay={0.3}
           style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
         >
           <div style={S.leaderboard}>
@@ -181,7 +181,7 @@ const MappaFinal = ({
                   }}
                 >
                   <span style={{ ...S.lbRank, color: C.accent }}>#{i + 1}</span>
-                  <MiniBlob color={p.color} expr={expr} size={28} id={`mlb-${i}`} />
+                  <MiniBlob color={p.color} expr={expr} accessory={p.accessory} size={28} id={`mlb-${i}`} />
                   <span style={S.lbName}>{p.name}</span>
                   <span style={{ ...S.lbScore, color: C.accent }}>{p.score ?? 0}</span>
                 </motion.div>
@@ -295,3 +295,5 @@ const S = {
 }
 
 export default MappaFinal
+
+

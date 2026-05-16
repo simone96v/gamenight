@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { BLOB_GRADIENTS, GRAY_GRADIENT } from '../utils/colors'
+import { renderAccessory } from '../utils/accessories'
 
 const BlobEyes = ({ expr, lx, rx, ey, prefix, rotate = 0 }) => {
   const pupilDx = expr === 'look-left' ? -9 : expr === 'look-right' ? 9 : 0
@@ -51,6 +52,7 @@ const Blob = ({
   id = 'blob',
   animate = true,
   name,
+  accessory,
 }) => {
   const [c1, c2, c3] = BLOB_GRADIENTS[color] || GRAY_GRADIENT
   const prefix = id
@@ -73,7 +75,7 @@ const Blob = ({
     >
       <svg
         viewBox="0 0 300 300"
-        style={{ width: size, height: 'auto' }}
+        style={{ width: size, height: 'auto', overflow: 'visible' }}
         aria-hidden="true"
       >
         <defs>
@@ -93,6 +95,7 @@ const Blob = ({
         </defs>
         <circle cx="150" cy="150" r="145" fill={`url(#${prefix}-grad)`} />
         <BlobEyes expr={expr} lx={115} rx={185} ey={140} prefix={prefix} rotate={rotate} />
+        {accessory && renderAccessory(accessory)}
       </svg>
       {name && (
         <div style={{

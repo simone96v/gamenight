@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+﻿import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import AppHeader from '../components/AppHeader'
@@ -150,7 +150,7 @@ const MappaLobbyScreen = () => {
     <div style={S.container}>
       <AppHeader
         accentColor="#059669"
-        leading={canControl && <IconButton ariaLabel="Indietro" onClick={handleBack}>←</IconButton>}
+        leading={canControl && <IconButton ariaLabel="Indietro" onClick={handleBack}>â†</IconButton>}
       />
 
       <div style={S.body}>
@@ -160,7 +160,7 @@ const MappaLobbyScreen = () => {
           style={{ textAlign: 'center' }}
         >
           <GradientTitle as="h2" size="lg">
-            📍 Indovina Dove
+            ðŸ“ Indovina Dove
           </GradientTitle>
           <p style={S.subtitle}>Piazza il pin sulla mappa d'Italia!</p>
         </motion.div>
@@ -220,7 +220,7 @@ const MappaLobbyScreen = () => {
           <div style={S.playersList}>
             {players.map((p, i) => (
               <div key={p.id} style={S.playerChip}>
-                <MiniBlob color={p.color} expr={expr} size={28} id={`ml-${i}`} />
+                <MiniBlob color={p.color} expr={expr} accessory={p.accessory} size={28} id={`ml-${i}`} />
                 <span style={S.playerName}>{p.name}</span>
               </div>
             ))}
@@ -236,10 +236,10 @@ const MappaLobbyScreen = () => {
               disabled={launching}
               style={accentBtnStyle('mappa')}
             >
-              {launching ? '⏳ Caricamento...' : '🗺️ Inizia!'}
+              {launching ? 'â³ Caricamento...' : 'ðŸ—ºï¸ Inizia!'}
             </Button>
           ) : (
-            <p style={S.waitText}>Aspettando il boss... 👑</p>
+            <p style={S.waitText}>Aspettando il boss... ðŸ‘‘</p>
           )}
         </div>
       </div>
@@ -335,3 +335,4 @@ const S = {
 }
 
 export default MappaLobbyScreen
+

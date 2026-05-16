@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+﻿import { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import AppHeader from '../components/AppHeader'
@@ -46,7 +46,7 @@ const BlobJumpLobbyScreen = () => {
         currentSeed: seed,
         currentRoundIdx: 0,
         totalRounds: rounds,
-        roundDuration: 0, // 0 = endless — game ends only on death
+        roundDuration: 0, // 0 = endless â€” game ends only on death
         roundScores: {},
         totalScores: {},
       }
@@ -124,7 +124,7 @@ const BlobJumpLobbyScreen = () => {
     <div style={S.container}>
       <AppHeader
         accentColor={C.accent}
-        leading={canControl && <IconButton ariaLabel="Indietro" onClick={handleBack}>←</IconButton>}
+        leading={canControl && <IconButton ariaLabel="Indietro" onClick={handleBack}>â†</IconButton>}
       />
 
       <div style={S.body}>
@@ -134,9 +134,9 @@ const BlobJumpLobbyScreen = () => {
           style={{ textAlign: 'center' }}
         >
           <GradientTitle as="h2" size="lg">
-            🦘 Blob Jump
+            ðŸ¦˜ Blob Jump
           </GradientTitle>
-          <p style={S.subtitle}>Salta più in alto degli altri!</p>
+          <p style={S.subtitle}>Salta piÃ¹ in alto degli altri!</p>
         </motion.div>
 
 
@@ -150,7 +150,7 @@ const BlobJumpLobbyScreen = () => {
           <div style={S.playersList}>
             {players.map((p, i) => (
               <div key={p.id} style={S.playerChip}>
-                <MiniBlob color={p.color} expr={expr} size={28} id={`bjl-${i}`} />
+                <MiniBlob color={p.color} expr={expr} accessory={p.accessory} size={28} id={`bjl-${i}`} />
                 <span style={S.playerName}>{p.name}</span>
               </div>
             ))}
@@ -166,10 +166,10 @@ const BlobJumpLobbyScreen = () => {
               disabled={launching}
               style={accentBtnStyle('blobjump')}
             >
-              {launching ? '⏳ Caricamento...' : '🦘 Via!'}
+              {launching ? 'â³ Caricamento...' : 'ðŸ¦˜ Via!'}
             </Button>
           ) : (
-            <p style={S.waitText}>Aspettando il boss... 👑</p>
+            <p style={S.waitText}>Aspettando il boss... ðŸ‘‘</p>
           )}
         </div>
       </div>
@@ -253,3 +253,4 @@ const S = {
 }
 
 export default BlobJumpLobbyScreen
+

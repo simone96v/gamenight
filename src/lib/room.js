@@ -109,7 +109,7 @@ export const subscribeToRoom = (code, onUpdate) => {
 // Aggiunge un giocatore alla stanza tramite RPC atomico (FOR UPDATE).
 // Elimina la race-condition fra join simultanei.
 // `isHost` marca il giocatore come host (solo per il creatore della stanza).
-export const addPlayerToRoom = async (code, { id, name, color: chosenColor, isHost = false }) => {
+export const addPlayerToRoom = async (code, { id, name, color: chosenColor, isHost = false, accessory = null }) => {
   const { room, error: getErr } = await getRoom(code)
   if (getErr || !room) return { player: null, error: getErr ?? new Error('room_not_found') }
 
@@ -134,7 +134,23 @@ export const addPlayerToRoom = async (code, { id, name, color: chosenColor, isHo
     return { player: null, error }
   }
 
-  const player = { id, name, color, score: 0, is_host: !!isHost, is_ready: false }
+  // Patch extra fields (accessory) into the player object in room state.
+  // The RPC only stores core fields; we merge extras via a state update.
+  if (accessory) {
+    const { room: updated } = await getRoom(code)
+    if (updated) {
+      const updState = updated.state ?? {}
+      const updPlayers = (updState.players || []).map((p) =>
+        p.id === id ? { ...p, accessory } : p,
+      )
+      await supabase
+        .from('rooms')
+        .update({ state: { ...updState, players: updPlayers }, updated_at: new Date().toISOString() })
+        .eq('code', code)
+    }
+  }
+
+  const player = { id, name, color, score: 0, is_host: !!isHost, is_ready: false, accessory }
   return { player, error: null }
 }
 
