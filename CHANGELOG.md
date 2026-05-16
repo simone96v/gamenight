@@ -5,6 +5,41 @@ Tutti i cambiamenti notabili a BlobParty sono documentati qui.
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.1.0/), e questo
 progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
+## [0.1.2] — 2026-05-16
+
+### Changed — Meccanica Emoji Quiz: ritorno al text input + indizio
+
+Revertita la scelta multipla. Si torna alla meccanica originale del prototipo
+(input testuale libero + matching fuzzy) ma **mantenendo il design system
+dell'app** introdotto in v0.1.1 (AppHeader, GameHUD, CSS variables, light/dark,
+player accent, niente audio).
+
+- **Input testuale**: l'utente digita il titolo nel campo "Scrivi il titolo…"
+  e preme Indovina (o Enter). Matching fuzzy (Levenshtein, normalizzazione
+  Unicode, stopwords).
+- **Bottone indizio**: "💡 Usa un indizio (−punti)". Cliccando, appare
+  immediatamente il testo dell'indizio sotto la card emoji. Il bottone cambia
+  in "💡 Indizio usato · punti ridotti". I punti massimi del round vengono
+  cappati a 350 (vs 800 senza indizio).
+- **Wrong-guess feedback**: input shake + flash rosso, l'input si svuota,
+  nessuna penalità — si può continuare a tentare finché il timer non scade.
+- **Reveal phase** riprogettata: card grande con il titolo corretto + chip
+  con avatar dei giocatori che hanno indovinato (👑 sul vincitore del round) +
+  tempo di risposta. Niente più 4 tile risposta.
+
+### Restored
+- `src/games/EmojiQuiz/matching.js` (normalize / lev / isCorrect).
+
+### Internal
+- `scoring.js`: ripristinato il parametro `hintUsed` in `basePoints()`.
+- `loadEmojiQuizDeck()`: rimossa la generazione di distractor (non più
+  necessari) — torna a esporre `answers[]` (varianti accettate).
+- `gameState.eqRoundAnswers`: ora `{ pid: { round, timeMs, hintUsed } }`
+  (solo guess corretti).
+- `gameState.eqHintUsed`: `{ pid: { round, used } }` (tracking dell'hint
+  per il computing dei punti).
+- Test Playwright aggiornati per il flow text-input + hint.
+
 ## [0.1.1] — 2026-05-16
 
 ### Changed — UI di Emoji Quiz riallineata al design system dell'app

@@ -1,4 +1,4 @@
-// Multiplayer flow (multi-choice, Trivia-style UI):
+// Multiplayer flow (text-input):
 // 2 browser contexts → create+join party → vote Emoji Quiz → host start →
 // entrambi vedono question phase con lo stesso puzzle (deck sync).
 
@@ -7,7 +7,7 @@ import { test, expect } from '@playwright/test'
 test.setTimeout(90_000)
 
 test.describe('Emoji Quiz — multiplayer', () => {
-  test('host crea + client si unisce + votano + host avvia → entrambi vedono lo stesso puzzle', async ({ browser }) => {
+  test('host + client votano Emoji Quiz, host avvia, entrambi vedono lo stesso puzzle', async ({ browser }) => {
     const hostCtx = await browser.newContext()
     const clientCtx = await browser.newContext()
     const host = await hostCtx.newPage()
@@ -34,11 +34,10 @@ test.describe('Emoji Quiz — multiplayer', () => {
       await client.getByPlaceholder(/Es\./).fill('Clientbot')
       await client.getByRole('button', { name: /Entra|Join/i }).click()
 
-      // Entrambi vedono l'altro
       await expect(host.getByText('Clientbot')).toBeVisible({ timeout: 10_000 })
       await expect(client.getByText('Hostbot')).toBeVisible({ timeout: 10_000 })
 
-      // Host avanza ai giochi
+      // Avanzamento ai giochi
       await host.getByRole('button', { name: /Avanti|Pronti|Inizia|Continua|Vota|Giochi/i }).click()
       await expect(host).toHaveURL(/\/games/, { timeout: 10_000 })
       await expect(client).toHaveURL(/\/games/, { timeout: 10_000 })
@@ -53,27 +52,26 @@ test.describe('Emoji Quiz — multiplayer', () => {
 
       // Host avvia
       await host.getByRole('button', { name: /Inizia/i }).click()
-
-      // /game/emojiquiz + question phase
       await expect(host).toHaveURL(/\/game\/emojiquiz/, { timeout: 10_000 })
       await expect(client).toHaveURL(/\/game\/emojiquiz/, { timeout: 10_000 })
 
-      // Question phase su entrambi (difficulty marker)
+      // Question phase su entrambi: emoji card + input
       await expect(host.locator('[aria-label*="Difficoltà"]')).toBeVisible({ timeout: 20_000 })
       await expect(client.locator('[aria-label*="Difficoltà"]')).toBeVisible({ timeout: 20_000 })
+      await expect(host.getByPlaceholder(/Scrivi il titolo/i)).toBeVisible()
+      await expect(client.getByPlaceholder(/Scrivi il titolo/i)).toBeVisible()
 
-      // 4 tile risposta su entrambi
-      const hostTiles = host.locator('button').filter({ has: host.locator('span').filter({ hasText: /^[A-D]$/ }) })
-      const clientTiles = client.locator('button').filter({ has: client.locator('span').filter({ hasText: /^[A-D]$/ }) })
-      await expect(hostTiles).toHaveCount(4)
-      await expect(clientTiles).toHaveCount(4)
-
-      // Sync del deck: almeno un titolo noto deve apparire identico fra i due
+      // Sync del deck: host e client mostrano lo stesso emoji
+      const hostEmoji = await host.locator('.eq-emoji-puzzle, [aria-label*="Difficoltà"]').first().evaluate(
+        (el) => el.parentElement?.textContent || '',
+      )
+      // Verifica sync via HTML content: stesso puzzle = stesso emoji su entrambe le pagine
       const hostHTML = await host.content()
       const clientHTML = await client.content()
-      const knownTitles = ['Il Re Leone', 'Titanic', 'Ghostbusters', 'Frozen', 'Joker', 'Baby Shark', 'Purple Rain', 'WALL·E', 'Ratatouille', 'Jurassic Park']
-      const sharedTitles = knownTitles.filter((t) => hostHTML.includes(t) && clientHTML.includes(t))
-      expect(sharedTitles.length, 'host e client devono condividere almeno un titolo (deck sync)').toBeGreaterThan(0)
+      // Cerca emoji noti del bank
+      const knownEmojis = ['🦁👑', '🚢🧊💔', '👻🔫', '🐠🔍', '🦖🏝️', '🤖🌱❤️', '👽📞🏠', '🃏🤡', '❄️👸⛄', '👶🦈', '💃🪩👑', '🌧️💜', '🚀']
+      const sharedEmoji = knownEmojis.find((e) => hostHTML.includes(e) && clientHTML.includes(e))
+      expect(sharedEmoji, 'host e client devono vedere lo stesso emoji').toBeDefined()
     } finally {
       await hostCtx.close()
       await clientCtx.close()

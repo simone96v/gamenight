@@ -106,12 +106,18 @@ const EmojiQuiz = () => {
         timerDuration={eq.timerDuration}
         players={eq.players}
         localPlayerId={eq.localPlayerId}
-        localAnswer={eq.localAnswer}
+        guess={eq.guess}
+        setGuess={eq.setGuess}
+        wrongFlash={eq.wrongFlash}
         submitted={eq.submitted}
+        hintUsed={eq.hintUsed}
+        inputRef={eq.inputRef}
+        inputWrapRef={eq.inputWrapRef}
         isExpired={eq.isExpired}
         isHost={eq.isHost}
         eqScores={eq.eqScores}
-        onAnswer={eq.submitAnswer}
+        onSubmit={eq.submitAnswer}
+        onUseHint={eq.useHint}
         onExit={handleChangeGame}
       />
     )
@@ -126,7 +132,6 @@ const EmojiQuiz = () => {
         timerDuration={eq.timerDuration}
         players={eq.players}
         localPlayerId={eq.localPlayerId}
-        localAnswer={eq.localAnswer}
         eqRoundAnswers={eq.eqRoundAnswers}
         eqRoundResult={eq.eqRoundResult}
         eqScores={eq.eqScores}
