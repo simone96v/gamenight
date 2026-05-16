@@ -128,6 +128,18 @@ const JoinScreen = () => {
           </p>
         </motion.div>
 
+        {/* Blob preview inline — subito dopo titolo+sottotitolo */}
+        <div style={blobWrapStyle}>
+          <Blob
+            color={selectedColor}
+            expr={blobExpr}
+            id="join-blob"
+            size="clamp(120px, 22dvh, 180px)"
+            animate={false}
+            style={{ position: 'relative', left: 'auto', right: 'auto', top: 'auto', bottom: 'auto', transform: 'none' }}
+          />
+        </div>
+
         {/* Code input */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -198,20 +210,6 @@ const JoinScreen = () => {
           </motion.div>
         )}
       </form>
-
-      {/* Bottom blob — gray until color is picked, hidden when form is full on short screens */}
-      <Blob
-        color={selectedColor}
-        expr={blobExpr}
-        id="join-blob"
-        size="min(clamp(200px, 52vw, 320px), clamp(180px, 30dvh, 320px))"
-        animate={false}
-        style={{
-          bottom: 'clamp(-40px, -6dvh, -20px)',
-          left: '50%',
-          transform: 'translateX(-50%)',
-        }}
-      />
     </motion.div>
   )
 }
@@ -232,6 +230,14 @@ const labelStyle = {
   letterSpacing: '0.06em',
   textTransform: 'uppercase',
   marginBottom: 'clamp(4px, 0.8dvh, 8px)',
+}
+
+const blobWrapStyle = {
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  flexShrink: 0,
+  margin: 'clamp(4px, 1dvh, 10px) 0',
 }
 
 const inputStyle = {

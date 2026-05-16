@@ -68,116 +68,18 @@ const ScramblePlaying = ({
       />
 
       <div style={S.body}>
-        {/* Vassoio della parola in costruzione */}
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{
-            opacity: 1,
-            y: 0,
-            x: errorFlash ? [0, -8, 8, -6, 6, 0] : 0,
-          }}
-          transition={errorFlash ? { duration: 0.4 } : SPRING}
+        {/* Istruzioni in alto (box col colore del giocatore) */}
+        <div
           style={{
-            ...S.tray,
-            borderColor: errorFlash ? 'var(--danger)' : 'var(--border)',
+            ...S.instructionsBox,
+            background: `${C.accent}14`,
+            borderColor: `${C.accent}40`,
           }}
         >
-          {Array.from({ length: RACK_LEN }).map((_, i) => {
-            const idx = tray[i]
-            const ch = idx != null ? shuffledRack[idx] : ''
-            return (
-              <div
-                key={i}
-                style={{
-                  ...S.traySlot,
-                  background: ch ? C.accent : 'transparent',
-                  color: ch ? '#fff' : 'var(--muted)',
-                  borderColor: ch ? C.accent : 'var(--border)',
-                }}
-              >
-                {ch}
-              </div>
-            )
-          })}
-        </motion.div>
-
-        {errorFlash && (
-          <motion.p
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            style={S.errorMsg}
-          >
-            {errorFlash === 'duplicate' && 'Già trovata!'}
-            {errorFlash === 'invalid' && 'Parola non valida'}
-            {errorFlash === 'too_short' && 'Minimo 3 lettere'}
-          </motion.p>
-        )}
-
-        {/* Griglia tessere */}
-        <div style={S.tilesGrid}>
-          {shuffledRack.split('').map((ch, i) => {
-            const used = usedSet.has(i)
-            return (
-              <motion.button
-                key={`${i}-${ch}`}
-                type="button"
-                disabled={used || isExpired}
-                onClick={() => onTapTile(i)}
-                whileHover={used || isExpired ? undefined : { y: -3, scale: 1.04 }}
-                whileTap={used || isExpired ? undefined : { scale: 0.93 }}
-                transition={SPRING}
-                style={{
-                  ...S.tile,
-                  background: used ? 'var(--surface2)' : 'var(--surface)',
-                  color: used ? 'var(--muted)' : 'var(--text)',
-                  borderColor: used ? 'var(--border)' : 'var(--border-strong)',
-                  opacity: used ? 0.35 : 1,
-                  cursor: used || isExpired ? 'default' : 'pointer',
-                  boxShadow: used ? 'none' : 'var(--shadow-sm)',
-                }}
-              >
-                {ch}
-              </motion.button>
-            )
-          })}
-        </div>
-
-        {/* Azioni */}
-        <div style={S.actions}>
-          <motion.button
-            type="button"
-            onClick={onReshuffle}
-            disabled={isExpired}
-            whileHover={isExpired ? undefined : { scale: 1.05 }}
-            whileTap={isExpired ? undefined : { scale: 0.95 }}
-            transition={SPRING}
-            style={{ ...S.actionBtn, opacity: isExpired ? 0.4 : 1 }}
-            aria-label="Mescola"
-          >
-            🔀
-          </motion.button>
-          <motion.button
-            type="button"
-            onClick={tray.length > 0 ? (tray.length === 1 ? onBackspace : onClearTray) : undefined}
-            onContextMenu={(e) => { e.preventDefault(); onClearTray() }}
-            disabled={isExpired || tray.length === 0}
-            whileHover={isExpired || tray.length === 0 ? undefined : { scale: 1.05 }}
-            whileTap={isExpired || tray.length === 0 ? undefined : { scale: 0.95 }}
-            transition={SPRING}
-            style={{ ...S.actionBtn, opacity: isExpired || tray.length === 0 ? 0.4 : 1 }}
-            aria-label="Cancella"
-          >
-            ⌫
-          </motion.button>
-          <Button
-            variant="primary"
-            onClick={onSubmit}
-            disabled={!canSubmit}
-            style={canSubmit ? { ...accentBtnStyle(C.accent), flex: 1 } : { flex: 1 }}
-          >
-            {dictLoading ? '⏳ Caricamento...' : '✓ Invia'}
-          </Button>
+          <span style={{ ...S.instructionsIcon, color: C.accent }}>💡</span>
+          <p style={{ ...S.instructions, color: 'var(--text)' }}>
+            Tocca le tessere <strong style={{ color: C.accent }}>in ordine</strong> per comporre parole italiane, poi premi <strong style={{ color: C.accent }}>Invia</strong>.
+          </p>
         </div>
 
         {/* Header lista parole */}
@@ -188,12 +90,10 @@ const ScramblePlaying = ({
           </span>
         </div>
 
-        {/* Lista parole (scrollable interna) */}
+        {/* Lista parole (scrollable interna, occupa lo spazio centrale) */}
         <div className="scrollable-list" style={S.wordsList}>
           {myWords.length === 0 ? (
-            <p style={S.empty}>
-              Tocca le tessere in ordine per comporre una parola, poi premi <strong>Invia</strong>.
-            </p>
+            <p style={S.empty}>Nessuna parola ancora.</p>
           ) : (
             <AnimatePresence initial={false}>
               {[...myWords].reverse().map((w) => {
@@ -223,6 +123,148 @@ const ScramblePlaying = ({
             </AnimatePresence>
           )}
         </div>
+
+        {/* Area input in basso: vassoio + tessere + azioni (ergonomia mobile) */}
+        <div style={S.inputArea}>
+          {/* Vassoio della parola in costruzione (con bottone refresh per cancellare tutto) */}
+          <div style={S.trayWrap}>
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{
+                opacity: 1,
+                y: 0,
+                x: errorFlash ? [0, -8, 8, -6, 6, 0] : 0,
+              }}
+              transition={errorFlash ? { duration: 0.4 } : SPRING}
+              style={{
+                ...S.tray,
+                borderColor: errorFlash ? 'var(--danger)' : 'var(--border)',
+              }}
+            >
+              {Array.from({ length: RACK_LEN }).map((_, i) => {
+                const idx = tray[i]
+                const ch = idx != null ? shuffledRack[idx] : ''
+                return (
+                  <div
+                    key={i}
+                    style={{
+                      ...S.traySlot,
+                      background: ch ? C.accent : 'transparent',
+                      color: ch ? '#fff' : 'var(--muted)',
+                      borderColor: ch ? C.accent : 'var(--border)',
+                    }}
+                  >
+                    {ch}
+                  </div>
+                )
+              })}
+            </motion.div>
+            <AnimatePresence>
+              {tray.length > 0 && !isExpired && (
+                <motion.button
+                  key="tray-clear"
+                  type="button"
+                  onClick={onClearTray}
+                  initial={{ opacity: 0, scale: 0.6 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.6 }}
+                  whileHover={{ scale: 1.1, rotate: -30 }}
+                  whileTap={{ scale: 0.9 }}
+                  transition={SPRING}
+                  style={{ ...S.trayClearBtn, color: C.accent, borderColor: C.accent }}
+                  aria-label="Cancella lettere"
+                >
+                  ↺
+                </motion.button>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {errorFlash && (
+            <motion.p
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              style={S.errorMsg}
+            >
+              {errorFlash === 'duplicate' && 'Già trovata!'}
+              {errorFlash === 'invalid' && 'Parola non valida'}
+              {errorFlash === 'too_short' && 'Minimo 3 lettere'}
+            </motion.p>
+          )}
+
+          {/* Griglia tessere */}
+          <div style={S.tilesGrid}>
+            {shuffledRack.split('').map((ch, i) => {
+              const used = usedSet.has(i)
+              return (
+                <motion.button
+                  key={`${i}-${ch}`}
+                  type="button"
+                  disabled={used || isExpired}
+                  onClick={() => onTapTile(i)}
+                  whileHover={used || isExpired ? undefined : { y: -3, scale: 1.04 }}
+                  whileTap={used || isExpired ? undefined : { scale: 0.93 }}
+                  transition={SPRING}
+                  style={{
+                    ...S.tile,
+                    background: used ? 'var(--surface2)' : 'var(--surface)',
+                    color: used ? 'var(--muted)' : 'var(--text)',
+                    borderColor: used ? 'var(--border)' : 'var(--border-strong)',
+                    opacity: used ? 0.35 : 1,
+                    cursor: used || isExpired ? 'default' : 'pointer',
+                    boxShadow: used ? 'none' : 'var(--shadow-sm)',
+                  }}
+                >
+                  {ch}
+                </motion.button>
+              )
+            })}
+          </div>
+
+          {/* Azioni */}
+          <div style={S.actions}>
+            <motion.button
+              type="button"
+              onClick={onReshuffle}
+              disabled={isExpired}
+              whileHover={isExpired ? undefined : { scale: 1.05, rotate: 90 }}
+              whileTap={isExpired ? undefined : { scale: 0.95 }}
+              transition={SPRING}
+              style={{ ...S.actionBtn, opacity: isExpired ? 0.4 : 1, color: 'var(--text)' }}
+              aria-label="Mescola"
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M16 3h5v5" />
+                <path d="M4 20 21 3" />
+                <path d="M21 16v5h-5" />
+                <path d="m15 15 6 6" />
+                <path d="M4 4l5 5" />
+              </svg>
+            </motion.button>
+            <motion.button
+              type="button"
+              onClick={tray.length > 0 ? (tray.length === 1 ? onBackspace : onClearTray) : undefined}
+              onContextMenu={(e) => { e.preventDefault(); onClearTray() }}
+              disabled={isExpired || tray.length === 0}
+              whileHover={isExpired || tray.length === 0 ? undefined : { scale: 1.05 }}
+              whileTap={isExpired || tray.length === 0 ? undefined : { scale: 0.95 }}
+              transition={SPRING}
+              style={{ ...S.actionBtn, opacity: isExpired || tray.length === 0 ? 0.4 : 1 }}
+              aria-label="Cancella"
+            >
+              ⌫
+            </motion.button>
+            <Button
+              variant="primary"
+              onClick={onSubmit}
+              disabled={!canSubmit}
+              style={canSubmit ? { ...accentBtnStyle(C.accent), flex: 1 } : { flex: 1 }}
+            >
+              {dictLoading ? '⏳ Caricamento...' : '✓ Invia'}
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -244,6 +286,37 @@ const S = {
     overflow: 'hidden',
     minHeight: 0,
   },
+  instructionsBox: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 'clamp(8px, 1.6vw, 12px)',
+    padding: 'clamp(8px, 1.4dvh, 12px) clamp(12px, 3vw, 18px)',
+    border: '1.5px solid',
+    borderRadius: 'var(--radius-sm)',
+    flexShrink: 0,
+  },
+  instructionsIcon: {
+    fontSize: 'clamp(18px, 2.6dvh, 22px)',
+    lineHeight: 1,
+    flexShrink: 0,
+  },
+  instructions: {
+    margin: 0,
+    fontSize: 'clamp(12px, 1.5dvh, 14px)',
+    fontWeight: 600,
+    lineHeight: 1.4,
+  },
+  inputArea: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 'clamp(8px, 1.4dvh, 14px)',
+    flexShrink: 0,
+    marginTop: 'auto',
+  },
+  trayWrap: {
+    position: 'relative',
+    flexShrink: 0,
+  },
   tray: {
     display: 'flex',
     justifyContent: 'center',
@@ -251,9 +324,30 @@ const S = {
     background: 'var(--surface)',
     border: '1.5px solid var(--border)',
     borderRadius: 'var(--radius-sm)',
-    padding: 'clamp(8px, 1.4dvh, 12px) clamp(8px, 2vw, 12px)',
+    padding: 'clamp(8px, 1.4dvh, 12px) clamp(56px, 13vw, 68px) clamp(8px, 1.4dvh, 12px) clamp(8px, 2vw, 12px)',
     boxShadow: 'var(--shadow-sm)',
     flexShrink: 0,
+  },
+  trayClearBtn: {
+    position: 'absolute',
+    right: 'clamp(14px, 3.5vw, 22px)',
+    bottom: 'clamp(14px, 3dvh, 22px)',
+    width: 'clamp(28px, 6.5vw, 34px)',
+    height: 'clamp(28px, 6.5vw, 34px)',
+    borderRadius: '50%',
+    border: '1.5px solid var(--border-strong)',
+    background: 'var(--surface)',
+    fontSize: 'clamp(16px, 2.2dvh, 20px)',
+    fontWeight: 800,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: 'var(--shadow-sm)',
+    WebkitTapHighlightColor: 'transparent',
+    userSelect: 'none',
+    padding: 0,
+    lineHeight: 1,
   },
   traySlot: {
     width: 'clamp(28px, 8vw, 40px)',

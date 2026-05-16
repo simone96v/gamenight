@@ -33,21 +33,8 @@ const ScrambleLobbyScreen = () => {
       const now = new Date().toISOString()
       const s = useSession.getState()
 
-      // Solo mode: aggiunge Blobby (bot) come avversario, se non già presente.
-      let basePlayers = s.players || []
-      if (s.mode === 'local' && !basePlayers.some((p) => p.id === 'blobby')) {
-        basePlayers = [...basePlayers, {
-          id: 'blobby',
-          name: 'Blobby',
-          color: '#14B8A6',
-          score: 0,
-          isBot: true,
-        }]
-        useSession.setState({ players: basePlayers })
-      }
-
       const fullState = {
-        players: basePlayers.map((p) => ({ ...p, score: 0 })),
+        players: (s.players || []).map((p) => ({ ...p, score: 0 })),
         currentIdx: 0,
         round: 0,
         activeGame: 'scramble',

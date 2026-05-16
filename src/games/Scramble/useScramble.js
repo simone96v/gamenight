@@ -198,69 +198,6 @@ export const useScramble = () => {
     isOnline, roomCode, localPlayerId, setGameState,
   ])
 
-  // ── Blobby bot (solo mode) ──
-  // All'inizio del round (mode=local, gioco in playing, blobby presente) precomputa
-  // le parole valide dal rack e le sottomette a intervalli crescenti durante i 60s.
-  const blobbyTimersRef = useRef([])
-  useEffect(() => {
-    // Clean previous schedule on phase/round change.
-    blobbyTimersRef.current.forEach((t) => clearTimeout(t))
-    blobbyTimersRef.current = []
-
-    if (mode !== 'local') return
-    if (currentPhase !== 'scramble_playing') return
-    if (!dict || !rack) return
-    if (!players.some((p) => p.id === 'blobby')) return
-
-    // Precomputa tutte le parole formabili dal rack che sono nel dizionario,
-    // ordinate per (lunghezza desc poi alfabetico) per scegliere le migliori.
-    const candidates = []
-    for (const w of dict) {
-      if (w.length < MIN_WORD_LEN) continue
-      if (isFormable(w, rack)) candidates.push(w)
-    }
-    candidates.sort((a, b) => b.length - a.length || a.localeCompare(b))
-
-    // Difficoltà: ~70% delle parole disponibili tra le top-30, max 12 a round.
-    const pool = candidates.slice(0, Math.min(40, candidates.length))
-    // Shuffle leggera per non essere deterministico.
-    for (let i = pool.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1))
-      ;[pool[i], pool[j]] = [pool[j], pool[i]]
-    }
-    const targetCount = Math.min(pool.length, 6 + Math.floor(Math.random() * 5)) // 6-10
-    const picks = pool.slice(0, targetCount)
-
-    // Distribuiscili nell'arco del round (lascia i primi 3s di "pensata" iniziale).
-    const startMs = questionStartedAt ? new Date(questionStartedAt).getTime() : Date.now()
-    const windowMs = (roundDuration - 3) * 1000
-    const cumulative = []
-    let lastAcceptedWords = useSession.getState().gameState?.scrambleWords?.blobby ?? []
-    picks.forEach((w, i) => {
-      const delay = 3000 + Math.floor((i + 0.5) * (windowMs / picks.length))
-        + Math.floor((Math.random() - 0.5) * 1500)
-      const elapsed = Date.now() - startMs
-      const t = setTimeout(() => {
-        const s = useSession.getState()
-        if (s.currentPhase !== 'scramble_playing') return
-        const prev = s.gameState?.scrambleWords ?? {}
-        const cur = Array.isArray(prev.blobby) ? prev.blobby : []
-        if (cur.includes(w)) return
-        cumulative.push(w)
-        const next = { ...prev, blobby: [...cur, w] }
-        setGameState({ scrambleWords: next })
-        lastAcceptedWords = next.blobby
-      }, Math.max(0, delay - elapsed))
-      blobbyTimersRef.current.push(t)
-    })
-
-    return () => {
-      blobbyTimersRef.current.forEach((t) => clearTimeout(t))
-      blobbyTimersRef.current = []
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, currentPhase, dict, rack, roundDuration, questionStartedAt])
-
   // ── Host: countdown → playing ──
   const countdownFiredRef = useRef(false)
   useEffect(() => {

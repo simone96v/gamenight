@@ -38,7 +38,7 @@ const LiquidBackground = () => {
     const ctx = canvas.getContext('2d')
 
     const palette = theme === 'dark' ? BLOBS_DARK : BLOBS_LIGHT
-    const BASE_ALPHA = theme === 'dark' ? 0.13 : 0.22
+    const BASE_ALPHA = theme === 'dark' ? 0.28 : 0.45
 
     let W, H, blobs, mouse, raf
 

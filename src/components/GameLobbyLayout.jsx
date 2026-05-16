@@ -161,16 +161,19 @@ const S = {
     fontSize: 'clamp(13px, 1.6dvh, 15px)',
     fontWeight: 800,
     color: 'var(--text)',
+    textAlign: 'center',
+    display: 'block',
+    width: '100%',
   },
   playerCount: {
     fontWeight: 600,
     color: 'var(--muted)',
   },
   playersGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(72px, 1fr))',
+    display: 'flex',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
     gap: 'clamp(8px, 1.5dvh, 14px)',
-    justifyItems: 'center',
   },
   playerCell: {
     display: 'flex',

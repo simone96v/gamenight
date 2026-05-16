@@ -103,7 +103,16 @@ const CreatePartyScreen = () => {
           <p style={subtitleStyle}>Scegli il tuo blob e dai inizio alla festa</p>
         </motion.div>
 
-        <ColorPicker selected={selectedColor} onSelect={setSelectedColor} />
+        <div style={blobWrapStyle}>
+          <Blob
+            color={selectedColor}
+            expr={blobExpr}
+            id="create-blob"
+            size="clamp(120px, 22dvh, 180px)"
+            animate={false}
+            style={{ position: 'relative', left: 'auto', right: 'auto', top: 'auto', bottom: 'auto', transform: 'none' }}
+          />
+        </div>
 
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -120,6 +129,8 @@ const CreatePartyScreen = () => {
             maxLength={12}
           />
         </motion.div>
+
+        <ColorPicker selected={selectedColor} onSelect={setSelectedColor} />
 
         <Button
           type="submit"
@@ -141,19 +152,6 @@ const CreatePartyScreen = () => {
           {creating ? '...' : '🎉 Crea party'}
         </Button>
       </form>
-
-      <Blob
-        color={selectedColor}
-        expr={blobExpr}
-        id="create-blob"
-        size="min(clamp(200px, 52vw, 320px), clamp(180px, 30dvh, 320px))"
-        animate={false}
-        style={{
-          bottom: 'clamp(-40px, -6dvh, -20px)',
-          left: '50%',
-          transform: 'translateX(-50%)',
-        }}
-      />
     </motion.div>
   )
 }
@@ -181,6 +179,14 @@ const labelStyle = {
   letterSpacing: '0.06em',
   textTransform: 'uppercase',
   marginBottom: 'clamp(4px, 0.8dvh, 8px)',
+}
+
+const blobWrapStyle = {
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  flexShrink: 0,
+  margin: 'clamp(4px, 1dvh, 10px) 0',
 }
 
 const inputStyle = {

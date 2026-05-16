@@ -36,10 +36,6 @@ const Scramble = () => {
   const handleChangeGame = useCallback(async () => {
     const s = useSession.getState()
     if (s.mode !== 'online') {
-      // Rimuovi Blobby (bot) prima di uscire, altrimenti rimane nei prossimi giochi solo.
-      useSession.setState({
-        players: (s.players || []).filter((p) => p.id !== 'blobby'),
-      })
       navigate('/solo/games', { replace: true })
       return
     }
@@ -169,8 +165,7 @@ const Scramble = () => {
   }
 
   if (sc.currentPhase === 'scramble_final') {
-    // Solo senza Blobby: schermata risultato semplice. Con Blobby (default) → podio.
-    if (!sc.isOnline && sc.players.length < 2) {
+    if (!sc.isOnline) {
       const me = sc.players.find((p) => p.id === sc.localPlayerId)
       const score = sc.scrambleScores?.[sc.localPlayerId] ?? me?.score ?? 0
       const myWordsAll = sc.scrambleWords?.[sc.localPlayerId] ?? []
@@ -195,7 +190,7 @@ const Scramble = () => {
           localPlayerId={sc.localPlayerId}
           scrambleScores={sc.scrambleScores}
           scrambleWords={sc.scrambleWords}
-          isHost={sc.isHost || !sc.isOnline}
+          isHost={sc.isHost}
           onReplay={handleReplay}
           onChangeGame={handleChangeGame}
         />
