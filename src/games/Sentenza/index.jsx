@@ -11,7 +11,7 @@ import SentenzaSelectionWaiting from './components/SentenzaSelectionWaiting'
 import SentenzaJudging from './components/SentenzaJudging'
 import SentenzaJudgingWaiting from './components/SentenzaJudgingWaiting'
 import SentenzaReveal from './components/SentenzaReveal'
-import SentenzaFinal from './components/SentenzaFinal'
+import GameLeaderboard from '../../components/GameLeaderboard'
 
 const SELECTION_TIMER = 30
 const JUDGING_TIMER = 30
@@ -187,10 +187,13 @@ const Sentenza = () => {
 
   if (g.currentPhase === 'sentenza_final') {
     return (
-      <SentenzaFinal
+      <GameLeaderboard
         players={g.players}
         localPlayerId={g.localPlayerId}
-        isHost={g.isHost}
+        gameName="Giudice Supremo"
+        subtitle="Chi ha vinto più sentenze?"
+        extraColumn={{ label: '⚖️', get: (p) => p.roundsWon ?? 0 }}
+        canControl={g.isHost}
         advancing={replaying}
         onReplay={handleReplay}
         onChangeGame={handleChangeGame}

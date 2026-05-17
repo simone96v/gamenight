@@ -5,7 +5,6 @@ import { useSession } from '../../stores/useSession'
 import { pushRoom } from '../../lib/room'
 import CountdownOverlay from '../../components/CountdownOverlay'
 import Spinner from '../../components/ui/Spinner'
-import SoloResultScreen from '../../components/SoloResultScreen'
 import BlobJumpLeaderboard from './components/BlobJumpLeaderboard'
 import { submitBlobJumpScore } from './useBlobJumpLeaderboard'
 
@@ -13,7 +12,6 @@ const retryImport = (fn) => fn().catch(() => new Promise((r) => setTimeout(r, 15
 
 const BlobJumpPlaying = lazy(() => retryImport(() => import('./components/BlobJumpPlaying')))
 const BlobJumpResults = lazy(() => retryImport(() => import('./components/BlobJumpResults')))
-const BlobJumpFinal = lazy(() => retryImport(() => import('./components/BlobJumpFinal')))
 
 const Loading = () => (
   <div className="flex items-center justify-center" style={{ flex: 1 }}>
@@ -171,40 +169,25 @@ const BlobJump = () => {
   }
 
   if (bj.currentPhase === 'blobjump_final') {
-    const extraButton = { label: '🏆 Classifica globale', onClick: () => setLbOpen(true) }
-    // Single-player: schermata risultato semplice.
-    if (!bj.isOnline) {
-      const me = bj.players.find((p) => p.id === bj.localPlayerId)
-      const height = bj.totalScores?.[bj.localPlayerId] ?? me?.score ?? 0
-      return (
-        <>
-          <SoloResultScreen
-            player={me}
-            gameEmoji="🦘"
-            gameName="Blob Jump"
-            primaryValue={height}
-            primaryLabel="metri"
-            advancing={replaying}
-            onReplay={handleReplay}
-            onChangeGame={handleChangeGame}
-            extraButton={extraButton}
-          />
-          <BlobJumpLeaderboard open={lbOpen} onClose={() => setLbOpen(false)} highlightedScore={submittedScore} />
-        </>
-      )
-    }
+    // L'ex BlobJumpFinal è fuso in BlobJumpResults via isFinal=true.
+    // Stessa visualizzazione (height bars + leaderboard) ma bottoni cambiano in
+    // "Rigioca / Cambia gioco" + "Classifica globale".
     return (
       <>
         <Suspense fallback={<Loading />}>
-          <BlobJumpFinal
+          <BlobJumpResults
             players={bj.players}
             localPlayerId={bj.localPlayerId}
-            isHost={bj.isHost}
+            isHost={bj.isHost || !bj.isOnline}
+            roundScores={bj.totalScores}
             totalScores={bj.totalScores}
+            currentRoundIdx={bj.currentRoundIdx}
+            totalRounds={bj.totalRounds}
             advancing={replaying}
+            isFinal
             onReplay={handleReplay}
             onChangeGame={handleChangeGame}
-            extraButton={extraButton}
+            onShowLeaderboard={() => setLbOpen(true)}
           />
         </Suspense>
         <BlobJumpLeaderboard open={lbOpen} onClose={() => setLbOpen(false)} highlightedScore={submittedScore} />

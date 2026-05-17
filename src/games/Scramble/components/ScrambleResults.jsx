@@ -31,6 +31,10 @@ const ScrambleResults = ({
   advancing,
   onAdvance,
   onExit,
+  // Final-mode props (l'ultimo round-end DIVENTA il final)
+  isFinal = false,
+  onReplay,
+  onChangeGame,
 }) => {
   const C = usePlayerAccent()
 
@@ -62,9 +66,11 @@ const ScrambleResults = ({
           transition={{ duration: 0.35 }}
           style={S.header}
         >
-          <RoundBadge n={roundIdx + 1} total={totalRounds} accentColor={C.accent} />
+          {!isFinal && (
+            <RoundBadge n={roundIdx + 1} total={totalRounds} accentColor={C.accent} />
+          )}
           <GradientTitle as="h2" size="lg" gradient={C.gradient}>
-            {isLast ? 'Ultimo round!' : 'Round finito'}
+            {isFinal ? 'Re delle Parole' : isLast ? 'Ultimo round!' : 'Round finito'}
           </GradientTitle>
           <div style={{ ...S.rackPill, borderColor: `${C.accent}40`, background: `${C.accent}14` }}>
             <span style={S.rackPillLabel}>Rack</span>
@@ -171,7 +177,20 @@ const ScrambleResults = ({
         </div>
 
         <div style={S.footer}>
-          {canAdvance ? (
+          {isFinal ? (
+            canAdvance ? (
+              <div style={{ display: 'flex', gap: 8, width: '100%' }}>
+                <Button variant="secondary" width="full" onClick={onChangeGame} disabled={advancing}>
+                  Cambia gioco
+                </Button>
+                <Button variant="primary" width="full" onClick={onReplay} disabled={advancing} style={accentBtnStyle(C.accent)}>
+                  {advancing ? '...' : 'Rigioca'}
+                </Button>
+              </div>
+            ) : (
+              <p style={S.waitText}>Aspettando il boss... 👑</p>
+            )
+          ) : canAdvance ? (
             <Button
               variant="primary"
               width="full"
@@ -179,7 +198,7 @@ const ScrambleResults = ({
               disabled={advancing}
               style={accentBtnStyle(C.accent)}
             >
-              {advancing ? '...' : isLast ? 'Classifica finale' : 'Prossimo round'}
+              {advancing ? '...' : 'Prossimo round'}
             </Button>
           ) : (
             <p style={S.waitText}>Aspettando il boss... 👑</p>

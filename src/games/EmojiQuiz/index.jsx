@@ -5,15 +5,13 @@ import { useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSession } from '../../stores/useSession'
 import { pushRoom } from '../../lib/room'
-import { loadEmojiQuizDeck } from '../../lib/emojiQuizDeck'
 import CountdownOverlay from '../../components/CountdownOverlay'
 import BlobLoader from '../../components/BlobLoader'
-import SoloResultScreen from '../../components/SoloResultScreen'
+import GameLeaderboard from '../../components/GameLeaderboard'
 import { useEmojiQuiz } from './useEmojiQuiz'
 import { TOTAL_ROUNDS } from './config'
 import EmojiQuizQuestionPhase from './components/EmojiQuizQuestionPhase'
 import EmojiQuizRevealPhase from './components/EmojiQuizRevealPhase'
-import EmojiQuizFinalPhase from './components/EmojiQuizFinalPhase'
 
 const EmojiQuiz = () => {
   const eq = useEmojiQuiz()
@@ -181,69 +179,30 @@ const EmojiQuiz = () => {
   }
 
   if (eq.screen === 'final') {
-    // Single-player: schermata risultato semplice (no classifica).
-    if (!eq.isOnline) {
-      const me = eq.players.find((p) => p.id === eq.localPlayerId)
-      const score = eq.eqScores?.[eq.localPlayerId] ?? me?.score ?? 0
-      const correct = eq.eqCorrectCount?.[eq.localPlayerId] ?? 0
-      const moreRounds = eq.sessionHasMoreRounds
+    // Merge dei punteggi/conteggi nei player object così GameLeaderboard
+    // può ordinare e mostrare in modo standard.
+    const playersWithScores = eq.players.map((p) => ({
+      ...p,
+      score: eq.eqScores?.[p.id] ?? p.score ?? 0,
+      correct_count: eq.eqCorrectCount?.[p.id] ?? 0,
+    }))
+    const moreRounds = eq.sessionHasMoreRounds
+    const subtitle = moreRounds
+      ? `Round ${eq.sessionRoundIdx + 1}/${eq.sessionTotalRounds}`
+      : eq.sessionTotalRounds > 1
+        ? `Score cumulativo dei ${eq.sessionTotalRounds} round`
+        : ''
 
-      // Intermediate round end: show round score + "Prossimo round" button
-      if (moreRounds) {
-        const questionsPlayed = (eq.sessionRoundIdx + 1) * (eq.totalRounds || 0)
-        const handleNextRound = () => {
-          eq.hostNextRound()
-        }
-        return (
-          <SoloResultScreen
-            player={me}
-            gameEmoji="🎬"
-            gameName={`Round ${eq.sessionRoundIdx + 1}/${eq.sessionTotalRounds}`}
-            primaryValue={score}
-            primaryLabel="punti"
-            stats={questionsPlayed > 0 ? [
-              { label: 'Indovinate', value: `${correct}/${questionsPlayed}` },
-            ] : []}
-            replayLabel="Prossimo round"
-            onReplay={handleNextRound}
-            onChangeGame={handleChangeGame}
-          />
-        )
-      }
-
-      // Final game end: show total result
-      const totalQuestions = (eq.sessionRoundIdx + 1) * (eq.totalRounds || 0)
-      return (
-        <SoloResultScreen
-          player={me}
-          gameEmoji="🎬"
-          gameName="Movie Quiz"
-          primaryValue={score}
-          primaryLabel="punti"
-          stats={totalQuestions > 0 ? [
-            { label: 'Indovinate', value: `${correct}/${totalQuestions}` },
-            ...(eq.sessionTotalRounds > 1 ? [{ label: 'Round', value: eq.sessionTotalRounds }] : []),
-          ] : []}
-          onReplay={handleReplay}
-          onChangeGame={handleChangeGame}
-        />
-      )
-    }
-    // Multi: classifica completa con podio.
     return (
-      <EmojiQuizFinalPhase
-        players={eq.players}
+      <GameLeaderboard
+        players={playersWithScores}
         localPlayerId={eq.localPlayerId}
-        eqScores={eq.eqScores}
-        eqCorrectCount={eq.eqCorrectCount}
-        totalRounds={eq.totalRounds}
-        sessionRoundIdx={eq.sessionRoundIdx}
-        sessionTotalRounds={eq.sessionTotalRounds}
-        sessionHasMoreRounds={eq.sessionHasMoreRounds}
-        isHost={eq.isHost}
-        advancing={false}
-        onReplay={handleReplay}
-        onNextRound={eq.hostNextRound}
+        gameName={moreRounds ? 'Round completato' : 'Movie Quiz'}
+        subtitle={subtitle}
+        extraColumn={{ label: 'indovinate', get: (p) => p.correct_count ?? 0 }}
+        canControl={eq.isHost || !eq.isOnline}
+        hasMoreRounds={moreRounds}
+        onReplay={moreRounds ? eq.hostNextRound : handleReplay}
         onChangeGame={handleChangeGame}
       />
     )

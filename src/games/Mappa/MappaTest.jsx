@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import MappaQuestion from './components/MappaQuestion'
 import MappaReveal from './components/MappaReveal'
-import MappaFinal from './components/MappaFinal'
+import GameLeaderboard from '../../components/GameLeaderboard'
 import { haversine, calcScore } from './geo'
 import questions from './data/mappa.json'
 
@@ -120,12 +120,12 @@ const MappaTest = () => {
 
   if (final) {
     return (
-      <MappaFinal
+      <GameLeaderboard
         players={fakePlayers}
         localPlayerId="test"
-        isHost={true}
-        advancing={false}
-        totalQuestions={pool.length}
+        gameName="Indovina Dove"
+        subtitle={`${pool.length} luoghi indovinati`}
+        canControl
         onReplay={replay}
         onChangeGame={() => {}}
       />

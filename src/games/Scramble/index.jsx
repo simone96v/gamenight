@@ -10,7 +10,6 @@ import { useSession } from '../../stores/useSession'
 import { pushRoom } from '../../lib/room'
 import CountdownOverlay from '../../components/CountdownOverlay'
 import BlobLoader from '../../components/BlobLoader'
-import SoloResultScreen from '../../components/SoloResultScreen'
 import Spinner from '../../components/ui/Spinner'
 import { pickRoundRacks } from './data/racks'
 import { SCRAMBLE_CONSTANTS } from './useScramble'
@@ -20,7 +19,6 @@ const { TOTAL_ROUNDS, ROUND_DURATION_S } = SCRAMBLE_CONSTANTS
 const retryImport = (fn) => fn().catch(() => new Promise((r) => setTimeout(r, 1500)).then(fn))
 const ScramblePlaying = lazy(() => retryImport(() => import('./components/ScramblePlaying')))
 const ScrambleResults = lazy(() => retryImport(() => import('./components/ScrambleResults')))
-const ScrambleFinal = lazy(() => retryImport(() => import('./components/ScrambleFinal')))
 
 const Loading = () => (
   <div className="flex items-center justify-center" style={{ flex: 1 }}>
@@ -165,32 +163,26 @@ const Scramble = () => {
   }
 
   if (sc.currentPhase === 'scramble_final') {
-    if (!sc.isOnline) {
-      const me = sc.players.find((p) => p.id === sc.localPlayerId)
-      const score = sc.scrambleScores?.[sc.localPlayerId] ?? me?.score ?? 0
-      const myWordsAll = sc.scrambleWords?.[sc.localPlayerId] ?? []
-      const wordsFound = Array.isArray(myWordsAll) ? myWordsAll.length : 0
-      return (
-        <SoloResultScreen
-          player={me}
-          gameEmoji="🔤"
-          gameName="Scramble"
-          primaryValue={score}
-          primaryLabel="punti"
-          stats={wordsFound > 0 ? [{ label: 'Parole', value: wordsFound }] : []}
-          onReplay={handleReplay}
-          onChangeGame={handleChangeGame}
-        />
-      )
-    }
+    // L'ex ScrambleFinal è fuso in ScrambleResults via isFinal=true.
+    // Stessa visualizzazione (hero + leaderboard + word chips) ma bottoni cambiano in
+    // "Rigioca / Cambia gioco" e i punti sono cumulativi.
     return (
       <Suspense fallback={<Loading />}>
-        <ScrambleFinal
+        <ScrambleResults
           players={sc.players}
           localPlayerId={sc.localPlayerId}
+          rack={sc.rack}
+          roundIdx={sc.roundIdx}
+          totalRounds={sc.totalRounds}
+          // In final i "round results" diventano i totali (così hero card + classifica
+          // mostrano cumulativi). I word chips usano l'array completo del giocatore.
+          scrambleRoundResults={sc.scrambleScores}
           scrambleScores={sc.scrambleScores}
           scrambleWords={sc.scrambleWords}
-          isHost={sc.isHost}
+          isHost={sc.isHost || !sc.isOnline}
+          isOnline={sc.isOnline}
+          isFinal
+          onExit={handleChangeGame}
           onReplay={handleReplay}
           onChangeGame={handleChangeGame}
         />

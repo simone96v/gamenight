@@ -7,7 +7,7 @@ import JudgingSetup from './components/JudgingSetup'
 import SentenzaJudging from './components/SentenzaJudging'
 import SentenzaJudgingWaiting from './components/SentenzaJudgingWaiting'
 import SentenzaReveal from './components/SentenzaReveal'
-import SentenzaFinal from './components/SentenzaFinal'
+import GameLeaderboard from '../../components/GameLeaderboard'
 
 const SAMPLE_PROMPT = "Il mio terapeuta ha mollato dopo che gli ho parlato di ___"
 const SAMPLE_ANSWER = "tre Spritz, due tequila e un crollo emotivo"
@@ -229,10 +229,12 @@ const SentenzaTest = () => {
           )}
 
           {phase === 'final' && (
-            <SentenzaFinal
+            <GameLeaderboard
               players={MOCK_SCORED}
               localPlayerId="p1"
-              isHost
+              gameName="Giudice Supremo"
+              extraColumn={{ label: '⚖️', get: (p) => p.roundsWon ?? 0 }}
+              canControl
               onReplay={() => console.log('replay')}
               onChangeGame={() => console.log('change game')}
             />

@@ -4,14 +4,13 @@ import { useMappa } from './useMappa'
 import { useSession } from '../../stores/useSession'
 import { pushRoom } from '../../lib/room'
 import Spinner from '../../components/ui/Spinner'
-import SoloResultScreen from '../../components/SoloResultScreen'
+import GameLeaderboard from '../../components/GameLeaderboard'
 import { loadMappaDeck } from '../../lib/mappaDeck'
 
 const retryImport = (fn) => fn().catch(() => new Promise((r) => setTimeout(r, 1500)).then(fn))
 
 const MappaQuestion = lazy(() => retryImport(() => import('./components/MappaQuestion')))
 const MappaReveal = lazy(() => retryImport(() => import('./components/MappaReveal')))
-const MappaFinal = lazy(() => retryImport(() => import('./components/MappaFinal')))
 
 const Loading = () => (
   <div className="flex items-center justify-center" style={{ flex: 1 }}>
@@ -147,37 +146,19 @@ const Mappa = () => {
   }
 
   if (mappa.currentPhase === 'mappa_final') {
-    // Single-player: schermata risultato semplice.
-    if (!mappa.isOnline) {
-      const me = mappa.players.find((p) => p.id === mappa.localPlayerId)
-      return (
-        <SoloResultScreen
-          player={me}
-          gameEmoji="🗺️"
-          gameName="Indovina Dove"
-          primaryValue={me?.score ?? 0}
-          primaryLabel="punti"
-          stats={mappa.totalQuestions > 0 ? [
-            { label: 'Luoghi', value: mappa.totalQuestions },
-          ] : []}
-          advancing={replaying}
-          onReplay={handleReplay}
-          onChangeGame={handleChangeGame}
-        />
-      )
-    }
     return (
-      <Suspense fallback={<Loading />}>
-        <MappaFinal
-          players={mappa.players}
-          localPlayerId={mappa.localPlayerId}
-          isHost={mappa.isHost}
-          advancing={replaying}
-          totalQuestions={mappa.totalQuestions}
-          onReplay={handleReplay}
-          onChangeGame={handleChangeGame}
-        />
-      </Suspense>
+      <GameLeaderboard
+        players={mappa.players}
+        localPlayerId={mappa.localPlayerId}
+        gameName="Indovina Dove"
+        subtitle={mappa.totalQuestions > 0
+          ? `${mappa.totalQuestions} ${mappa.totalQuestions === 1 ? 'luogo' : 'luoghi'} indovinati`
+          : ''}
+        canControl={mappa.isHost || !mappa.isOnline}
+        advancing={replaying}
+        onReplay={handleReplay}
+        onChangeGame={handleChangeGame}
+      />
     )
   }
 

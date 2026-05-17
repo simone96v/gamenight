@@ -10,8 +10,7 @@ import BlobLoader from '../../components/BlobLoader'
 import WheelPhase from './phases/WheelPhase'
 import QuestionPhase from './phases/QuestionPhase'
 import RevealPhase from './phases/RevealPhase'
-import FinalPhase from './phases/FinalPhase'
-import SoloResultScreen from '../../components/SoloResultScreen'
+import GameLeaderboard from '../../components/GameLeaderboard'
 import { useSession } from '../../stores/useSession'
 import { pushRoom } from '../../lib/room'
 
@@ -133,66 +132,27 @@ const Trivia = () => {
   }
 
   if (trivia.currentPhase === 'final') {
-    // Single-player: schermata risultato semplice.
-    if (!trivia.isOnline) {
-      const me = trivia.players.find((p) => p.id === trivia.localPlayerId)
-      const score = me?.score ?? 0
-      const correct = me?.correct_count ?? 0
-      const session = trivia.gameState?.triviaSession
-      const isSessionMode = !!session && (session.totalRounds ?? 1) > 1
-      const hasMoreRounds = isSessionMode && (session.roundIdx + 1) < session.totalRounds
+    const session = trivia.gameState?.triviaSession
+    const isSessionMode = !!session && (session.totalRounds ?? 1) > 1
+    const hasMoreRounds = isSessionMode && (session.roundIdx + 1) < session.totalRounds
+    const subtitle = hasMoreRounds
+      ? `Round ${session.roundIdx + 1}/${session.totalRounds}`
+      : isSessionMode
+        ? `Score cumulativo dei ${session.totalRounds} round`
+        : ''
 
-      if (hasMoreRounds) {
-        // Intermediate round end
-        const roundQs = session.questionsPerRound ?? 0
-        return (
-          <SoloResultScreen
-            player={me}
-            gameEmoji="🧠"
-            gameName={`Round ${session.roundIdx + 1}/${session.totalRounds}`}
-            primaryValue={score}
-            primaryLabel="punti"
-            stats={roundQs > 0 ? [
-              { label: 'Corrette', value: `${correct}/${roundQs * (session.roundIdx + 1)}` },
-            ] : []}
-            advancing={trivia.advancing}
-            replayLabel="Prossimo round"
-            onReplay={trivia.hostReplay}
-            onChangeGame={handleChangeGame}
-          />
-        )
-      }
-
-      // Final game end
-      const totalQs = isSessionMode
-        ? (session.totalRounds * (session.questionsPerRound ?? 0))
-        : (trivia.totalQuestions ?? 0)
-      return (
-        <SoloResultScreen
-          player={me}
-          gameEmoji="🧠"
-          gameName="Trivia"
-          primaryValue={score}
-          primaryLabel="punti"
-          stats={totalQs > 0 ? [
-            { label: 'Corrette', value: `${correct}/${totalQs}` },
-            ...(isSessionMode ? [{ label: 'Round', value: session.totalRounds }] : []),
-          ] : []}
-          advancing={trivia.advancing}
-          onReplay={trivia.hostReplay}
-          onChangeGame={handleChangeGame}
-        />
-      )
-    }
     return (
-      <FinalPhase
+      <GameLeaderboard
         players={trivia.players}
         localPlayerId={trivia.localPlayerId}
-        isHost={trivia.isHost}
+        gameName={hasMoreRounds ? 'Round completato' : 'Classifica finale'}
+        subtitle={subtitle}
+        extraColumn={{ label: 'corrette', get: (p) => p.correct_count ?? 0 }}
+        canControl={trivia.isHost || !trivia.isOnline}
         advancing={trivia.advancing}
+        hasMoreRounds={hasMoreRounds}
         onReplay={trivia.hostReplay}
         onChangeGame={handleChangeGame}
-        session={trivia.gameState?.triviaSession}
       />
     )
   }

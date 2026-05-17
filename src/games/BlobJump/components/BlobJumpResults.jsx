@@ -16,12 +16,19 @@ const BlobJumpResults = ({
   totalRounds,
   advancing,
   onAdvance,
+  // Final-mode props (l'ultimo round-end DIVENTA il final)
+  isFinal = false,
+  totalScores = null,
+  onReplay,
+  onChangeGame,
+  onShowLeaderboard,
 }) => {
   const C = usePlayerAccent()
+  const scores = isFinal && totalScores ? totalScores : roundScores
   const sorted = [...(players || [])].sort(
-    (a, b) => (roundScores[b.id] ?? 0) - (roundScores[a.id] ?? 0),
+    (a, b) => (scores[b.id] ?? 0) - (scores[a.id] ?? 0),
   )
-  const topScore = roundScores[sorted[0]?.id] ?? 1
+  const topScore = scores[sorted[0]?.id] ?? 1
 
   return (
     <div style={S.container}>
@@ -32,13 +39,15 @@ const BlobJumpResults = ({
           animate={{ opacity: 1, y: 0 }}
           style={{ textAlign: 'center' }}
         >
-          <RoundBadge
-            n={currentRoundIdx + 1}
-            total={totalRounds}
-            accentColor={C.accent}
-          />
+          {!isFinal && (
+            <RoundBadge
+              n={currentRoundIdx + 1}
+              total={totalRounds}
+              accentColor={C.accent}
+            />
+          )}
           <GradientTitle as="h2" size="lg" gradient={C.gradient}>
-            Risultati
+            {isFinal ? 'Re del Salto' : 'Risultati'}
           </GradientTitle>
         </motion.div>
 
@@ -51,7 +60,7 @@ const BlobJumpResults = ({
         >
           <div style={S.heightColumns}>
             {sorted.map((p, i) => {
-              const score = roundScores[p.id] ?? 0
+              const score = scores[p.id] ?? 0
               const pct = topScore > 0 ? Math.max(8, (score / topScore) * 100) : 8
               const isLocal = p.id === localPlayerId
               return (
@@ -96,7 +105,7 @@ const BlobJumpResults = ({
         {/* Leaderboard list */}
         <div style={S.leaderboard}>
           {sorted.map((p, i) => {
-            const score = roundScores[p.id] ?? 0
+            const score = scores[p.id] ?? 0
             const isLocal = p.id === localPlayerId
             return (
               <motion.div
@@ -120,7 +129,27 @@ const BlobJumpResults = ({
         </div>
 
         <div style={S.footer}>
-          {isHost ? (
+          {isFinal ? (
+            <>
+              {onShowLeaderboard && (
+                <Button variant="secondary" width="full" onClick={onShowLeaderboard}>
+                  🏆 Classifica globale
+                </Button>
+              )}
+              {isHost ? (
+                <div style={{ display: 'flex', gap: 8, width: '100%' }}>
+                  <Button variant="secondary" width="full" onClick={onChangeGame} disabled={advancing}>
+                    Cambia gioco
+                  </Button>
+                  <Button variant="primary" width="full" onClick={onReplay} disabled={advancing} style={accentBtnStyle(C.accent)}>
+                    {advancing ? '...' : 'Rigioca'}
+                  </Button>
+                </div>
+              ) : (
+                <p style={S.waitText}>Aspettando il boss... 👑</p>
+              )}
+            </>
+          ) : isHost ? (
             <Button
               variant="primary"
               width="full"
@@ -128,11 +157,7 @@ const BlobJumpResults = ({
               disabled={advancing}
               style={accentBtnStyle(C.accent)}
             >
-              {advancing
-                ? '...'
-                : currentRoundIdx + 1 >= totalRounds
-                  ? 'Classifica finale'
-                  : 'Prossimo round'}
+              {advancing ? '...' : 'Prossimo round'}
             </Button>
           ) : (
             <p style={S.waitText}>Aspettando il boss... 👑</p>
@@ -261,6 +286,9 @@ const S = {
   footer: {
     marginTop: 'auto',
     flexShrink: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 8,
   },
   waitText: {
     color: 'var(--muted)',
