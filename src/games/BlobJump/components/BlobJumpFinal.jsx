@@ -17,6 +17,7 @@ const BlobJumpFinal = ({
   advancing,
   onReplay,
   onChangeGame,
+  extraButton = null,
 }) => {
   const C = usePlayerAccent()
   const sorted = [...(players || [])].sort(
@@ -93,6 +94,11 @@ const BlobJumpFinal = ({
         </GameSection>
 
         <div style={S.footer}>
+          {extraButton && (
+            <Button variant="secondary" width="full" onClick={extraButton.onClick} disabled={advancing}>
+              {extraButton.label}
+            </Button>
+          )}
           {isHost ? (
             <div style={{ display: 'flex', gap: 8, width: '100%' }}>
               <Button variant="secondary" width="full" onClick={onChangeGame} disabled={advancing}>

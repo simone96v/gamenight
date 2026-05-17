@@ -36,6 +36,7 @@ const GameLobbyLayout = ({
   onStart,
   onBack,
   warning,
+  headerActions = null,
   children,
 }) => {
   const C = usePlayerAccent()
@@ -53,6 +54,7 @@ const GameLobbyLayout = ({
         leading={canControl && onBack ? (
           <IconButton ariaLabel="Indietro" onClick={onBack}>←</IconButton>
         ) : null}
+        actions={headerActions}
       />
 
       <div style={S.body}>

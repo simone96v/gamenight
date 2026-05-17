@@ -1,6 +1,8 @@
 import { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import GameLobbyLayout from '../components/GameLobbyLayout'
+import IconButton from '../components/ui/IconButton'
+import BlobJumpLeaderboard from '../games/BlobJump/components/BlobJumpLeaderboard'
 import { useSession } from '../stores/useSession'
 import { pushRoom } from '../lib/room'
 
@@ -15,6 +17,7 @@ const BlobJumpLobbyScreen = () => {
   const isSolo = mode === 'local'
   const canControl = isHost || isSolo
   const [launching, setLaunching] = useState(false)
+  const [lbOpen, setLbOpen] = useState(false)
 
   const handleStart = useCallback(async () => {
     if (!canControl || launching) return
@@ -96,15 +99,21 @@ const BlobJumpLobbyScreen = () => {
   }, [navigate, setAwaitingGC])
 
   return (
-    <GameLobbyLayout
-      gameName="Blob Jump"
-      gameDescription="Salta più in alto degli altri! Il tuo blob rimbalza verso il cielo."
-      players={players}
-      canControl={canControl}
-      launching={launching}
-      onStart={handleStart}
-      onBack={handleBack}
-    />
+    <>
+      <GameLobbyLayout
+        gameName="Blob Jump"
+        gameDescription="Salta più in alto degli altri! Il tuo blob rimbalza verso il cielo."
+        players={players}
+        canControl={canControl}
+        launching={launching}
+        onStart={handleStart}
+        onBack={handleBack}
+        headerActions={
+          <IconButton ariaLabel="Classifica globale" onClick={() => setLbOpen(true)}>🏆</IconButton>
+        }
+      />
+      <BlobJumpLeaderboard open={lbOpen} onClose={() => setLbOpen(false)} />
+    </>
   )
 }
 

@@ -35,6 +35,7 @@ const SoloResultScreen = ({
   replayLabel = 'Rigioca',
   onReplay,
   onChangeGame,
+  extraButton = null,    // { label, onClick } — bottone secondario opzionale sopra il footer
 }) => {
   const C = usePlayerAccent()
   const expr = useMiniExpr()
@@ -107,25 +108,32 @@ const SoloResultScreen = ({
           </motion.div>
         )}
 
-        {/* Footer con due bottoni */}
-        <div style={S.footer}>
-          <Button
-            variant="secondary"
-            width="full"
-            onClick={onChangeGame}
-            disabled={advancing}
-          >
-            Cambia gioco
-          </Button>
-          <Button
-            variant="primary"
-            width="full"
-            onClick={onReplay}
-            disabled={advancing}
-            style={accentBtnStyle(C.accent)}
-          >
-            {advancing ? '...' : replayLabel}
-          </Button>
+        {/* Footer: opzionale bottone extra + due bottoni standard */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '100%', maxWidth: 420, marginTop: 'clamp(10px, 2dvh, 18px)' }}>
+          {extraButton && (
+            <Button variant="secondary" width="full" onClick={extraButton.onClick} disabled={advancing}>
+              {extraButton.label}
+            </Button>
+          )}
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Button
+              variant="secondary"
+              width="full"
+              onClick={onChangeGame}
+              disabled={advancing}
+            >
+              Cambia gioco
+            </Button>
+            <Button
+              variant="primary"
+              width="full"
+              onClick={onReplay}
+              disabled={advancing}
+              style={accentBtnStyle(C.accent)}
+            >
+              {advancing ? '...' : replayLabel}
+            </Button>
+          </div>
         </div>
       </div>
     </div>

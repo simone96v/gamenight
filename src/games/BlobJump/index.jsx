@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, useCallback } from 'react'
+import { lazy, Suspense, useState, useCallback, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useBlobJump } from './useBlobJump'
 import { useSession } from '../../stores/useSession'
@@ -6,6 +6,8 @@ import { pushRoom } from '../../lib/room'
 import CountdownOverlay from '../../components/CountdownOverlay'
 import Spinner from '../../components/ui/Spinner'
 import SoloResultScreen from '../../components/SoloResultScreen'
+import BlobJumpLeaderboard from './components/BlobJumpLeaderboard'
+import { submitBlobJumpScore } from './useBlobJumpLeaderboard'
 
 const retryImport = (fn) => fn().catch(() => new Promise((r) => setTimeout(r, 1500)).then(fn))
 
@@ -24,6 +26,34 @@ const BlobJump = () => {
   const navigate = useNavigate()
   const setAwaitingGameChange = useSession((s) => s.setAwaitingGameChange)
   const [replaying, setReplaying] = useState(false)
+  const [lbOpen, setLbOpen] = useState(false)
+  const [submittedScore, setSubmittedScore] = useState(null)
+  const submitFiredRef = useRef(false)
+
+  // Submit del best score globale + auto-apertura overlay quando entra in blobjump_final.
+  useEffect(() => {
+    if (bj.currentPhase !== 'blobjump_final') {
+      submitFiredRef.current = false
+      return
+    }
+    if (submitFiredRef.current) return
+    submitFiredRef.current = true
+
+    const me = bj.players.find((p) => p.id === bj.localPlayerId)
+    const score = bj.totalScores?.[bj.localPlayerId] ?? me?.score ?? 0
+    if (!me || score <= 0) {
+      // Niente da submittare (player non trovato o 0 metri) → apri comunque per consultazione
+      setLbOpen(true)
+      return
+    }
+    setSubmittedScore(score)
+    submitBlobJumpScore({
+      score,
+      playerName: me.name || 'Anonimo',
+      color: me.color,
+      source: bj.isOnline ? 'online' : 'solo',
+    }).then(() => setLbOpen(true))
+  }, [bj.currentPhase, bj.players, bj.localPlayerId, bj.totalScores, bj.isOnline])
 
   const handleChangeGame = useCallback(async () => {
     const s = useSession.getState()
@@ -141,35 +171,44 @@ const BlobJump = () => {
   }
 
   if (bj.currentPhase === 'blobjump_final') {
+    const extraButton = { label: '🏆 Classifica globale', onClick: () => setLbOpen(true) }
     // Single-player: schermata risultato semplice.
     if (!bj.isOnline) {
       const me = bj.players.find((p) => p.id === bj.localPlayerId)
       const height = bj.totalScores?.[bj.localPlayerId] ?? me?.score ?? 0
       return (
-        <SoloResultScreen
-          player={me}
-          gameEmoji="🦘"
-          gameName="Blob Jump"
-          primaryValue={height}
-          primaryLabel="metri"
-          advancing={replaying}
-          onReplay={handleReplay}
-          onChangeGame={handleChangeGame}
-        />
+        <>
+          <SoloResultScreen
+            player={me}
+            gameEmoji="🦘"
+            gameName="Blob Jump"
+            primaryValue={height}
+            primaryLabel="metri"
+            advancing={replaying}
+            onReplay={handleReplay}
+            onChangeGame={handleChangeGame}
+            extraButton={extraButton}
+          />
+          <BlobJumpLeaderboard open={lbOpen} onClose={() => setLbOpen(false)} highlightedScore={submittedScore} />
+        </>
       )
     }
     return (
-      <Suspense fallback={<Loading />}>
-        <BlobJumpFinal
-          players={bj.players}
-          localPlayerId={bj.localPlayerId}
-          isHost={bj.isHost}
-          totalScores={bj.totalScores}
-          advancing={replaying}
-          onReplay={handleReplay}
-          onChangeGame={handleChangeGame}
-        />
-      </Suspense>
+      <>
+        <Suspense fallback={<Loading />}>
+          <BlobJumpFinal
+            players={bj.players}
+            localPlayerId={bj.localPlayerId}
+            isHost={bj.isHost}
+            totalScores={bj.totalScores}
+            advancing={replaying}
+            onReplay={handleReplay}
+            onChangeGame={handleChangeGame}
+            extraButton={extraButton}
+          />
+        </Suspense>
+        <BlobJumpLeaderboard open={lbOpen} onClose={() => setLbOpen(false)} highlightedScore={submittedScore} />
+      </>
     )
   }
 
