@@ -175,7 +175,6 @@ const ScrambleLobbyScreen = () => {
       players={players}
       canControl={canControl}
       launching={launching}
-      startLabel="Via!"
       onStart={handleStart}
       onBack={handleBack}
     >

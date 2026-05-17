@@ -181,11 +181,6 @@ const TriviaLobbyScreen = () => {
   }
 
   const isContinuing = roundIdx > 0
-  const startLabel = isContinuing
-    ? `Round ${roundIdx + 1}`
-    : totalRounds > 1
-      ? `Gioca · ${totalRounds} round`
-      : 'Gioca'
 
   return (
     <GameLobbyLayout
@@ -200,7 +195,6 @@ const TriviaLobbyScreen = () => {
       onBack={handleExit}
       onStart={handleStart}
       launching={launching}
-      startLabel={startLabel}
     >
       <LobbySegmented
         label="Round"

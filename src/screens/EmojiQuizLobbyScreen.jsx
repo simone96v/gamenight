@@ -203,7 +203,6 @@ const EmojiQuizLobbyScreen = () => {
       onBack={handleExit}
       onStart={handleStart}
       launching={launching}
-      startLabel="Inizia"
     >
       <LobbySegmented
         label="Domande"

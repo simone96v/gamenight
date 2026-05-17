@@ -111,7 +111,6 @@ const SentenzaLobbyScreen = () => {
       canControl={isHost}
       launching={launching}
       disabled={tooFew}
-      startLabel="Inizia!"
       onStart={handleStart}
       onBack={handleBack}
       warning={tooFew ? '⚠️ Servono almeno 3 giocatori per Sentenza' : undefined}

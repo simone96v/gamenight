@@ -8,7 +8,7 @@
 //   gameEmoji (opzionale, sopra il titolo come accent)
 //   gameName, gameDescription
 //   players, canControl, launching, disabled
-//   startLabel (default "Gioca ora")
+//   startLabel (default "Gioca" — CTA canonica di tutte le lobby)
 //   onStart, onBack
 //   warning (stringa opzionale, es. "Servono almeno 3 giocatori")
 //   children (slot impostazioni: stepper, ruota, chip, ecc.)
@@ -32,7 +32,7 @@ const GameLobbyLayout = ({
   canControl = false,
   launching = false,
   disabled = false,
-  startLabel = 'Gioca ora',
+  startLabel = 'Gioca',
   onStart,
   onBack,
   warning,

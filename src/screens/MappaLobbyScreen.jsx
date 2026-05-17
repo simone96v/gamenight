@@ -134,7 +134,6 @@ const MappaLobbyScreen = () => {
       players={players}
       canControl={canControl}
       launching={launching}
-      startLabel="Inizia!"
       onStart={handleStart}
       onBack={handleBack}
     >
