@@ -272,14 +272,14 @@ export const useTrivia = () => {
           categoryVotes: s.gameState?.categoryVotes ?? {},
           triviaSession: nextSession,
         }
-        const { error } = await pushRoom(roomCode, 'trivia_lobby', newState)
+        const { error } = await pushRoom(roomCode, 'trivia_wheel', newState)
         if (error) {
           console.error('[useTrivia] hostReplay (next round) error:', error)
           showError('generic')
         }
       } else {
         useSession.setState({
-          currentPhase: 'trivia_lobby',
+          currentPhase: 'trivia_wheel',
           gameState: {
             ...s.gameState,
             triviaSession: nextSession,

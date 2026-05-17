@@ -30,7 +30,6 @@ const EmojiQuizLobbyScreen = () => {
 
   const isHost = useSession((s) => s.isHost)
   const mode = useSession((s) => s.mode)
-  const roomCode = useSession((s) => s.roomCode)
   const players = useSession((s) => s.players)
   const gameState = useSession((s) => s.gameState)
   const showError = useSession((s) => s.showError)
@@ -200,8 +199,11 @@ const EmojiQuizLobbyScreen = () => {
       players={players}
       canControl={canControl}
       onBack={handleExit}
+      onStart={handleStart}
+      launching={launching}
+      startLabel="Inizia"
     >
-      {/* Settings: solo numero domande */}
+      {/* Settings: numero domande + difficoltà */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -248,25 +250,6 @@ const EmojiQuizLobbyScreen = () => {
           </div>
         </div>
       </motion.div>
-
-      {/* Start button */}
-      <motion.button
-        type="button"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        onClick={handleStart}
-        disabled={!canControl || launching}
-        whileHover={!canControl || launching ? undefined : { scale: 1.02 }}
-        whileTap={!canControl || launching ? undefined : { scale: 0.98 }}
-        style={{
-          ...startBtn,
-          opacity: !canControl || launching ? 0.5 : 1,
-          cursor: !canControl || launching ? 'not-allowed' : 'pointer',
-        }}
-      >
-        {canControl ? 'Inizia' : 'In attesa dell\'host…'}
-      </motion.button>
     </GameLobbyLayout>
   )
 }
@@ -358,19 +341,6 @@ const chipBtn = {
   alignItems: 'center',
   justifyContent: 'center',
   background: 'var(--surface)',
-}
-const startBtn = {
-  marginTop: 'clamp(10px, 1.5dvh, 14px)',
-  width: '100%',
-  padding: 'clamp(12px, 1.8dvh, 16px)',
-  borderRadius: 'var(--radius-sm)',
-  border: 'none',
-  background: 'var(--accent)',
-  color: 'var(--bg)',
-  fontSize: 'clamp(15px, 2dvh, 18px)',
-  fontWeight: 900,
-  letterSpacing: '0.02em',
-  boxShadow: 'var(--shadow-sm)',
 }
 
 export default EmojiQuizLobbyScreen

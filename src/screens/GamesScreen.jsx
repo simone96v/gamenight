@@ -1,21 +1,16 @@
 // GamesScreen — votazione del gioco (multiplayer).
-// Layout a card verticali responsive: 1 colonna mobile, 2-3 colonne PC.
+// Griglia 2 colonne con GameCard condivise. Header con progresso voti.
 
 import { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import AppHeader from '../components/AppHeader'
 import ErrorBanner from '../components/ErrorBanner'
 import GradientTitle from '../components/ui/GradientTitle'
+import GameCard from '../components/GameCard'
+import MiniBlob, { useMiniExpr } from '../components/MiniBlob'
 import { useSession } from '../stores/useSession'
 import { useSettings } from '../stores/useSettings'
-
-const pickImage = (image, theme) => {
-  if (!image) return null
-  if (typeof image === 'string') return image
-  return theme === 'dark' ? image.dark : image.light
-}
 import { availableGamesFor } from '../data/games'
-import { startTriviaGame } from '../lib/triviaSetup'
 import { pushRoom, rpcInitGame } from '../lib/room'
 
 const GamesScreen = () => {
@@ -27,8 +22,8 @@ const GamesScreen = () => {
   const currentPhase = useSession((s) => s.currentPhase)
   const castVote = useSession((s) => s.castVote)
   const showError = useSession((s) => s.showError)
-  const numQuestions = useSettings((s) => s.numQuestions)
-  const timerDuration = useSettings((s) => s.timerDuration)
+  const theme = useSettings((s) => s.theme)
+  const expr = useMiniExpr()
 
   const [launching, setLaunching] = useState(false)
 
@@ -65,129 +60,39 @@ const GamesScreen = () => {
     const launch = async () => {
       setLaunching(true)
       const session = useSession.getState()
+      const basePlayers = (session.players || []).map((p) => ({ ...p, score: 0 }))
+      const baseState = {
+        players: basePlayers,
+        currentIdx: 0,
+        round: 0,
+        activeGame: winnerId,
+        selectedGame: winnerId,
+        selectedCategory: session.gameState?.selectedCategory ?? null,
+        categoryVotes: session.gameState?.categoryVotes ?? {},
+      }
 
-      if (winnerId === 'trivia') {
-        // Trivia ha una lobby dedicata (settings + wheel categorie).
-        // Pulisci la session per partire da capo e naviga tutti su /trivia-lobby
-        // via phase=trivia_lobby. Il game vero parte quando l'host spinna la wheel.
-        const fullState = {
-          players: (session.players || []).map((p) => ({ ...p, score: 0 })),
-          currentIdx: 0,
-          round: 0,
-          activeGame: 'trivia',
-          selectedGame: winnerId,
-          selectedCategory: session.gameState?.selectedCategory ?? null,
-          categoryVotes: session.gameState?.categoryVotes ?? {},
-          // triviaSession verrà inizializzato dalla lobby stessa
-        }
-        const pushRes = await pushRoom(roomCode, 'trivia_lobby', fullState)
+      const LOBBY_PHASE = {
+        trivia:    'trivia_lobby',
+        mappa:     'mappa_lobby',
+        blobjump:  'blobjump_lobby',
+        scramble:  'scramble_lobby',
+        emojiquiz: 'emojiquiz_lobby',
+        sentenza:  'sentenza_lobby',
+      }
+      const lobbyPhase = LOBBY_PHASE[winnerId]
+      if (lobbyPhase) {
+        const extra = winnerId === 'sentenza'
+          ? { sentenzaRounds: session.gameState?.sentenzaRounds ?? 8 }
+          : {}
+        const pushRes = await pushRoom(roomCode, lobbyPhase, { ...baseState, ...extra })
         if (pushRes.error) {
           showError('generic')
           setLaunching(false)
-          return
         }
         return
       }
 
-      if (winnerId === 'mappa') {
-        const fullState = {
-          players: (session.players || []).map((p) => ({ ...p, score: 0 })),
-          currentIdx: 0,
-          round: 0,
-          activeGame: 'mappa',
-          selectedGame: winnerId,
-          selectedCategory: session.gameState?.selectedCategory ?? null,
-          categoryVotes: session.gameState?.categoryVotes ?? {},
-        }
-        const pushRes = await pushRoom(roomCode, 'mappa_lobby', fullState)
-        if (pushRes.error) {
-          showError('generic')
-          setLaunching(false)
-          return
-        }
-        return
-      }
-
-      if (winnerId === 'blobjump') {
-        const fullState = {
-          players: (session.players || []).map((p) => ({ ...p, score: 0 })),
-          currentIdx: 0,
-          round: 0,
-          activeGame: 'blobjump',
-          selectedGame: winnerId,
-          selectedCategory: session.gameState?.selectedCategory ?? null,
-          categoryVotes: session.gameState?.categoryVotes ?? {},
-        }
-        const pushRes = await pushRoom(roomCode, 'blobjump_lobby', fullState)
-        if (pushRes.error) {
-          showError('generic')
-          setLaunching(false)
-          return
-        }
-        return
-      }
-
-      if (winnerId === 'scramble') {
-        const fullState = {
-          players: (session.players || []).map((p) => ({ ...p, score: 0 })),
-          currentIdx: 0,
-          round: 0,
-          activeGame: 'scramble',
-          selectedGame: winnerId,
-          selectedCategory: session.gameState?.selectedCategory ?? null,
-          categoryVotes: session.gameState?.categoryVotes ?? {},
-        }
-        const pushRes = await pushRoom(roomCode, 'scramble_lobby', fullState)
-        if (pushRes.error) {
-          showError('generic')
-          setLaunching(false)
-          return
-        }
-        return
-      }
-
-      if (winnerId === 'emojiquiz') {
-        const fullState = {
-          players: (session.players || []).map((p) => ({ ...p, score: 0 })),
-          currentIdx: 0,
-          round: 0,
-          activeGame: 'emojiquiz',
-          selectedGame: winnerId,
-          selectedCategory: session.gameState?.selectedCategory ?? null,
-          categoryVotes: session.gameState?.categoryVotes ?? {},
-        }
-        const pushRes = await pushRoom(roomCode, 'emojiquiz_lobby', fullState)
-        if (pushRes.error) {
-          showError('generic')
-          setLaunching(false)
-          return
-        }
-        return
-      }
-
-      if (winnerId === 'sentenza') {
-        const fullState = {
-          players: (session.players || []).map((p) => ({ ...p, score: 0 })),
-          currentIdx: 0,
-          round: 0,
-          activeGame: 'sentenza',
-          selectedGame: winnerId,
-          selectedCategory: session.gameState?.selectedCategory ?? null,
-          categoryVotes: session.gameState?.categoryVotes ?? {},
-          sentenzaRounds: session.gameState?.sentenzaRounds ?? 8,
-        }
-        const pushRes = await pushRoom(roomCode, 'sentenza_lobby', fullState)
-        if (pushRes.error) {
-          showError('generic')
-          setLaunching(false)
-          return
-        }
-        return
-      }
-
-      const phaseMap = {
-        neverhave: 'play_neverhave',
-      }
+      const phaseMap = { neverhave: 'play_neverhave' }
       const newPhase = phaseMap[winnerId]
       if (!newPhase) {
         showError('generic')
@@ -204,7 +109,7 @@ const GamesScreen = () => {
     launch()
   }, [
     isHost, currentPhase, totalPlayers, totalVotes,
-    gameVotes, numQuestions, roomCode, launching, showError,
+    gameVotes, roomCode, launching, showError,
   ])
 
   const handlePick = (game) => {
@@ -246,26 +151,26 @@ const GamesScreen = () => {
             style={{ textAlign: 'center', flexShrink: 0 }}
           >
             <GradientTitle as="h1" size="xl">Scegli il gioco</GradientTitle>
-            <p style={{
-              margin: '8px 0 0',
-              color: 'var(--muted)',
-              fontSize: 'clamp(13px, 1.6dvh, 16px)',
-              fontWeight: 600,
-            }}>
-              🗳️ {totalVotes}/{totalPlayers} voti
-              {myVote && <span style={{ marginLeft: 8, color: 'var(--success)' }}>· ✓ Hai votato</span>}
+            <p style={subtitle}>
+              {totalVotes === 0
+                ? 'Tocca una card per votare'
+                : myVote
+                  ? totalVotes === totalPlayers
+                    ? 'Tutti hanno votato!'
+                    : `Hai votato · ${totalVotes}/${totalPlayers}`
+                  : `${totalVotes}/${totalPlayers} hanno votato`}
             </p>
           </motion.div>
 
-          {/* Grid card — 2 colonne fisse, opzionale 3+ su PC molto largo */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-              gap: 'clamp(10px, 1.4vw, 16px)',
-              flexShrink: 0,
-            }}
-          >
+          {/* Progress strip giocatori */}
+          <VoteProgressStrip
+            players={players}
+            gameVotes={gameVotes}
+            expr={expr}
+          />
+
+          {/* Grid card */}
+          <div style={grid}>
             {games.map((g, i) => (
               <GameCard
                 key={g.id}
@@ -274,6 +179,8 @@ const GamesScreen = () => {
                 onClick={() => handlePick(g)}
                 selected={myVote === g.id}
                 voteCount={voteCounts[g.id] || 0}
+                mode="vote"
+                theme={theme}
               />
             ))}
           </div>
@@ -282,18 +189,7 @@ const GamesScreen = () => {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              style={{
-                textAlign: 'center',
-                background: 'var(--surface)',
-                borderRadius: 'var(--radius-sm)',
-                border: '1px solid var(--border)',
-                boxShadow: 'var(--shadow-sm)',
-                padding: '14px 20px',
-                color: 'var(--accent)',
-                fontWeight: 800,
-                fontSize: 'clamp(14px, 1.8dvh, 16px)',
-                flexShrink: 0,
-              }}
+              style={launchBanner}
             >
               ⚡ Avvio del gioco vincitore...
             </motion.div>
@@ -304,215 +200,125 @@ const GamesScreen = () => {
   )
 }
 
-// ─── GameCard ──────────────────────────────────────────────────────────
-
-const GameCard = ({ game, index, onClick, selected, voteCount }) => {
-  const theme = useSettings((s) => s.theme)
-  const imageSrc = pickImage(game.image, theme)
+const VoteProgressStrip = ({ players, gameVotes, expr }) => {
+  if (!players?.length) return null
   return (
-  <motion.button
-    type="button"
-    initial={{ opacity: 0, y: 18, scale: 0.94 }}
-    animate={{ opacity: 1, y: 0, scale: 1 }}
-    transition={{ delay: index * 0.05, type: 'spring', stiffness: 260, damping: 22 }}
-    whileHover={{
-      scale: 1.03,
-      y: -4,
-      boxShadow: selected
-        ? `0 0 0 4px rgba(0, 0, 0, 0.25), 0 24px 48px ${game.shadow}`
-        : `0 16px 36px rgba(31, 41, 55, 0.14), 0 0 0 1px var(--border) inset`,
-    }}
-    whileTap={{
-      scale: 0.97,
-      y: 0,
-      boxShadow: selected
-        ? `0 0 0 4px rgba(0, 0, 0, 0.20), 0 4px 12px ${game.shadow}`
-        : `0 4px 10px rgba(31, 41, 55, 0.06)`,
-    }}
-    onClick={onClick}
-    style={{
-      width: '100%',
-      background: 'var(--surface)',
-      borderRadius: 20,
-      border: selected ? '2.5px solid var(--accent)' : '1px solid var(--border)',
-      boxShadow: selected
-        ? `0 0 0 4px rgba(0, 0, 0, 0.20), 0 18px 36px ${game.shadow}`
-        : `0 10px 22px rgba(31, 41, 55, 0.08), 0 0 0 1px var(--border) inset`,
-      padding: 0,
-      display: 'flex',
-      flexDirection: 'column',
-      cursor: 'pointer',
-      textAlign: 'left',
-      position: 'relative',
-      overflow: 'hidden',
-    }}
-  >
-    {/* Hero illustrazione */}
-    <div style={{
-      position: 'relative',
-      width: '100%',
-      aspectRatio: '16 / 11',
-      background: game.bg,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      overflow: 'hidden',
-    }}>
-      {imageSrc ? (
-        <motion.img
-          src={imageSrc}
-          alt={game.name}
-          loading="lazy"
-          draggable={false}
-          animate={selected
-            ? { scale: [1, 1.04, 1] }
-            : { scale: 1 }
-          }
-          transition={{ duration: 0.8, ease: 'easeOut' }}
-          style={{
-            position: 'absolute',
-            inset: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            display: 'block',
-          }}
-        />
-      ) : (
-        <>
-          <div style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundImage: 'radial-gradient(rgba(255,255,255,0.18) 1px, transparent 1px)',
-            backgroundSize: '14px 14px',
-            backgroundPosition: '0 0',
-            pointerEvents: 'none',
-            opacity: 0.6,
-          }} />
-          <div style={{
-            position: 'absolute', top: -32, right: -32, width: 130, height: 130,
-            borderRadius: '50%', background: 'rgba(255,255,255,0.22)',
-            filter: 'blur(24px)', pointerEvents: 'none',
-          }} />
-          <div style={{
-            position: 'absolute', bottom: -38, left: -38, width: 110, height: 110,
-            borderRadius: '50%', background: 'rgba(255,255,255,0.14)',
-            filter: 'blur(20px)', pointerEvents: 'none',
-          }} />
-          <motion.div
-            animate={selected
-              ? { rotate: [0, -8, 8, -6, 6, 0], scale: [1, 1.06, 1] }
-              : { rotate: 0, scale: 1 }
-            }
-            transition={{ duration: 1, ease: 'easeOut' }}
-            style={{
-              position: 'relative',
-              fontSize: 'clamp(56px, 12vw, 84px)',
-              lineHeight: 1,
-              filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.22))',
-              zIndex: 1,
-            }}
-          >
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.05 }}
+      style={progressStrip}
+    >
+      {players.map((p) => {
+        const voted = !!gameVotes[p.id]
+        return (
+          <div key={p.id} style={voterCell}>
             <div style={{
-              position: 'absolute',
-              top: '50%', left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: '140%', height: '140%',
-              borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 65%)',
-              pointerEvents: 'none',
-              zIndex: -1,
-            }} />
-            {game.emoji}
-          </motion.div>
-        </>
-      )}
-
-      {/* Badge voti (top-right) */}
-      {voteCount > 0 && (
-        <motion.div
-          initial={{ scale: 0, rotate: -20 }}
-          animate={{ scale: 1, rotate: 0 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 16 }}
-          style={{
-            position: 'absolute',
-            top: 8,
-            right: 8,
-            background: 'var(--accent)',
-            color: 'var(--bg)',
-            borderRadius: 999,
-            padding: '4px 10px',
-            fontSize: 11,
-            fontWeight: 900,
-            boxShadow: '0 4px 14px rgba(0, 0, 0, 0.45)',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 4,
-            zIndex: 2,
-          }}
-        >
-          <span style={{ fontSize: 11 }}>🗳️</span>
-          <span>{voteCount}</span>
-        </motion.div>
-      )}
-
-      {/* Selected check (top-left) */}
-      {selected && (
-        <motion.div
-          initial={{ scale: 0, rotate: -90 }}
-          animate={{ scale: 1, rotate: 0 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 18 }}
-          style={{
-            position: 'absolute',
-            top: 8,
-            left: 8,
-            background: 'var(--surface)',
-            color: 'var(--text)',
-            borderRadius: '50%',
-            width: 26,
-            height: 26,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: 14,
-            fontWeight: 900,
-            boxShadow: '0 4px 12px rgba(0,0,0,0.20)',
-            zIndex: 3,
-          }}
-        >
-          ✓
-        </motion.div>
-      )}
-    </div>
-
-    {/* Body */}
-    <div style={{
-      padding: '10px 12px 12px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      gap: 8,
-    }}>
-      <span style={{
-        fontSize: 'clamp(14px, 1.8dvh, 17px)',
-        fontWeight: 900,
-        color: 'var(--text)',
-        lineHeight: 1.2,
-      }}>
-        {game.name}
-      </span>
-      <span style={{
-        fontSize: 'clamp(11px, 1.3dvh, 13px)',
-        fontWeight: 700,
-        color: 'var(--muted)',
-        whiteSpace: 'nowrap',
-        flexShrink: 0,
-      }}>
-        👥 {game.minPlayers}–{game.maxPlayers}
-      </span>
-    </div>
-  </motion.button>
+              ...voterBlob,
+              opacity: voted ? 1 : 0.45,
+              filter: voted ? 'none' : 'grayscale(0.3)',
+            }}>
+              <MiniBlob color={p.color} expr={expr} size={28} id={`voter-${p.id}`} />
+              {voted && (
+                <div style={voterCheck} aria-label="Ha votato">
+                  ✓
+                </div>
+              )}
+            </div>
+            <span style={{
+              ...voterName,
+              color: voted ? 'var(--text)' : 'var(--muted)',
+              fontWeight: voted ? 800 : 600,
+            }}>
+              {p.name}
+            </span>
+          </div>
+        )
+      })}
+    </motion.div>
   )
+}
+
+const subtitle = {
+  margin: '6px 0 0',
+  color: 'var(--muted)',
+  fontSize: 'clamp(13px, 1.6dvh, 16px)',
+  fontWeight: 600,
+}
+
+const grid = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+  gap: 'clamp(10px, 1.4vw, 16px)',
+  flexShrink: 0,
+}
+
+const launchBanner = {
+  textAlign: 'center',
+  background: 'var(--surface)',
+  borderRadius: 'var(--radius-sm)',
+  border: '1px solid var(--border)',
+  boxShadow: 'var(--shadow-sm)',
+  padding: '14px 20px',
+  color: 'var(--accent)',
+  fontWeight: 800,
+  fontSize: 'clamp(14px, 1.8dvh, 16px)',
+  flexShrink: 0,
+}
+
+const progressStrip = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 'clamp(10px, 1.5vw, 16px)',
+  flexWrap: 'wrap',
+  background: 'var(--surface)',
+  borderRadius: 'var(--radius-sm)',
+  border: '1px solid var(--border)',
+  padding: 'clamp(8px, 1.2dvh, 12px) clamp(12px, 2vw, 18px)',
+}
+
+const voterCell = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: 4,
+  minWidth: 48,
+}
+
+const voterBlob = {
+  position: 'relative',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  transition: 'opacity 0.18s, filter 0.18s',
+}
+
+const voterCheck = {
+  position: 'absolute',
+  bottom: -2,
+  right: -4,
+  background: 'var(--success)',
+  color: '#fff',
+  fontSize: 9,
+  fontWeight: 900,
+  width: 14,
+  height: 14,
+  borderRadius: '50%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  border: '1.5px solid var(--surface)',
+  lineHeight: 1,
+}
+
+const voterName = {
+  fontSize: 11,
+  maxWidth: 56,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+  textAlign: 'center',
 }
 
 export default GamesScreen

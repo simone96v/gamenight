@@ -1,35 +1,26 @@
-// Lobby di gioco Trivia (session-mode) — uses GameLobbyLayout.
-// Settings (round/domande) + CategoryWheel + player grid.
+// Lobby di gioco Trivia — solo settings + giocatori + Start.
+// La ruota delle categorie vive nello schermo di gioco (WheelPhase), non qui.
 
-import { useEffect, useMemo, useCallback, useRef } from 'react'
+import { useEffect, useCallback, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import GameLobbyLayout from '../components/GameLobbyLayout'
-import CategoryWheel from '../components/CategoryWheel'
-import ErrorBanner from '../components/ErrorBanner'
 import BlobLoader from '../components/BlobLoader'
 import { useSession } from '../stores/useSession'
 import { useSettings } from '../stores/useSettings'
-import { pushRoom, rpcStartGame } from '../lib/room'
-import { getDeck, preloadPool } from '../lib/aiQuestions'
-import { TRIVIA_CATEGORIES } from '../games/Trivia/constants'
-import { usePlayerAccent } from '../hooks/usePlayerAccent'
-
-const ALL_CATEGORIES = TRIVIA_CATEGORIES
+import { pushRoom } from '../lib/room'
+import { preloadPool } from '../lib/aiQuestions'
 
 const TriviaLobbyScreen = () => {
   const navigate = useNavigate()
 
   const isHost         = useSession((s) => s.isHost)
   const mode           = useSession((s) => s.mode)
-  const roomCode       = useSession((s) => s.roomCode)
-  const localPlayerId  = useSession((s) => s.localPlayerId)
   const players        = useSession((s) => s.players)
   const gameState      = useSession((s) => s.gameState)
   const showError      = useSession((s) => s.showError)
   const setAwaitingGC  = useSession((s) => s.setAwaitingGameChange)
 
-  const C = usePlayerAccent()
   const isSolo = mode === 'local'
   const canControl = isHost || isSolo
 
@@ -37,33 +28,16 @@ const TriviaLobbyScreen = () => {
   const triviaQuestionsLocal     = useSettings((s) => s.triviaQuestionsPerRound)
   const setTotalRounds           = useSettings((s) => s.setTriviaSessionRounds)
   const setQuestionsPerRound     = useSettings((s) => s.setTriviaQuestionsPerRound)
-  const timerDuration            = useSettings((s) => s.timerDuration)
 
   const session = gameState?.triviaSession ?? null
-  const roundIdx        = session?.roundIdx ?? 0
-  const totalRounds     = session?.totalRounds ?? triviaSessionRoundsLocal
+  const roundIdx          = session?.roundIdx ?? 0
+  const totalRounds       = session?.totalRounds ?? triviaSessionRoundsLocal
   const questionsPerRound = session?.questionsPerRound ?? triviaQuestionsLocal
-  const categoriesPlayed  = session?.categoriesPlayed ?? []
-  const spinTarget = session?.spinTarget ?? null
   const launching = session?.launching ?? false
+
   const launchingRef = useRef(false)
   useEffect(() => { launchingRef.current = launching }, [launching])
   useEffect(() => { launchingRef.current = false }, [])
-
-  const currentSpinner = useMemo(() => {
-    if (players.length === 0) return null
-    const seed = (roomCode || '').split('').reduce((acc, c) => acc * 31 + c.charCodeAt(0), 0)
-    const idx = Math.abs(seed + roundIdx * 7919) % players.length
-    return players[idx]?.id ?? null
-  }, [roomCode, roundIdx, players])
-
-  const isSpinner = localPlayerId === currentSpinner
-  const spinnerPlayer = players.find((p) => p.id === currentSpinner)
-
-  const availableCategories = useMemo(
-    () => ALL_CATEGORIES.filter((c) => !categoriesPlayed.includes(c.id)),
-    [categoriesPlayed],
-  )
 
   useEffect(() => { preloadPool() }, [])
 
@@ -96,7 +70,7 @@ const TriviaLobbyScreen = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canControl])
 
-  const updateSessionSetting = (patch) => {
+  const updateSessionSetting = useCallback((patch) => {
     if (!canControl) return
     const s = useSession.getState()
     const newSession = { ...(s.gameState?.triviaSession ?? {}), ...patch }
@@ -111,7 +85,7 @@ const TriviaLobbyScreen = () => {
         ...newGameState,
       })
     }
-  }
+  }, [canControl])
 
   const handleQuestionsChange = (n) => {
     setQuestionsPerRound(n)
@@ -145,123 +119,84 @@ const TriviaLobbyScreen = () => {
     setAwaitingGC(false)
   }
 
-  const handleRequestSpin = useCallback(() => {
-    if (!isSpinner || launchingRef.current || spinTarget) return
-    if (availableCategories.length === 0) return
-
-    const winIdx = Math.floor(Math.random() * availableCategories.length)
-    const winner = availableCategories[winIdx]
-
-    const s = useSession.getState()
-    const newSession = { ...(s.gameState?.triviaSession ?? {}), spinTarget: winner.id }
-    const newGameState = { ...s.gameState, triviaSession: newSession }
-    useSession.setState({ gameState: newGameState })
-    if (s.mode === 'online' && s.roomCode) {
-      pushRoom(s.roomCode, s.currentPhase, {
-        players: s.players,
-        currentIdx: s.currentIdx,
-        round: s.round,
-        activeGame: s.activeGame,
-        ...newGameState,
-      })
-    }
-  }, [isSpinner, spinTarget, availableCategories])
-
-  const setLaunchingState = useCallback((value) => {
-    const s = useSession.getState()
-    const newSession = { ...(s.gameState?.triviaSession ?? {}), launching: value }
-    const newGameState = { ...s.gameState, triviaSession: newSession }
-    useSession.setState({ gameState: newGameState })
-    if (s.mode === 'online' && s.roomCode) {
-      pushRoom(s.roomCode, s.currentPhase, {
-        players: s.players,
-        currentIdx: s.currentIdx,
-        round: s.round,
-        activeGame: s.activeGame,
-        ...newGameState,
-      })
-    }
-  }, [])
-
-  const handleSpinEnd = useCallback(async (category) => {
+  const handleStart = useCallback(async () => {
     if (!canControl || launchingRef.current) return
     launchingRef.current = true
 
     const s = useSession.getState()
-    const freshSession = s.gameState?.triviaSession ?? {}
-    const freshCategoriesPlayed = freshSession.categoriesPlayed ?? []
-    const freshRoundIdx = freshSession.roundIdx ?? 0
-    const freshQuestionsPerRound = freshSession.questionsPerRound ?? questionsPerRound
-
-    const launchSession = {
-      ...freshSession,
-      categoriesPlayed: [...freshCategoriesPlayed, category.id],
-      currentCategory: category.id,
+    const currentSession = s.gameState?.triviaSession ?? {
+      roundIdx: 0,
+      totalRounds: triviaSessionRoundsLocal,
+      questionsPerRound: triviaQuestionsLocal,
+      categoriesPlayed: [],
+      cumulativeScores: {},
       spinTarget: null,
-      launching: true,
     }
-    const launchGameState = { ...s.gameState, triviaSession: launchSession }
-    useSession.setState({ gameState: launchGameState })
+    const nextSession = {
+      ...currentSession,
+      spinTarget: null,
+      launching: false,
+    }
+    const newGameState = {
+      ...s.gameState,
+      activeGame: 'trivia',
+      selectedGame: 'trivia',
+      triviaSession: nextSession,
+    }
 
-    try {
-      const deckData = await getDeck(category.id, freshQuestionsPerRound)
-      const resetScores = freshRoundIdx === 0
-
-      if (s.mode === 'online' && s.roomCode) {
-        const startResult = await rpcStartGame(s.roomCode, deckData, timerDuration, resetScores)
-        if (startResult.error) {
-          console.error('[trivia-lobby] startGame:', startResult.error)
-          showError('generic')
-          setLaunchingState(false)
-          launchingRef.current = false
-        }
-      } else {
-        const resetPlayers = resetScores
-          ? (s.players || []).map((p) => ({
-              ...p, score: 0, current_streak: 0, best_streak: 0,
-              correct_count: 0, total_speed_ms: 0,
-            }))
-          : s.players
-        const now = new Date().toISOString()
-        useSession.setState({
-          players: resetPlayers,
-          gameState: {
-            deck: deckData,
-            current_round: 0,
-            current_question: deckData[0],
-            round_results: {},
-            triviaSession: launchSession,
-          },
-          currentPhase: 'countdown',
-          questionStartedAt: now,
-          activeGame: 'trivia',
-        })
-        navigate('/game/trivia', { replace: true })
+    if (s.mode === 'online' && s.roomCode) {
+      const fullState = {
+        players: s.players,
+        currentIdx: 0,
+        round: 0,
+        activeGame: 'trivia',
+        selectedGame: 'trivia',
+        selectedCategory: s.gameState?.selectedCategory ?? null,
+        categoryVotes: s.gameState?.categoryVotes ?? {},
+        triviaSession: nextSession,
       }
-    } catch (err) {
-      console.error('[trivia-lobby] handleSpinEnd:', err)
-      showError('generic')
-      setLaunchingState(false)
-      launchingRef.current = false
+      const { error } = await pushRoom(s.roomCode, 'trivia_wheel', fullState)
+      if (error) {
+        console.error('[trivia-lobby] handleStart:', error)
+        showError('generic')
+        launchingRef.current = false
+      }
+    } else {
+      useSession.setState({
+        gameState: newGameState,
+        currentPhase: 'trivia_wheel',
+        activeGame: 'trivia',
+      })
+      navigate('/game/trivia', { replace: true })
     }
-  }, [canControl, questionsPerRound, timerDuration, showError, setLaunchingState, navigate])
+  }, [canControl, triviaSessionRoundsLocal, triviaQuestionsLocal, showError, navigate])
 
   if (launching) {
-    return <BlobLoader text="Preparando le domande..." />
+    return <BlobLoader text="Caricamento..." />
   }
+
+  const isContinuing = roundIdx > 0
+  const startLabel = isContinuing
+    ? `Round ${roundIdx + 1}`
+    : totalRounds > 1
+      ? `Gioca · ${totalRounds} round`
+      : 'Gioca'
 
   return (
     <GameLobbyLayout
       gameEmoji="🧠"
       gameName="Trivia"
       gameDescription={
-        categoriesPlayed.length === 0
-          ? 'La ruota decide la categoria!'
-          : `Giocate: ${categoriesPlayed.map((id) => ALL_CATEGORIES.find((c) => c.id === id)?.emoji).join(' ')}`
+        isContinuing
+          ? `Round ${roundIdx + 1}/${totalRounds} in arrivo`
+          : 'Domande a tempo, una categoria a round'
       }
       players={players}
       canControl={canControl}
       onBack={handleExit}
+      onStart={handleStart}
+      launching={launching}
+      startLabel={startLabel}
     >
       {/* Settings */}
       <motion.div
@@ -276,7 +211,7 @@ const TriviaLobbyScreen = () => {
             value={totalRounds}
             onDecrement={() => canControl && handleRoundsChange(totalRounds - 1)}
             onIncrement={() => canControl && handleRoundsChange(totalRounds + 1)}
-            disabled={!canControl || launching || !!spinTarget || roundIdx > 0}
+            disabled={!canControl || launching || isContinuing}
             min={1} max={5}
           />
         </div>
@@ -286,28 +221,10 @@ const TriviaLobbyScreen = () => {
             value={questionsPerRound}
             onDecrement={() => canControl && handleQuestionsChange(questionsPerRound - 1)}
             onIncrement={() => canControl && handleQuestionsChange(questionsPerRound + 1)}
-            disabled={!canControl || launching || !!spinTarget || roundIdx > 0}
+            disabled={!canControl || launching || isContinuing}
             min={1} max={15}
           />
         </div>
-      </motion.div>
-
-      {/* Wheel */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.1 }}
-        style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
-      >
-        <CategoryWheel
-          categories={availableCategories}
-          spinTarget={spinTarget}
-          onRequestSpin={handleRequestSpin}
-          onSpinEnd={handleSpinEnd}
-          disabled={launching || !!spinTarget}
-          canSpin={isSpinner}
-          spinnerName={spinnerPlayer?.name ?? ''}
-        />
       </motion.div>
     </GameLobbyLayout>
   )

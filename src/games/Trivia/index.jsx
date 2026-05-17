@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTrivia } from './useTrivia'
 import CountdownOverlay from '../../components/CountdownOverlay'
 import BlobLoader from '../../components/BlobLoader'
+import WheelPhase from './phases/WheelPhase'
 import QuestionPhase from './phases/QuestionPhase'
 import RevealPhase from './phases/RevealPhase'
 import FinalPhase from './phases/FinalPhase'
@@ -61,6 +62,11 @@ const Trivia = () => {
   // Transitional: hostReplay sets phase to trivia_lobby → useEffect navigates
   if (trivia.currentPhase === 'trivia_lobby') {
     return <BlobLoader text="Caricamento..." />
+  }
+
+  // Wheel phase — ogni round inizia con la ruota delle categorie in-game
+  if (trivia.currentPhase === 'trivia_wheel') {
+    return <WheelPhase onExit={handleChangeGame} />
   }
 
   // Countdown overlay full-screen

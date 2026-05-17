@@ -22,6 +22,7 @@ const phaseToPath = (phase) => {
     case 'lobby':       return '/lobby'
     case 'game_voting': return '/games'
     case 'trivia_lobby': return '/trivia-lobby'
+    case 'trivia_wheel': return '/game/trivia'
     case 'countdown':   return '/game/trivia'
     case 'question':    return '/game/trivia'
     case 'reveal':      return '/game/trivia'
