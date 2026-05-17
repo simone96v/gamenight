@@ -82,49 +82,7 @@ const ScramblePlaying = ({
           </p>
         </div>
 
-        {/* Header lista parole */}
-        <div style={S.listHeader}>
-          <span style={S.listTitle}>Parole trovate</span>
-          <span style={{ ...S.listScore, color: C.accent }}>
-            {myWords.length} · {myScore} pt
-          </span>
-        </div>
-
-        {/* Lista parole (scrollable interna, occupa lo spazio centrale) */}
-        <div className="scrollable-list" style={S.wordsList}>
-          {myWords.length === 0 ? (
-            <p style={S.empty}>Nessuna parola ancora.</p>
-          ) : (
-            <AnimatePresence initial={false}>
-              {[...myWords].reverse().map((w) => {
-                const pts = scoreWord(w, RACK_LEN)
-                const isPangram = w.length === RACK_LEN
-                return (
-                  <motion.div
-                    key={w}
-                    layout
-                    initial={{ opacity: 0, x: -12 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={SPRING}
-                    style={{
-                      ...S.wordRow,
-                      ...(isPangram ? { borderColor: C.accent, background: `${C.accent}1a` } : {}),
-                    }}
-                  >
-                    <span style={S.wordText}>{w}</span>
-                    {isPangram && <span style={{ ...S.pangramBadge, color: C.accent }}>PANGRAM!</span>}
-                    <span style={{ ...S.wordPts, color: isPangram ? C.accent : 'var(--text)' }}>
-                      +{pts}
-                    </span>
-                  </motion.div>
-                )
-              })}
-            </AnimatePresence>
-          )}
-        </div>
-
-        {/* Area input in basso: vassoio + tessere + azioni (ergonomia mobile) */}
+        {/* Area input in alto: vassoio + tessere + azioni (più visibile mentre si compone) */}
         <div style={S.inputArea}>
           {/* Vassoio della parola in costruzione (con bottone refresh per cancellare tutto) */}
           <div style={S.trayWrap}>
@@ -265,6 +223,48 @@ const ScramblePlaying = ({
             </Button>
           </div>
         </div>
+
+        {/* Header lista parole */}
+        <div style={S.listHeader}>
+          <span style={S.listTitle}>Parole trovate</span>
+          <span style={{ ...S.listScore, color: C.accent }}>
+            {myWords.length} · {myScore} pt
+          </span>
+        </div>
+
+        {/* Lista parole (scrollable, occupa lo spazio rimanente in basso) */}
+        <div className="scrollable-list" style={S.wordsList}>
+          {myWords.length === 0 ? (
+            <p style={S.empty}>Nessuna parola ancora.</p>
+          ) : (
+            <AnimatePresence initial={false}>
+              {[...myWords].reverse().map((w) => {
+                const pts = scoreWord(w, RACK_LEN)
+                const isPangram = w.length === RACK_LEN
+                return (
+                  <motion.div
+                    key={w}
+                    layout
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0 }}
+                    transition={SPRING}
+                    style={{
+                      ...S.wordRow,
+                      ...(isPangram ? { borderColor: C.accent, background: `${C.accent}1a` } : {}),
+                    }}
+                  >
+                    <span style={S.wordText}>{w}</span>
+                    {isPangram && <span style={{ ...S.pangramBadge, color: C.accent }}>PANGRAM!</span>}
+                    <span style={{ ...S.wordPts, color: isPangram ? C.accent : 'var(--text)' }}>
+                      +{pts}
+                    </span>
+                  </motion.div>
+                )
+              })}
+            </AnimatePresence>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -309,9 +309,10 @@ const S = {
   inputArea: {
     display: 'flex',
     flexDirection: 'column',
-    gap: 'clamp(8px, 1.4dvh, 14px)',
-    flexShrink: 0,
-    marginTop: 'auto',
+    gap: 'clamp(10px, 2dvh, 18px)',
+    flex: 1,
+    minHeight: 0,
+    justifyContent: 'space-evenly',
   },
   trayWrap: {
     position: 'relative',
@@ -429,8 +430,8 @@ const S = {
     fontVariantNumeric: 'tabular-nums',
   },
   wordsList: {
-    flex: 1,
-    minHeight: 0,
+    flex: '0 0 auto',
+    maxHeight: 'clamp(90px, 18dvh, 170px)',
     overflowY: 'auto',
     overflowX: 'hidden',
     background: 'var(--surface)',

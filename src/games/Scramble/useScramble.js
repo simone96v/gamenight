@@ -147,31 +147,32 @@ export const useScramble = () => {
     if (currentPhase !== 'scramble_playing') return
     if (isExpired) return
     const word = currentWord.toUpperCase()
-    if (word.length < MIN_WORD_LEN) {
-      setErrorFlash('too_short')
+    const rejectWith = (kind) => {
+      setErrorFlash(kind)
       setTimeout(() => setErrorFlash(null), 380)
+      setTray([])
+      setShuffledRack((r) => shuffleRack(r || rack))
+    }
+    if (word.length < MIN_WORD_LEN) {
+      rejectWith('too_short')
       return
     }
     // Anti-doppione per giocatore.
     if (myWords.includes(word)) {
-      setErrorFlash('duplicate')
-      setTimeout(() => setErrorFlash(null), 380)
+      rejectWith('duplicate')
       return
     }
     if (!isFormable(word, rack)) {
-      setErrorFlash('invalid')
-      setTimeout(() => setErrorFlash(null), 380)
+      rejectWith('invalid')
       return
     }
     if (!dict) {
       // Dizionario non ancora caricato — rifiuta con avviso.
-      setErrorFlash('invalid')
-      setTimeout(() => setErrorFlash(null), 380)
+      rejectWith('invalid')
       return
     }
     if (!isInDictionary(word, dict)) {
-      setErrorFlash('invalid')
-      setTimeout(() => setErrorFlash(null), 380)
+      rejectWith('invalid')
       return
     }
 
