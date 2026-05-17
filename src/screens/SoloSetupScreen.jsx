@@ -120,18 +120,9 @@ const SoloSetupScreen = () => {
 
         <Button
           type="submit"
-          variant="primary"
+          variant="secondary"
           width="full"
           disabled={!canStart}
-          style={
-            canStart
-              ? {
-                  background:
-                    'linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)',
-                  boxShadow: '0 8px 24px rgba(6, 182, 212, 0.35)',
-                }
-              : undefined
-          }
         >
           🎮 Scegli il gioco
         </Button>

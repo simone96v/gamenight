@@ -6,7 +6,6 @@ import { useThemeSync } from './hooks/useThemeSync'
 import { ConnectionContext } from './contexts/connection'
 
 import ErrorBoundary from './components/ErrorBoundary'
-import LiquidBackground from './components/LiquidBackground'
 import HomeScreen from './screens/HomeScreen'
 import IosPwaPrompt from './components/IosPwaPrompt'
 
@@ -41,7 +40,6 @@ function App() {
   return (
     <ErrorBoundary>
       <ConnectionContext.Provider value={status}>
-        <LiquidBackground />
         <IosPwaPrompt />
         <Suspense>
           <Routes>
