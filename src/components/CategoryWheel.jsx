@@ -33,6 +33,7 @@ const CategoryWheel = ({
   disabled = false,
   canSpin = false,
   spinnerName = '',
+  accentColor = null, // colore giocatore — usato per bottone SPIN + glow
 }) => {
   const [rotation, setRotation] = useState(0)
   const [spinning, setSpinning] = useState(false)
@@ -244,19 +245,23 @@ const CategoryWheel = ({
           disabled={isBusy || disabled || segCount === 0}
           whileHover={(isBusy || disabled) ? undefined : {
             y: -2,
-            boxShadow: '0 12px 30px rgba(0, 0, 0, 0.4)',
+            boxShadow: accentColor
+              ? `0 12px 30px ${accentColor}66`
+              : '0 12px 30px rgba(0, 0, 0, 0.4)',
           }}
           whileTap={(isBusy || disabled) ? undefined : {
             y: 1,
             scale: 0.97,
-            boxShadow: '0 4px 10px rgba(0, 0, 0, 0.25)',
+            boxShadow: accentColor
+              ? `0 4px 10px ${accentColor}55`
+              : '0 4px 10px rgba(0, 0, 0, 0.25)',
           }}
           transition={{ type: 'spring', stiffness: 400, damping: 22 }}
           style={{
             background: isBusy
               ? 'var(--surface2)'
-              : 'var(--accent)',
-            color: isBusy ? 'var(--muted)' : 'var(--bg)',
+              : accentColor || 'var(--accent)',
+            color: isBusy ? 'var(--muted)' : '#fff',
             border: 'none',
             padding: '14px 32px',
             borderRadius: 16,
@@ -265,7 +270,11 @@ const CategoryWheel = ({
             letterSpacing: '0.01em',
             cursor: (isBusy || disabled) ? 'default' : 'pointer',
             opacity: disabled ? 0.55 : 1,
-            boxShadow: isBusy ? 'none' : '0 8px 20px rgba(0, 0, 0, 0.35)',
+            boxShadow: isBusy
+              ? 'none'
+              : accentColor
+                ? `0 8px 20px ${accentColor}55`
+                : '0 8px 20px rgba(0, 0, 0, 0.35)',
             transition: 'opacity 0.2s, background 0.15s, color 0.15s',
             minWidth: 200,
           }}

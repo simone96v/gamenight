@@ -221,7 +221,6 @@ const VoteProgressStrip = ({ players, gameVotes, expr }) => {
               <MiniBlob
                 color={p.color}
                 expr={expr}
-                pose={voted ? 'bounce' : 'idle'}
                 size={28}
                 id={`voter-${p.id}`}
               />

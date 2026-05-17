@@ -197,25 +197,28 @@ const WheelPhase = ({ onExit }) => {
           </motion.div>
         )}
 
-        {/* Spinner indicator + blob attivo */}
+        {/* Spinner indicator + blob attivo — bordo + label tintati col color giocatore */}
         <motion.div
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.05 }}
-          style={S.spinnerCard}
+          style={{
+            ...S.spinnerCard,
+            borderColor: `${C.accent}40`,
+            boxShadow: `0 4px 14px ${C.accent}22, var(--shadow-sm)`,
+          }}
         >
           {spinnerPlayer && (
             <div style={S.spinnerBlob}>
               <MiniBlob
                 color={spinnerPlayer.color}
                 expr={expr}
-                pose={isSpinner ? 'bounce' : 'attack'}
                 size={56}
                 id={`spinner-${spinnerPlayer.id}`}
               />
             </div>
           )}
-          <span style={S.spinnerLabel}>{spinnerLabel}</span>
+          <span style={{ ...S.spinnerLabel, color: C.accent }}>{spinnerLabel}</span>
           <p style={S.spinnerHint}>
             {isSpinner ? 'Gira la ruota per scoprire la categoria' : 'Aspetta lo spin...'}
           </p>
@@ -257,6 +260,7 @@ const WheelPhase = ({ onExit }) => {
             disabled={launching || !!spinTarget}
             canSpin={isSpinner}
             spinnerName={spinnerPlayer?.name ?? ''}
+            accentColor={C.accent}
           />
         </motion.div>
       </div>
