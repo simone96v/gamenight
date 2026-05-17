@@ -1059,14 +1059,15 @@ export class GameEngine {
     ctx.arc(0, 0, r, 0, Math.PI * 2)
     ctx.fill()
 
-    // Top-left shine (lighter shade of body color)
+    // Top-left shine — proporzioni canonical (cx:100 cy:90 rx:24 ry:15 rot:-30°)
+    // Tradotto dal viewBox 300 al canvas r-based: offset (-0.38r, -0.49r), size 0.183r × 0.115r
     ctx.fillStyle = light
     ctx.globalAlpha = 0.85
     ctx.save()
-    ctx.translate(-r * 0.42, -r * 0.5)
-    ctx.rotate(-Math.PI / 5)
+    ctx.translate(-r * 0.38, -r * 0.49)
+    ctx.rotate(-Math.PI / 6)
     ctx.beginPath()
-    ctx.ellipse(0, 0, r * 0.22, r * 0.13, 0, 0, Math.PI * 2)
+    ctx.ellipse(0, 0, r * 0.183, r * 0.115, 0, 0, Math.PI * 2)
     ctx.fill()
     ctx.restore()
     ctx.globalAlpha = 1
@@ -1083,15 +1084,16 @@ export class GameEngine {
   _drawAliveEyes(ctx, r) {
     const blob = this.blob
     const OUTLINE = '#1F2937'
-    // Smooth look direction based on velocity
+    // Proporzioni canonical (MiniBlob/Blob): occhi a (±100, 115) ry=40 in viewBox 300.
+    // Tradotto al canvas r-based: spacing=0.38r, y=-0.30r, rx=0.26r, ry=0.31r
     const lookX = Math.max(-1, Math.min(1, blob.vx / 200))
-    const eyeSpacing = r * 0.50
-    const eyeY = -r * 0.05
-    const eyeRx = r * 0.34
-    const eyeRy = r * 0.40
-    const hlR = r * 0.13
+    const eyeSpacing = r * 0.38
+    const eyeY = -r * 0.30
+    const eyeRx = r * 0.26
+    const eyeRy = r * 0.31
+    const hlR = r * 0.07
     const lookOff = lookX * (eyeRx * 0.32)
-    const lookYOff = blob.vy > 300 ? 1.8 : blob.vy < -400 ? -1.8 : 0
+    const lookYOff = blob.vy > 300 ? 1.5 : blob.vy < -400 ? -1.5 : 0
 
     for (const side of [-1, 1]) {
       const ex = side * eyeSpacing
@@ -1102,39 +1104,41 @@ export class GameEngine {
       ctx.ellipse(ex, eyeY, eyeRx, eyeRy, 0, 0, Math.PI * 2)
       ctx.fill()
 
-      // Big highlight (top-right)
+      // Highlight bianco principale (offset top-right interno all'occhio)
       ctx.fillStyle = '#fff'
       ctx.beginPath()
-      ctx.arc(ex + lookOff + eyeRx * 0.32, eyeY + lookYOff - eyeRy * 0.34, hlR, 0, Math.PI * 2)
+      ctx.arc(ex + lookOff + eyeRx * 0.32, eyeY + lookYOff - eyeRy * 0.33, hlR, 0, Math.PI * 2)
       ctx.fill()
 
-      // Tiny bottom-left sparkle
+      // Sparkle bottom-left
       ctx.fillStyle = 'rgba(255,255,255,0.6)'
       ctx.beginPath()
-      ctx.arc(ex + lookOff - eyeRx * 0.28, eyeY + lookYOff + eyeRy * 0.38, hlR * 0.45, 0, Math.PI * 2)
+      ctx.arc(ex + lookOff - eyeRx * 0.27, eyeY + lookYOff + eyeRy * 0.37, hlR * 0.4, 0, Math.PI * 2)
       ctx.fill()
     }
 
-    // Smile mouth
+    // Smile — canonical: ampiezza 56 (±28) profondità 14 a y=160 in viewBox 300.
+    // Tradotto: mouthW=0.21r, mouthY=0.05r, depth=0.11r, strokeWidth=0.054r
     ctx.strokeStyle = OUTLINE
-    ctx.lineWidth = Math.max(2, r * 0.15)
+    ctx.lineWidth = Math.max(2, r * 0.054)
     ctx.lineCap = 'round'
     ctx.beginPath()
-    const mouthW = r * 0.42
-    const mouthY = r * 0.50
+    const mouthW = r * 0.21
+    const mouthY = r * 0.05
     ctx.moveTo(-mouthW, mouthY)
-    ctx.quadraticCurveTo(0, mouthY + r * 0.32, mouthW, mouthY)
+    ctx.quadraticCurveTo(0, mouthY + r * 0.11, mouthW, mouthY)
     ctx.stroke()
     ctx.lineCap = 'butt'
   }
 
   _drawDeadEyes(ctx, r) {
-    const eyeSpacing = r * 0.42
-    const eyeY = -r * 0.1
-    const s = r * 0.22
+    // Stessa posizione occhi della pose alive (allineato al canonical)
+    const eyeSpacing = r * 0.38
+    const eyeY = -r * 0.30
+    const s = r * 0.18
 
     ctx.strokeStyle = '#0f0c2e'
-    ctx.lineWidth = 2.8
+    ctx.lineWidth = Math.max(2, r * 0.054)
     ctx.lineCap = 'round'
 
     for (const side of [-1, 1]) {
@@ -1149,9 +1153,9 @@ export class GameEngine {
       ctx.stroke()
     }
 
-    // Sad mouth
+    // Sad mouth — vicino agli occhi come la smile canonical
     ctx.beginPath()
-    ctx.arc(0, r * 0.35, r * 0.25, Math.PI * 0.15, Math.PI * 0.85, true)
+    ctx.arc(0, r * 0.15, r * 0.21, Math.PI * 0.15, Math.PI * 0.85, true)
     ctx.stroke()
     ctx.lineCap = 'butt'
   }
