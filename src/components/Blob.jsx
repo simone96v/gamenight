@@ -1,43 +1,67 @@
 import { motion } from 'framer-motion'
 import { BLOB_GRADIENTS, GRAY_GRADIENT } from '../utils/colors'
 
-const BlobEyes = ({ expr, lx, rx, ey, prefix, rotate = 0 }) => {
-  const pupilDx = expr === 'look-left' ? -9 : expr === 'look-right' ? 9 : 0
-  const pupilDy = expr === 'look-left' ? -3 : expr === 'look-right' ? -3 : 0
+const OUTLINE = '#1F2937'
+
+const BlobEyes = ({
+  expr,
+  lx = 100, rx = 200, ey = 115, my = 160,
+  eyeRx = 34, eyeRy = 40, pupilR = 9, glintR = 3.5,
+  strokeW = 7, smileW = 28, smileBend = 14,
+  rotate = 0,
+  gaze = null, // { x: -1..1, y: -1..1 } per parallasse pupille
+}) => {
+  // Parallasse: la pupilla bianca shifta dentro l'occhio in base a gaze.
+  // Si somma agli offset dell'expression (look-left/right). Modesto: max ±8/±5.
+  const gazeDx = gaze ? gaze.x * 8 : 0
+  const gazeDy = gaze ? gaze.y * 5 : 0
+  const lookDx = (expr === 'look-left' ? -11 : expr === 'look-right' ? 11 : 0) + gazeDx
+  const lookDy = (expr === 'look-left' || expr === 'look-right' ? -5 : 0) + gazeDy
   const cx = (lx + rx) / 2
   const wrap = (children) =>
     rotate ? <g transform={`rotate(${rotate}, ${cx}, ${ey})`}>{children}</g> : <>{children}</>
 
   if (expr === 'blink') {
+    const blinkW = eyeRx * 0.88
     return wrap(
       <>
-        <ellipse cx={lx} cy={ey} rx="24" ry="4" fill="#fff" opacity="0.9" />
-        <ellipse cx={rx} cy={ey} rx="24" ry="4" fill="#fff" opacity="0.9" />
+        <path d={`M${lx - blinkW} ${ey} Q${lx} ${ey + 11}, ${lx + blinkW} ${ey}`}
+          fill="none" stroke={OUTLINE} strokeWidth={strokeW} strokeLinecap="round" />
+        <path d={`M${rx - blinkW} ${ey} Q${rx} ${ey + 11}, ${rx + blinkW} ${ey}`}
+          fill="none" stroke={OUTLINE} strokeWidth={strokeW} strokeLinecap="round" />
+        <path d={`M${cx - smileW} ${my} Q${cx} ${my + smileBend}, ${cx + smileW} ${my}`}
+          fill="none" stroke={OUTLINE} strokeWidth={strokeW} strokeLinecap="round" />
       </>
     )
   }
 
   if (expr === 'happy') {
+    const happyW = eyeRx * 0.88
     return wrap(
       <>
-        <path d={`M${lx - 22} ${ey + 3} Q${lx} ${ey - 22}, ${lx + 22} ${ey + 3}`}
-          fill="none" stroke="#fff" strokeWidth="6" strokeLinecap="round" />
-        <path d={`M${rx - 22} ${ey + 3} Q${rx} ${ey - 22}, ${rx + 22} ${ey + 3}`}
-          fill="none" stroke="#fff" strokeWidth="6" strokeLinecap="round" />
+        <path d={`M${lx - happyW} ${ey + 10} Q${lx} ${ey - 26}, ${lx + happyW} ${ey + 10}`}
+          fill="none" stroke={OUTLINE} strokeWidth={strokeW + 1} strokeLinecap="round" />
+        <path d={`M${rx - happyW} ${ey + 10} Q${rx} ${ey - 26}, ${rx + happyW} ${ey + 10}`}
+          fill="none" stroke={OUTLINE} strokeWidth={strokeW + 1} strokeLinecap="round" />
+        <path d={`M${cx - smileW - 4} ${my - 4} Q${cx} ${my + 26}, ${cx + smileW + 4} ${my - 4}`}
+          fill="none" stroke={OUTLINE} strokeWidth={strokeW + 1} strokeLinecap="round" />
       </>
     )
   }
 
   return wrap(
     <>
-      <ellipse cx={lx} cy={ey} rx="26" ry="28" fill={`url(#${prefix}-eye-l)`} />
-      <circle cx={lx + 3 + pupilDx} cy={ey + 4 + pupilDy} r="12" fill="#6D28D9" />
-      <circle cx={lx + 5 + pupilDx} cy={ey + 1 + pupilDy} r="4.5" fill="#1E1B4B" />
-      <circle cx={lx + 9 + pupilDx} cy={ey - 3 + pupilDy} r="2.8" fill="rgba(255,255,255,0.9)" />
-      <ellipse cx={rx} cy={ey} rx="26" ry="28" fill={`url(#${prefix}-eye-r)`} />
-      <circle cx={rx + 3 + pupilDx} cy={ey + 4 + pupilDy} r="12" fill="#6D28D9" />
-      <circle cx={rx + 5 + pupilDx} cy={ey + 1 + pupilDy} r="4.5" fill="#1E1B4B" />
-      <circle cx={rx + 9 + pupilDx} cy={ey - 3 + pupilDy} r="2.8" fill="rgba(255,255,255,0.9)" />
+      {/* Left eye: solid dark + highlight */}
+      <ellipse cx={lx} cy={ey} rx={eyeRx} ry={eyeRy} fill={OUTLINE} />
+      <circle cx={lx + 11 + lookDx} cy={ey - 13 + lookDy} r={pupilR} fill="#fff" />
+      <circle cx={lx - 9 + lookDx} cy={ey + 15 + lookDy} r={glintR} fill="rgba(255,255,255,0.6)" />
+      {/* Right eye */}
+      <ellipse cx={rx} cy={ey} rx={eyeRx} ry={eyeRy} fill={OUTLINE} />
+      <circle cx={rx + 11 + lookDx} cy={ey - 13 + lookDy} r={pupilR} fill="#fff" />
+      <circle cx={rx - 9 + lookDx} cy={ey + 15 + lookDy} r={glintR} fill="rgba(255,255,255,0.6)" />
+      {/* Smile */}
+      <path d={`M${cx - smileW} ${my} Q${cx} ${my + smileBend}, ${cx + smileW} ${my}`}
+        fill="none" stroke={OUTLINE} strokeWidth={strokeW} strokeLinecap="round" />
     </>
   )
 }
@@ -53,6 +77,8 @@ const Blob = ({
   id = 'blob',
   animate = true,
   name,
+  face,
+  gaze = null,
 }) => {
   const [c1, c2, c3] = BLOB_GRADIENTS[color] || GRAY_GRADIENT
   const prefix = id
@@ -79,22 +105,19 @@ const Blob = ({
         aria-hidden="true"
       >
         <defs>
-          <linearGradient id={`${prefix}-grad`} x1="0%" y1="0%" x2="100%" y2="80%">
+          <radialGradient id={`${prefix}-grad`} cx="40%" cy="36%" r="72%">
             <stop offset="0%" stopColor={c1} />
-            <stop offset="40%" stopColor={c2} />
+            <stop offset="60%" stopColor={c2} />
             <stop offset="100%" stopColor={c3} />
-          </linearGradient>
-          <radialGradient id={`${prefix}-eye-l`} cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#fff" />
-            <stop offset="100%" stopColor="#F0ECF9" />
-          </radialGradient>
-          <radialGradient id={`${prefix}-eye-r`} cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#fff" />
-            <stop offset="100%" stopColor="#F0ECF9" />
           </radialGradient>
         </defs>
-        <circle cx="150" cy="150" r="145" fill={`url(#${prefix}-grad)`} />
-        <BlobEyes expr={expr} lx={115} rx={185} ey={140} prefix={prefix} rotate={rotate} />
+        {/* Body: forma BLOB canonica (matches MiniBlob pose='idle') */}
+        <path
+          d="M150,24 C220,24 282,80 282,148 C282,232 224,284 150,284 C76,284 18,232 18,148 C18,80 80,24 150,24 Z"
+          fill={`url(#${prefix}-grad)`}
+        />
+        <ellipse cx="100" cy="90" rx="24" ry="15" fill={c1} opacity="0.85" transform="rotate(-30 100 90)" />
+        <BlobEyes expr={expr} rotate={rotate} gaze={gaze} {...face} />
       </svg>
       {name && (
         <div style={{

@@ -119,7 +119,7 @@ const GamesScreen = () => {
 
   return (
     <motion.div
-      className="screen"
+      className="screen screen-narrow"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
@@ -218,7 +218,13 @@ const VoteProgressStrip = ({ players, gameVotes, expr }) => {
               opacity: voted ? 1 : 0.45,
               filter: voted ? 'none' : 'grayscale(0.3)',
             }}>
-              <MiniBlob color={p.color} expr={expr} size={28} id={`voter-${p.id}`} />
+              <MiniBlob
+                color={p.color}
+                expr={expr}
+                pose={voted ? 'bounce' : 'idle'}
+                size={28}
+                id={`voter-${p.id}`}
+              />
               {voted && (
                 <div style={voterCheck} aria-label="Ha votato">
                   ✓

@@ -7,19 +7,31 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'icons/*.png'],
+      includeAssets: ['favicon.svg', 'icons/*.svg', 'icons/*.png'],
       manifest: {
         name: 'Blob Party',
         short_name: 'Blob Party',
         description: 'Mini-giochi per le serate con i tuoi',
-        theme_color: '#8B5CF6',
-        background_color: '#F5F3FF',
+        theme_color: '#F59E0B',
+        background_color: '#FEF3C7',
         display: 'standalone',
         orientation: 'portrait',
         scope: '/',
         start_url: '/',
         lang: 'it',
         icons: [
+          {
+            src: '/icons/icon.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
+            purpose: 'any',
+          },
+          {
+            src: '/icons/icon-maskable.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
+            purpose: 'maskable',
+          },
           {
             src: '/icons/icon-192.png',
             sizes: '192x192',

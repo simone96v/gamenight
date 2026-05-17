@@ -74,7 +74,7 @@ const SoloResultScreen = ({
             transition={{ delay: 0.15, type: 'spring', stiffness: 260, damping: 18 }}
             style={S.playerBox}
           >
-            <MiniBlob color={player.color} expr={expr} size={64} id="solo-result-blob" />
+            <MiniBlob color={player.color} expr={expr} pose="bounce" size={64} id="solo-result-blob" />
             <span style={S.playerName}>{player.name}</span>
           </motion.div>
         )}

@@ -39,7 +39,7 @@ const ScramblePlaying = ({
 }) => {
   const C = usePlayerAccent()
   const myScore = myWords.reduce((acc, w) => acc + scoreWord(w, RACK_LEN), 0)
-  // Sostituisce score per HUD (parole/round contate live)
+  // Sovrascrive score con il conteggio parole del round corrente (live).
   const hudPlayers = players.map((p) => ({
     ...p,
     score: p.id === localPlayerId
@@ -168,8 +168,9 @@ const ScramblePlaying = ({
                     ...S.tile,
                     background: used ? 'var(--surface2)' : 'var(--surface)',
                     color: used ? 'var(--muted)' : 'var(--text)',
-                    borderColor: used ? 'var(--border)' : 'var(--border-strong)',
-                    opacity: used ? 0.35 : 1,
+                    borderColor: used ? 'var(--border)' : C.accent,
+                    borderWidth: used ? '1.5px' : '2px',
+                    opacity: used ? 0.4 : 1,
                     cursor: used || isExpired ? 'default' : 'pointer',
                     boxShadow: used ? 'none' : 'var(--shadow-sm)',
                   }}
@@ -349,16 +350,16 @@ const S = {
     lineHeight: 1,
   },
   traySlot: {
-    width: 'clamp(28px, 8vw, 40px)',
-    height: 'clamp(36px, 9vw, 48px)',
-    borderRadius: 8,
-    border: '1.5px dashed var(--border)',
+    width: 'clamp(30px, 8.4vw, 42px)',
+    height: 'clamp(38px, 9.2vw, 50px)',
+    borderRadius: 12,
+    border: '1.5px dashed var(--border-strong)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     fontFamily: "'Baloo 2', cursive",
-    fontSize: 'clamp(18px, 4.5vw, 26px)',
-    fontWeight: 800,
+    fontSize: 'clamp(18px, 4.6vw, 26px)',
+    fontWeight: 900,
     letterSpacing: '-0.02em',
   },
   errorMsg: {
@@ -376,11 +377,11 @@ const S = {
     flexShrink: 0,
   },
   tile: {
-    aspectRatio: '1 / 1.15',
-    border: '1.5px solid var(--border-strong)',
-    borderRadius: 'var(--radius-sm)',
+    aspectRatio: '1 / 1.1',
+    border: '2px solid',
+    borderRadius: 12,
     fontFamily: "'Baloo 2', cursive",
-    fontSize: 'clamp(20px, 5vw, 30px)',
+    fontSize: 'clamp(22px, 5.4vw, 32px)',
     fontWeight: 900,
     letterSpacing: '-0.02em',
     display: 'flex',
@@ -398,18 +399,19 @@ const S = {
     flexShrink: 0,
   },
   actionBtn: {
-    width: 'clamp(48px, 12vw, 56px)',
-    height: 'clamp(48px, 7dvh, 64px)',
+    width: 'clamp(42px, 11vw, 50px)',
+    height: 'clamp(42px, 11vw, 50px)',
     background: 'var(--surface)',
     border: '1.5px solid var(--border-strong)',
-    borderRadius: 'var(--radius-sm)',
-    fontSize: 'clamp(18px, 2.4dvh, 22px)',
+    borderRadius: 12,
+    fontSize: 'clamp(16px, 2.2dvh, 20px)',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     color: 'var(--text)',
     boxShadow: 'var(--shadow-sm)',
+    flexShrink: 0,
   },
   listHeader: {
     display: 'flex',
@@ -452,18 +454,18 @@ const S = {
     display: 'flex',
     alignItems: 'center',
     gap: 8,
-    padding: '6px 10px',
+    padding: 'clamp(8px, 1.2dvh, 12px) clamp(12px, 3vw, 16px)',
     background: 'var(--bg)',
-    border: '1.5px solid transparent',
-    borderRadius: 10,
+    border: '1.5px solid var(--border)',
+    borderRadius: 12,
   },
   wordText: {
     flex: 1,
     fontFamily: "'Baloo 2', cursive",
-    fontWeight: 800,
-    fontSize: 'clamp(13px, 1.6dvh, 16px)',
+    fontWeight: 900,
+    fontSize: 'clamp(13px, 1.7dvh, 17px)',
     color: 'var(--text)',
-    letterSpacing: '0.04em',
+    letterSpacing: '0.08em',
   },
   pangramBadge: {
     fontSize: 'clamp(9px, 1.1dvh, 11px)',

@@ -1,13 +1,15 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import GameLobbyLayout from '../components/GameLobbyLayout'
+import LobbySegmented from '../components/ui/LobbySegmented'
 import { useSession } from '../stores/useSession'
 import { pushRoom } from '../lib/room'
 import { loadMappaDeck, preloadMappaPool, MAPPA_DIFFICULTIES } from '../lib/mappaDeck'
 import { usePlayerAccent } from '../hooks/usePlayerAccent'
 
 const ROUND_OPTIONS = [5, 10, 25, 50]
+// Difficoltà stripped (niente emoji/colore) per usare lo stile flat di Movie Quiz.
+const DIFFICULTY_OPTIONS = MAPPA_DIFFICULTIES.map(({ id, label }) => ({ id, label }))
 
 const MappaLobbyScreen = () => {
   const C = usePlayerAccent()
@@ -127,7 +129,6 @@ const MappaLobbyScreen = () => {
 
   return (
     <GameLobbyLayout
-      gameEmoji="🗺️"
       gameName="Indovina Dove"
       gameDescription="Piazza il pin sulla mappa d'Italia! Più sei vicino, più punti fai."
       players={players}
@@ -137,110 +138,26 @@ const MappaLobbyScreen = () => {
       onStart={handleStart}
       onBack={handleBack}
     >
-      {/* Domande */}
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        style={settingsCard}
-      >
-        <span style={settingLabel}>Quante domande?</span>
-        <div style={optionsRow}>
-          {ROUND_OPTIONS.map((n) => (
-            <motion.button
-              key={n}
-              type="button"
-              onClick={() => canControl && syncRounds(n)}
-              disabled={!canControl}
-              whileHover={canControl ? { y: -2 } : undefined}
-              whileTap={canControl ? { y: 0, scale: 0.95 } : undefined}
-              transition={{ type: 'spring', stiffness: 400, damping: 22 }}
-              style={{
-                ...optionBtn,
-                background: rounds === n ? C.accent : 'var(--surface)',
-                color: rounds === n ? '#fff' : 'var(--text)',
-                border: rounds === n ? `2px solid ${C.accent}` : '2px solid var(--border)',
-                boxShadow: rounds === n ? `0 4px 12px ${C.shadow}` : '0 2px 6px rgba(0,0,0,0.04)',
-                opacity: !canControl ? 0.6 : 1,
-                cursor: canControl ? 'pointer' : 'default',
-              }}
-            >
-              {n}
-            </motion.button>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Difficoltà */}
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.12 }}
-        style={settingsCard}
-      >
-        <span style={settingLabel}>Difficoltà</span>
-        <div style={optionsRow}>
-          {MAPPA_DIFFICULTIES.map((d) => {
-            const active = d.id === difficulty
-            return (
-              <motion.button
-                key={d.id}
-                type="button"
-                onClick={() => canControl && syncDifficulty(d.id)}
-                disabled={!canControl}
-                whileHover={canControl ? { y: -2 } : undefined}
-                whileTap={canControl ? { y: 0, scale: 0.95 } : undefined}
-                transition={{ type: 'spring', stiffness: 400, damping: 22 }}
-                style={{
-                  ...optionBtn,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 4,
-                  fontSize: 'clamp(12px, 1.5dvh, 14px)',
-                  background: active ? d.color : 'var(--surface)',
-                  color: active ? '#fff' : 'var(--text)',
-                  border: active ? `2px solid ${d.color}` : '2px solid var(--border)',
-                  boxShadow: active ? '0 4px 12px rgba(0,0,0,0.2)' : '0 2px 6px rgba(0,0,0,0.04)',
-                  opacity: !canControl ? 0.6 : 1,
-                  cursor: canControl ? 'pointer' : 'default',
-                }}
-              >
-                <span style={{ fontSize: 14 }}>{d.emoji}</span>
-                <span>{d.label}</span>
-              </motion.button>
-            )
-          })}
-        </div>
-      </motion.div>
+      <LobbySegmented
+        label="Quante domande?"
+        options={ROUND_OPTIONS}
+        value={rounds}
+        onChange={syncRounds}
+        accent={C.accent}
+        accentShadow={C.shadow}
+        disabled={!canControl}
+      />
+      <LobbySegmented
+        label="Difficoltà"
+        options={DIFFICULTY_OPTIONS}
+        value={difficulty}
+        onChange={syncDifficulty}
+        accent={C.accent}
+        accentShadow={C.shadow}
+        disabled={!canControl}
+      />
     </GameLobbyLayout>
   )
-}
-
-const settingsCard = {
-  background: 'var(--surface)',
-  borderRadius: 'var(--radius-lg)',
-  padding: 'clamp(16px, 2.5dvh, 24px)',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 14,
-}
-const settingLabel = {
-  fontSize: 'clamp(14px, 1.8dvh, 17px)',
-  fontWeight: 800,
-  color: 'var(--text)',
-}
-const optionsRow = {
-  display: 'flex',
-  gap: 10,
-}
-const optionBtn = {
-  flex: 1,
-  padding: 'clamp(12px, 2dvh, 18px) 0',
-  borderRadius: 'var(--radius-sm)',
-  fontSize: 'clamp(16px, 2dvh, 20px)',
-  fontWeight: 900,
-  transition: 'all 0.2s',
 }
 
 export default MappaLobbyScreen

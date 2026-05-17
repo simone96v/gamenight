@@ -1,9 +1,9 @@
-// Lobby Movie Quiz — solo stepper "Domande" + bottone Start. No categorie, no ruota.
+// Lobby Movie Quiz — selettore "Domande" + "Difficoltà" + bottone Start.
 
 import { useEffect, useCallback, useRef } from 'react'
-import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import GameLobbyLayout from '../components/GameLobbyLayout'
+import LobbySegmented from '../components/ui/LobbySegmented'
 import BlobLoader from '../components/BlobLoader'
 import { useSession } from '../stores/useSession'
 import { pushRoom } from '../lib/room'
@@ -11,10 +11,12 @@ import {
   loadEmojiQuizDeck,
   preloadEmojiQuizPool,
 } from '../lib/emojiQuizDeck'
+import { usePlayerAccent } from '../hooks/usePlayerAccent'
 
 const DEFAULT_QUESTIONS = 7
 const MIN_QUESTIONS = 5
 const MAX_QUESTIONS = 15
+const QUESTION_OPTIONS = [5, 7, 10, 15]
 const DEFAULT_DIFFICULTY = 'mix'
 const DIFFICULTY_OPTIONS = [
   { id: 'mix',    label: 'Mix' },
@@ -27,6 +29,7 @@ const clamp = (n, min, max) => Math.max(min, Math.min(max, n))
 
 const EmojiQuizLobbyScreen = () => {
   const navigate = useNavigate()
+  const C = usePlayerAccent()
 
   const isHost = useSession((s) => s.isHost)
   const mode = useSession((s) => s.mode)
@@ -193,7 +196,6 @@ const EmojiQuizLobbyScreen = () => {
 
   return (
     <GameLobbyLayout
-      gameEmoji="🎬"
       gameName="Movie Quiz"
       gameDescription="Decifra gli emoji: film o serie TV."
       players={players}
@@ -203,144 +205,26 @@ const EmojiQuizLobbyScreen = () => {
       launching={launching}
       startLabel="Inizia"
     >
-      {/* Settings: numero domande + difficoltà */}
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.05 }}
-        style={settingsCard}
-      >
-        <div style={settingRow}>
-          <span style={settingLabelStyle}>Domande</span>
-          <Stepper
-            value={questionsPerRound}
-            onDecrement={() => canControl && handleQuestionsChange(questionsPerRound - 1)}
-            onIncrement={() => canControl && handleQuestionsChange(questionsPerRound + 1)}
-            disabled={!canControl || launching}
-            min={MIN_QUESTIONS} max={MAX_QUESTIONS}
-          />
-        </div>
-        <div style={{ ...settingRow, marginTop: 'clamp(8px, 1.2dvh, 12px)', alignItems: 'flex-start' }}>
-          <span style={settingLabelStyle}>Difficoltà</span>
-          <div style={chipRow}>
-            {DIFFICULTY_OPTIONS.map((opt) => {
-              const active = difficulty === opt.id
-              const dis = !canControl || launching
-              return (
-                <motion.button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => !dis && handleDifficultyChange(opt.id)}
-                  disabled={dis}
-                  whileHover={dis || active ? undefined : { scale: 1.04 }}
-                  whileTap={dis ? undefined : { scale: 0.96 }}
-                  style={{
-                    ...chipBtn,
-                    background: active ? 'var(--accent)' : 'var(--surface)',
-                    color: active ? 'var(--bg)' : 'var(--text)',
-                    border: active ? '1.5px solid var(--accent)' : '1.5px solid var(--border-strong)',
-                    opacity: dis && !active ? 0.5 : 1,
-                    cursor: dis ? 'not-allowed' : 'pointer',
-                  }}
-                >
-                  {opt.label}
-                </motion.button>
-              )
-            })}
-          </div>
-        </div>
-      </motion.div>
+      <LobbySegmented
+        label="Domande"
+        options={QUESTION_OPTIONS}
+        value={questionsPerRound}
+        onChange={handleQuestionsChange}
+        accent={C.accent}
+        accentShadow={C.shadow}
+        disabled={!canControl || launching}
+      />
+      <LobbySegmented
+        label="Difficoltà"
+        options={DIFFICULTY_OPTIONS}
+        value={difficulty}
+        onChange={handleDifficultyChange}
+        accent={C.accent}
+        accentShadow={C.shadow}
+        disabled={!canControl || launching}
+      />
     </GameLobbyLayout>
   )
-}
-
-const Stepper = ({ value, onDecrement, onIncrement, disabled, min, max }) => {
-  const decDisabled = disabled || value <= min
-  const incDisabled = disabled || value >= max
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-      <motion.button
-        type="button"
-        onClick={onDecrement}
-        disabled={decDisabled}
-        whileHover={decDisabled ? undefined : { scale: 1.1 }}
-        whileTap={decDisabled ? undefined : { scale: 0.9 }}
-        transition={{ type: 'spring', stiffness: 400, damping: 22 }}
-        style={{ ...stepBtn, opacity: decDisabled ? 0.4 : 1 }}
-      >
-        −
-      </motion.button>
-      <span style={stepValueStyle}>{value}</span>
-      <motion.button
-        type="button"
-        onClick={onIncrement}
-        disabled={incDisabled}
-        whileHover={incDisabled ? undefined : { scale: 1.1 }}
-        whileTap={incDisabled ? undefined : { scale: 0.9 }}
-        transition={{ type: 'spring', stiffness: 400, damping: 22 }}
-        style={{ ...stepBtn, opacity: incDisabled ? 0.4 : 1 }}
-      >
-        +
-      </motion.button>
-    </div>
-  )
-}
-
-const settingsCard = {
-  background: 'var(--surface)',
-  borderRadius: 'var(--radius-sm)',
-  border: '1px solid var(--border)',
-  boxShadow: 'var(--shadow-sm)',
-  padding: 'clamp(10px, 1.5dvh, 14px) clamp(14px, 3vw, 18px)',
-}
-const settingRow = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: 12,
-}
-const settingLabelStyle = {
-  fontSize: 'clamp(13px, 1.5dvh, 15px)',
-  fontWeight: 700,
-  color: 'var(--text)',
-}
-const stepBtn = {
-  width: 34,
-  height: 34,
-  borderRadius: 10,
-  border: '1.5px solid var(--border-strong)',
-  background: 'var(--surface)',
-  color: 'var(--text)',
-  fontSize: 17,
-  fontWeight: 800,
-  cursor: 'pointer',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-}
-const stepValueStyle = {
-  minWidth: 26,
-  textAlign: 'center',
-  fontSize: 'clamp(15px, 1.8dvh, 19px)',
-  fontWeight: 900,
-  color: 'var(--accent)',
-}
-const chipRow = {
-  display: 'flex',
-  gap: 6,
-  flexWrap: 'wrap',
-  justifyContent: 'flex-end',
-}
-const chipBtn = {
-  padding: '6px 12px',
-  borderRadius: 999,
-  fontSize: 'clamp(12px, 1.4dvh, 14px)',
-  fontWeight: 800,
-  letterSpacing: '0.01em',
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  background: 'var(--surface)',
 }
 
 export default EmojiQuizLobbyScreen

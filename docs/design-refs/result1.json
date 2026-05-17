@@ -1,0 +1,22 @@
+[
+  {
+    "id": "0ed17704-2a19-47f4-ab2d-7f3c3ef6fd16",
+    "status": "completed",
+    "display_name": "Nano Banana Pro",
+    "job_set_type": "nano_banana_2",
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2yoWYbEoATHLzU9DgTL8OraYEvs/hf_20260517_135042_0ed17704-2a19-47f4-ab2d-7f3c3ef6fd16.png",
+    "created_at": 1779025842.196778,
+    "params": {
+      "width": 1536,
+      "height": 2752,
+      "aspect_ratio": "9:16",
+      "resolution": "2k",
+      "batch_size": 1,
+      "input_images": [],
+      "input_image": null,
+      "application": null,
+      "surface": null,
+      "prompt": "Mobile app UI mockup, 9:16 portrait, flat clean modern design, NO photos, NO people, NO 3D, NO device bezels — just the app UI filling the entire frame. Italian-language word-scramble game called Scramble. STYLE: Light mode. Background #F8F9FA. White card surfaces with soft drop shadow. Rounded corners: 14px on buttons, 22px on cards. Display font: Baloo 2 (rounded friendly sans, weight 800-900) for letters and numbers. Body font: Inter for labels. Primary accent color: vibrant violet #8B5CF6. Text color #111827 dark grey. Muted text #6B7280. LAYOUT TOP TO BOTTOM: (1) Slim app header 56px tall, white background, subtle bottom border: back arrow icon left, centered logo text Blob Party in Baloo 2 bold 700. (2) GameHUD strip white card ~80px: round badge 1/3 on left, in center a circular progress ring with violet stroke around timer text 00:45, on right two stacked player chips one violet with name Marco and small score, one amber #F59E0B with name Lisa and score. (3) Hint box with light violet tinted background and soft violet border: lightbulb icon + Italian text Tocca le tessere in ordine per comporre parole italiane, poi premi Invia. (4) WORD TRAY ROW most focal element: a white card with 7 letter slots in a row, each ~48x60px with dashed grey-violet border, ALL EMPTY no letters typed yet. (5) TILES GRID: row of 7 large letter tiles, ~50x57px each, white background, thick violet border #8B5CF6, with bold Baloo 2 dark letters R A T O S E I. Subtle shadow under each tile. (6) ACTIONS ROW: small square shuffle icon button white card violet outline icon ~56px, small square backspace ⌫ icon button, and a big primary submit button labeled Invia filling remaining width in DISABLED state light grey background muted text. (7) Section header: bold Parole trovate on left, violet text 0 · 0 pt on right. (8) EMPTY WORDS LIST card: white background filling the rest of screen, centered muted grey text Nessuna parola ancora. inside. Generous spacing 8-12px between rows, generous side padding 16px. Mobile-first portrait. Photorealistic UI render quality. No annotation labels, no callouts, no captions outside the UI. Frame the entire app interface edge-to-edge."
+    }
+  }
+]

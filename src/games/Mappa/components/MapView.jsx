@@ -71,15 +71,15 @@ const blobPinSvg = (color, size = 38, animated = false) => {
         <stop offset="100%" stop-color="#F0ECF9"/>
       </radialGradient>
     </defs>
-    <circle cx="150" cy="150" r="145" fill="url(#bg-${uid})" stroke="#fff" stroke-width="10"/>
-    <ellipse cx="115" cy="140" rx="26" ry="28" fill="url(#eg-${uid})"/>
-    <circle cx="118" cy="144" r="12" fill="#6D28D9"/>
-    <circle cx="120" cy="141" r="4.5" fill="#1E1B4B"/>
-    <circle cx="124" cy="137" r="2.8" fill="rgba(255,255,255,0.9)"/>
-    <ellipse cx="185" cy="140" rx="26" ry="28" fill="url(#eg-${uid})"/>
-    <circle cx="188" cy="144" r="12" fill="#6D28D9"/>
-    <circle cx="190" cy="141" r="4.5" fill="#1E1B4B"/>
-    <circle cx="194" cy="137" r="2.8" fill="rgba(255,255,255,0.9)"/>
+    <path d="M150,24 C220,24 282,80 282,148 C282,232 224,284 150,284 C76,284 18,232 18,148 C18,80 80,24 150,24 Z" fill="url(#bg-${uid})" stroke="#fff" stroke-width="10"/>
+    <ellipse cx="100" cy="115" rx="34" ry="40" fill="url(#eg-${uid})"/>
+    <circle cx="103" cy="119" r="14" fill="#6D28D9"/>
+    <circle cx="105" cy="116" r="5.5" fill="#1E1B4B"/>
+    <circle cx="110" cy="111" r="3.2" fill="rgba(255,255,255,0.9)"/>
+    <ellipse cx="200" cy="115" rx="34" ry="40" fill="url(#eg-${uid})"/>
+    <circle cx="203" cy="119" r="14" fill="#6D28D9"/>
+    <circle cx="205" cy="116" r="5.5" fill="#1E1B4B"/>
+    <circle cx="210" cy="111" r="3.2" fill="rgba(255,255,255,0.9)"/>
   </svg>`
   return animated ? `<div class="mappa-pin-drop">${svg}</div>` : svg
 }
@@ -94,9 +94,9 @@ const realBlobSvg = (size = 46) => {
         <stop offset="100%" stop-color="#F43F5E"/>
       </linearGradient>
     </defs>
-    <circle cx="150" cy="150" r="145" fill="url(#bg-${uid})" stroke="#fff" stroke-width="10"/>
-    <path d="M93 143 Q115 118, 137 143" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
-    <path d="M163 143 Q185 118, 207 143" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+    <path d="M150,24 C220,24 282,80 282,148 C282,232 224,284 150,284 C76,284 18,232 18,148 C18,80 80,24 150,24 Z" fill="url(#bg-${uid})" stroke="#fff" stroke-width="10"/>
+    <path d="M70 120 Q100 88, 130 120" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round"/>
+    <path d="M170 120 Q200 88, 230 120" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round"/>
   </svg>`
 }
 
@@ -110,9 +110,9 @@ const autoBlobSvg = (size = 34) => {
         <stop offset="100%" stop-color="#9CA3AF"/>
       </linearGradient>
     </defs>
-    <circle cx="150" cy="150" r="145" fill="url(#bg-${uid})" stroke="#fff" stroke-width="10"/>
-    <ellipse cx="115" cy="145" rx="24" ry="4" fill="#fff" opacity="0.7"/>
-    <ellipse cx="185" cy="145" rx="24" ry="4" fill="#fff" opacity="0.7"/>
+    <path d="M150,24 C220,24 282,80 282,148 C282,232 224,284 150,284 C76,284 18,232 18,148 C18,80 80,24 150,24 Z" fill="url(#bg-${uid})" stroke="#fff" stroke-width="10"/>
+    <ellipse cx="100" cy="115" rx="30" ry="5" fill="#fff" opacity="0.7"/>
+    <ellipse cx="200" cy="115" rx="30" ry="5" fill="#fff" opacity="0.7"/>
   </svg>`
 }
 

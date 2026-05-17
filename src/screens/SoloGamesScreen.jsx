@@ -43,7 +43,7 @@ const SoloGamesScreen = () => {
 
   return (
     <motion.div
-      className="screen"
+      className="screen screen-narrow"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
@@ -82,9 +82,17 @@ const SoloGamesScreen = () => {
           >
             <GradientTitle as="h1" size="xl">Scegli il gioco</GradientTitle>
             {player && (
-              <div style={playerRow}>
-                <MiniBlob color={player.color} expr={expr} size={28} id="solo-hdr" />
-                <span style={playerName}>{player.name}</span>
+              <div style={playerRowWrap}>
+                <div
+                  style={{
+                    ...playerBox,
+                    background: `${player.color}14`,
+                    borderColor: player.color,
+                  }}
+                >
+                  <MiniBlob color={player.color} expr={expr} size={32} id="solo-hdr" />
+                  <span style={playerName}>{player.name}</span>
+                </div>
               </div>
             )}
           </motion.div>
@@ -108,17 +116,29 @@ const SoloGamesScreen = () => {
   )
 }
 
-const playerRow = {
+const playerRowWrap = {
   display: 'flex',
-  alignItems: 'center',
   justifyContent: 'center',
-  gap: 8,
-  marginTop: 'clamp(8px, 1.2dvh, 12px)',
+  marginTop: 'clamp(10px, 1.4dvh, 14px)',
+}
+const playerBox = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 10,
+  padding: 'clamp(4px, 0.7dvh, 6px) clamp(14px, 3vw, 18px) clamp(4px, 0.7dvh, 6px) clamp(4px, 1vw, 6px)',
+  borderRadius: 999,
+  border: '1.5px solid',
+  maxWidth: '90%',
 }
 const playerName = {
-  fontSize: 'clamp(13px, 1.6dvh, 16px)',
-  fontWeight: 700,
-  color: 'var(--muted)',
+  fontFamily: "'Baloo 2', cursive",
+  fontSize: 'clamp(14px, 1.8dvh, 18px)',
+  fontWeight: 800,
+  letterSpacing: '-0.01em',
+  color: 'var(--text)',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
 }
 const grid = {
   display: 'grid',

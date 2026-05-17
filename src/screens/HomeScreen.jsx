@@ -1,4 +1,4 @@
-// HomeScreen — hero + CTA "Crea party" / "Ho già un codice" + 4 blob agli angoli.
+// HomeScreen — hero + CTA "Crea party" / "Ho già un codice" + un blob piccolo sopra il logo e uno grande che sbuca dal basso al centro.
 
 import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
@@ -7,6 +7,7 @@ import GradientTitle from '../components/ui/GradientTitle'
 import OptionCard from '../components/ui/OptionCard'
 import ErrorBanner from '../components/ErrorBanner'
 import Blob from '../components/Blob'
+import { useBlobGaze } from '../hooks/useBlob'
 import { useSettings } from '../stores/useSettings'
 
 const useOptions = () => {
@@ -80,53 +81,35 @@ const StatPill = ({ emoji, label, delay }) => (
   </motion.div>
 )
 
-// Sequenza espressioni — top-left guarda a destra, bottom-right guarda a sinistra.
+// Sequenza espressioni del blob hero — ciclo automatico di sguardi/blink/sorrisi.
 const EXPR_SEQUENCE = [
-  { top: 'look-right', bottom: 'look-left',  dur: 2500 },
-  { top: 'blink',      bottom: 'look-left',  dur: 150 },
-  { top: 'look-right', bottom: 'look-left',  dur: 3000 },
-  { top: 'look-right', bottom: 'blink',      dur: 150 },
-  { top: 'look-right', bottom: 'look-left',  dur: 2000 },
-  { top: 'normal',     bottom: 'normal',     dur: 2000 },
-  { top: 'blink',      bottom: 'blink',      dur: 150 },
-  { top: 'happy',      bottom: 'look-left',  dur: 2500 },
-  { top: 'look-right', bottom: 'happy',      dur: 2500 },
-  { top: 'blink',      bottom: 'look-left',  dur: 150 },
-  { top: 'look-right', bottom: 'look-left',  dur: 2000 },
-  { top: 'look-left',  bottom: 'look-right', dur: 2000 },
-  { top: 'look-right', bottom: 'blink',      dur: 150 },
-  { top: 'look-right', bottom: 'look-left',  dur: 3000 },
-  { top: 'blink',      bottom: 'blink',      dur: 150 },
+  { expr: 'look-right', dur: 2500 },
+  { expr: 'blink',      dur: 150 },
+  { expr: 'look-right', dur: 3000 },
+  { expr: 'normal',     dur: 2000 },
+  { expr: 'happy',      dur: 2500 },
+  { expr: 'blink',      dur: 150 },
+  { expr: 'look-left',  dur: 2000 },
+  { expr: 'blink',      dur: 150 },
+  { expr: 'look-right', dur: 3000 },
 ]
 
-const useExpressions = () => {
-  const [topExpr, setTopExpr] = useState('look-right')
-  const [bottomExpr, setBottomExpr] = useState('look-left')
-  const idxRef = useRef(0)
-
+const useExprCycle = (startIdx = 0) => {
+  const [expr, setExpr] = useState(EXPR_SEQUENCE[startIdx].expr)
+  const idxRef = useRef(startIdx)
   useEffect(() => {
     let timer
     const step = () => {
       const s = EXPR_SEQUENCE[idxRef.current]
-      setTopExpr(s.top)
-      setBottomExpr(s.bottom)
+      setExpr(s.expr)
       idxRef.current = (idxRef.current + 1) % EXPR_SEQUENCE.length
       timer = setTimeout(step, s.dur)
     }
     step()
     return () => clearTimeout(timer)
   }, [])
-
-  return { topExpr, bottomExpr }
+  return expr
 }
-
-// Dimensione: min(28vw, 20dvh) — si adatta sia alla larghezza che all'altezza.
-// Offset 25%: max(-7vw, -5dvh) — corrisponde esattamente a -25% del lato che
-// determina la dimensione, garantendo 75% dentro e occhi sempre visibili.
-const BLOB_SIZE    = 'min(clamp(100px, 28vw, 240px), clamp(100px, 20dvh, 240px))'
-const BLOB_SIZE_LG = 'min(clamp(110px, 32vw, 260px), clamp(110px, 22dvh, 260px))'
-const OFFSET_SM    = 'clamp(-60px, max(-7vw, -5dvh), -16px)'
-const OFFSET_LG    = 'clamp(-65px, max(-8vw, -5.5dvh), -18px)'
 
 const ThemeToggle = () => {
   const theme = useSettings((s) => s.theme)
@@ -169,9 +152,16 @@ const ThemeToggle = () => {
   )
 }
 
+// Blob inferiore: 35% del corpo esce dal viewport bottom (65% visibile).
+// Con il viso canonico (smile bottom y=174) la faccia resta sopra il bordo.
+const BOTTOM_BLOB_SIZE   = 'clamp(166px, 48vw, 307px)'
+const BOTTOM_BLOB_OFFSET = 'clamp(-108px, -17vw, -58px)'
+
 const HomeScreen = () => {
   const navigate = useNavigate()
-  const { topExpr, bottomExpr } = useExpressions()
+  const topExpr = useExprCycle(0)
+  const bottomExpr = useExprCycle(4) // sfasato dal top per non blinkare insieme
+  const gaze = useBlobGaze({ strength: 1 })
   const OPTIONS = useOptions()
 
   const handlePick = (id) => {
@@ -193,8 +183,8 @@ const HomeScreen = () => {
       <div
         className="screen-body"
         style={{
-          justifyContent: 'center',
-          paddingTop: 'clamp(24px, 5dvh, 48px)',
+          justifyContent: 'flex-start',
+          paddingTop: 'clamp(12px, 2.5dvh, 24px)',
           paddingBottom: 'clamp(16px, 3dvh, 28px)',
           gap: 'clamp(20px, 3.5dvh, 36px)',
           position: 'relative',
@@ -208,7 +198,18 @@ const HomeScreen = () => {
           transition={{ duration: 0.35 }}
           style={{ textAlign: 'center' }}
         >
-          <GradientTitle as="h1" size="2xl">
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 6 }}>
+            <Blob
+              color="#F59E0B"
+              expr={topExpr}
+              id="hero"
+              size="clamp(56px, 12vw, 88px)"
+              animate={false}
+              gaze={gaze}
+              style={{ position: 'relative' }}
+            />
+          </div>
+          <GradientTitle as="h1" size="xl">
             Blob Party
           </GradientTitle>
           <p
@@ -267,42 +268,19 @@ const HomeScreen = () => {
         </motion.div>
       </div>
 
-      {/* 4 blob agli angoli */}
-      <Blob
-        color="#8B5CF6"
-        expr={topExpr}
-        id="tb"
-        size={BLOB_SIZE}
-        animate={false}
-        rotate={-45}
-        style={{ top: OFFSET_SM, left: OFFSET_SM }}
-      />
+      {/* Blob inferiore — 35% esce dal viewport bottom, 65% visibile */}
       <Blob
         color="#F59E0B"
         expr={bottomExpr}
-        id="tr"
-        size={BLOB_SIZE_LG}
+        id="bottom-hero"
+        size={BOTTOM_BLOB_SIZE}
         animate={false}
-        rotate={45}
-        style={{ top: OFFSET_LG, right: OFFSET_LG }}
-      />
-      <Blob
-        color="#10B981"
-        expr={topExpr}
-        id="bl"
-        size={BLOB_SIZE_LG}
-        animate={false}
-        rotate={45}
-        style={{ bottom: OFFSET_LG, left: OFFSET_LG }}
-      />
-      <Blob
-        color="#F43F5E"
-        expr={bottomExpr}
-        id="bb"
-        size={BLOB_SIZE}
-        animate={false}
-        rotate={-45}
-        style={{ bottom: OFFSET_SM, right: OFFSET_SM }}
+        gaze={gaze}
+        style={{
+          bottom: BOTTOM_BLOB_OFFSET,
+          left: '50%',
+          transform: 'translateX(-50%)',
+        }}
       />
     </motion.div>
   )

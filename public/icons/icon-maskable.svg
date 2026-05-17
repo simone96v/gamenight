@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <radialGradient id="g" cx="40%" cy="36%" r="72%">
+      <stop offset="0%" stop-color="#FDE68A"/>
+      <stop offset="60%" stop-color="#FBBF24"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </radialGradient>
+  </defs>
+  <!-- Background: copre tutto il canvas anche dopo il mask. -->
+  <rect width="400" height="400" fill="#FEF3C7"/>
+  <!-- Blob centrato — viewBox 300 traslato di +50 su entrambi gli assi -->
+  <!-- (75% di area, con ~12.5% safe-zone padding su ogni lato) -->
+  <g transform="translate(50, 50)">
+    <path d="M150,24 C220,24 282,80 282,148 C282,232 224,284 150,284 C76,284 18,232 18,148 C18,80 80,24 150,24 Z" fill="url(#g)"/>
+    <ellipse cx="100" cy="90" rx="24" ry="15" fill="#FDE68A" opacity="0.85" transform="rotate(-30 100 90)"/>
+    <ellipse cx="100" cy="115" rx="34" ry="40" fill="#1F2937"/>
+    <circle cx="111" cy="102" r="9" fill="#fff"/>
+    <circle cx="91" cy="130" r="3.5" fill="rgba(255,255,255,0.6)"/>
+    <ellipse cx="200" cy="115" rx="34" ry="40" fill="#1F2937"/>
+    <circle cx="211" cy="102" r="9" fill="#fff"/>
+    <circle cx="191" cy="130" r="3.5" fill="rgba(255,255,255,0.6)"/>
+    <path d="M122 160 Q150 174, 178 160" fill="none" stroke="#1F2937" stroke-width="7" stroke-linecap="round"/>
+  </g>
+</svg>

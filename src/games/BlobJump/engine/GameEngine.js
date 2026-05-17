@@ -1059,12 +1059,17 @@ export class GameEngine {
     ctx.arc(0, 0, r, 0, Math.PI * 2)
     ctx.fill()
 
-    // Outline
-    ctx.strokeStyle = dark
-    ctx.lineWidth = 1.2
+    // Top-left shine (lighter shade of body color)
+    ctx.fillStyle = light
+    ctx.globalAlpha = 0.85
+    ctx.save()
+    ctx.translate(-r * 0.42, -r * 0.5)
+    ctx.rotate(-Math.PI / 5)
     ctx.beginPath()
-    ctx.arc(0, 0, r, 0, Math.PI * 2)
-    ctx.stroke()
+    ctx.ellipse(0, 0, r * 0.22, r * 0.13, 0, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.restore()
+    ctx.globalAlpha = 1
 
     if (isDead) {
       this._drawDeadEyes(ctx, r)
@@ -1077,46 +1082,50 @@ export class GameEngine {
 
   _drawAliveEyes(ctx, r) {
     const blob = this.blob
+    const OUTLINE = '#1F2937'
     // Smooth look direction based on velocity
     const lookX = Math.max(-1, Math.min(1, blob.vx / 200))
-    const eyeSpacing = r * 0.42
-    const eyeY = -r * 0.12
-    const eyeRx = r * 0.28
-    const eyeRy = r * 0.32
-    const pupilR = r * 0.15
-    const pupilOff = lookX * 3.2
-    const pupilYOff = blob.vy > 300 ? 2 : blob.vy < -400 ? -2 : 0.5
+    const eyeSpacing = r * 0.50
+    const eyeY = -r * 0.05
+    const eyeRx = r * 0.34
+    const eyeRy = r * 0.40
+    const hlR = r * 0.13
+    const lookOff = lookX * (eyeRx * 0.32)
+    const lookYOff = blob.vy > 300 ? 1.8 : blob.vy < -400 ? -1.8 : 0
 
     for (const side of [-1, 1]) {
       const ex = side * eyeSpacing
 
-      // White
-      ctx.fillStyle = '#fff'
+      // Solid dark eye
+      ctx.fillStyle = OUTLINE
       ctx.beginPath()
       ctx.ellipse(ex, eyeY, eyeRx, eyeRy, 0, 0, Math.PI * 2)
       ctx.fill()
-      ctx.strokeStyle = 'rgba(0,0,0,0.08)'
-      ctx.lineWidth = 0.5
-      ctx.stroke()
 
-      // Iris
-      ctx.fillStyle = '#6D28D9'
+      // Big highlight (top-right)
+      ctx.fillStyle = '#fff'
       ctx.beginPath()
-      ctx.arc(ex + pupilOff * 0.6, eyeY + pupilYOff, pupilR * 1.15, 0, Math.PI * 2)
+      ctx.arc(ex + lookOff + eyeRx * 0.32, eyeY + lookYOff - eyeRy * 0.34, hlR, 0, Math.PI * 2)
       ctx.fill()
 
-      // Pupil
-      ctx.fillStyle = '#1E1B4B'
+      // Tiny bottom-left sparkle
+      ctx.fillStyle = 'rgba(255,255,255,0.6)'
       ctx.beginPath()
-      ctx.arc(ex + pupilOff, eyeY + pupilYOff, pupilR * 0.7, 0, Math.PI * 2)
-      ctx.fill()
-
-      // Highlight
-      ctx.fillStyle = 'rgba(255,255,255,0.85)'
-      ctx.beginPath()
-      ctx.arc(ex + pupilOff + 1.8, eyeY + pupilYOff - 2, pupilR * 0.35, 0, Math.PI * 2)
+      ctx.arc(ex + lookOff - eyeRx * 0.28, eyeY + lookYOff + eyeRy * 0.38, hlR * 0.45, 0, Math.PI * 2)
       ctx.fill()
     }
+
+    // Smile mouth
+    ctx.strokeStyle = OUTLINE
+    ctx.lineWidth = Math.max(2, r * 0.15)
+    ctx.lineCap = 'round'
+    ctx.beginPath()
+    const mouthW = r * 0.42
+    const mouthY = r * 0.50
+    ctx.moveTo(-mouthW, mouthY)
+    ctx.quadraticCurveTo(0, mouthY + r * 0.32, mouthW, mouthY)
+    ctx.stroke()
+    ctx.lineCap = 'butt'
   }
 
   _drawDeadEyes(ctx, r) {

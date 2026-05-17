@@ -7,7 +7,8 @@ import { ConnectionContext } from './contexts/connection'
 
 import ErrorBoundary from './components/ErrorBoundary'
 import HomeScreen from './screens/HomeScreen'
-import IosPwaPrompt from './components/IosPwaPrompt'
+import InstallPrompt from './components/InstallPrompt'
+import FloatingBlobs from './components/FloatingBlobs'
 
 const ModeScreen = lazy(() => import('./screens/ModeScreen'))
 const CreatePartyScreen = lazy(() => import('./screens/CreatePartyScreen'))
@@ -40,7 +41,10 @@ function App() {
   return (
     <ErrorBoundary>
       <ConnectionContext.Provider value={status}>
-        <IosPwaPrompt />
+        <InstallPrompt />
+        {/* FloatingBlobs è OUTSIDE <Routes> → istanza unica, sopravvive ai cambi route
+            mantenendo posizioni e velocità del loop fisico. */}
+        <FloatingBlobs />
         <Suspense>
           <Routes>
             <Route path="/" element={<HomeScreen />} />

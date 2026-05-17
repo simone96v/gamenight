@@ -97,7 +97,6 @@ const BlobJumpLobbyScreen = () => {
 
   return (
     <GameLobbyLayout
-      gameEmoji="🦘"
       gameName="Blob Jump"
       gameDescription="Salta più in alto degli altri! Il tuo blob rimbalza verso il cielo."
       players={players}

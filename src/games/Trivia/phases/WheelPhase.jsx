@@ -9,6 +9,7 @@ import IconButton from '../../../components/ui/IconButton'
 import RoundBadge from '../../../components/ui/RoundBadge'
 import CategoryWheel from '../../../components/CategoryWheel'
 import BlobLoader from '../../../components/BlobLoader'
+import MiniBlob, { useMiniExpr } from '../../../components/MiniBlob'
 import { useSession } from '../../../stores/useSession'
 import { useSettings } from '../../../stores/useSettings'
 import { usePlayerAccent } from '../../../hooks/usePlayerAccent'
@@ -20,6 +21,7 @@ import { useNavigate } from 'react-router-dom'
 const WheelPhase = ({ onExit }) => {
   const navigate = useNavigate()
   const C = usePlayerAccent()
+  const expr = useMiniExpr()
 
   const mode          = useSession((s) => s.mode)
   const isHost        = useSession((s) => s.isHost)
@@ -195,13 +197,24 @@ const WheelPhase = ({ onExit }) => {
           </motion.div>
         )}
 
-        {/* Spinner indicator */}
+        {/* Spinner indicator + blob attivo */}
         <motion.div
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.05 }}
           style={S.spinnerCard}
         >
+          {spinnerPlayer && (
+            <div style={S.spinnerBlob}>
+              <MiniBlob
+                color={spinnerPlayer.color}
+                expr={expr}
+                pose={isSpinner ? 'bounce' : 'attack'}
+                size={56}
+                id={`spinner-${spinnerPlayer.id}`}
+              />
+            </div>
+          )}
           <span style={S.spinnerLabel}>{spinnerLabel}</span>
           <p style={S.spinnerHint}>
             {isSpinner ? 'Gira la ruota per scoprire la categoria' : 'Aspetta lo spin...'}
@@ -276,6 +289,13 @@ const S = {
     textAlign: 'center',
     width: '100%',
     maxWidth: 360,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 4,
+  },
+  spinnerBlob: {
+    marginBottom: 2,
   },
   spinnerLabel: {
     display: 'block',

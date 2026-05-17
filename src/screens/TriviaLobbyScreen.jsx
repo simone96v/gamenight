@@ -2,17 +2,22 @@
 // La ruota delle categorie vive nello schermo di gioco (WheelPhase), non qui.
 
 import { useEffect, useCallback, useRef } from 'react'
-import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import GameLobbyLayout from '../components/GameLobbyLayout'
+import LobbySegmented from '../components/ui/LobbySegmented'
 import BlobLoader from '../components/BlobLoader'
 import { useSession } from '../stores/useSession'
 import { useSettings } from '../stores/useSettings'
 import { pushRoom } from '../lib/room'
 import { preloadPool } from '../lib/aiQuestions'
+import { usePlayerAccent } from '../hooks/usePlayerAccent'
+
+const TRIVIA_ROUND_OPTIONS = [1, 2, 3, 5]
+const TRIVIA_QUESTION_OPTIONS = [3, 5, 10, 15]
 
 const TriviaLobbyScreen = () => {
   const navigate = useNavigate()
+  const C = usePlayerAccent()
 
   const isHost         = useSession((s) => s.isHost)
   const mode           = useSession((s) => s.mode)
@@ -184,7 +189,6 @@ const TriviaLobbyScreen = () => {
 
   return (
     <GameLobbyLayout
-      gameEmoji="🧠"
       gameName="Trivia"
       gameDescription={
         isContinuing
@@ -198,108 +202,26 @@ const TriviaLobbyScreen = () => {
       launching={launching}
       startLabel={startLabel}
     >
-      {/* Settings */}
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.05 }}
-        style={settingsCard}
-      >
-        <div style={settingRow}>
-          <span style={settingLabelStyle}>Round</span>
-          <Stepper
-            value={totalRounds}
-            onDecrement={() => canControl && handleRoundsChange(totalRounds - 1)}
-            onIncrement={() => canControl && handleRoundsChange(totalRounds + 1)}
-            disabled={!canControl || launching || isContinuing}
-            min={1} max={5}
-          />
-        </div>
-        <div style={{ ...settingRow, marginTop: 'clamp(6px, 1dvh, 10px)' }}>
-          <span style={settingLabelStyle}>Domande</span>
-          <Stepper
-            value={questionsPerRound}
-            onDecrement={() => canControl && handleQuestionsChange(questionsPerRound - 1)}
-            onIncrement={() => canControl && handleQuestionsChange(questionsPerRound + 1)}
-            disabled={!canControl || launching || isContinuing}
-            min={1} max={15}
-          />
-        </div>
-      </motion.div>
+      <LobbySegmented
+        label="Round"
+        options={TRIVIA_ROUND_OPTIONS}
+        value={totalRounds}
+        onChange={handleRoundsChange}
+        accent={C.accent}
+        accentShadow={C.shadow}
+        disabled={!canControl || launching || isContinuing}
+      />
+      <LobbySegmented
+        label="Domande per round"
+        options={TRIVIA_QUESTION_OPTIONS}
+        value={questionsPerRound}
+        onChange={handleQuestionsChange}
+        accent={C.accent}
+        accentShadow={C.shadow}
+        disabled={!canControl || launching || isContinuing}
+      />
     </GameLobbyLayout>
   )
-}
-
-const Stepper = ({ value, onDecrement, onIncrement, disabled, min, max }) => {
-  const decDisabled = disabled || value <= min
-  const incDisabled = disabled || value >= max
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-      <motion.button
-        type="button"
-        onClick={onDecrement}
-        disabled={decDisabled}
-        whileHover={decDisabled ? undefined : { scale: 1.1 }}
-        whileTap={decDisabled ? undefined : { scale: 0.9 }}
-        transition={{ type: 'spring', stiffness: 400, damping: 22 }}
-        style={{ ...stepBtn, opacity: decDisabled ? 0.4 : 1 }}
-      >
-        {'−'}
-      </motion.button>
-      <span style={stepValue}>{value}</span>
-      <motion.button
-        type="button"
-        onClick={onIncrement}
-        disabled={incDisabled}
-        whileHover={incDisabled ? undefined : { scale: 1.1 }}
-        whileTap={incDisabled ? undefined : { scale: 0.9 }}
-        transition={{ type: 'spring', stiffness: 400, damping: 22 }}
-        style={{ ...stepBtn, opacity: incDisabled ? 0.4 : 1 }}
-      >
-        +
-      </motion.button>
-    </div>
-  )
-}
-
-const settingsCard = {
-  background: 'var(--surface)',
-  borderRadius: 'var(--radius-sm)',
-  border: '1px solid var(--border)',
-  boxShadow: 'var(--shadow-sm)',
-  padding: 'clamp(10px, 1.5dvh, 14px) clamp(14px, 3vw, 18px)',
-}
-const settingRow = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: 12,
-}
-const settingLabelStyle = {
-  fontSize: 'clamp(13px, 1.5dvh, 15px)',
-  fontWeight: 700,
-  color: 'var(--text)',
-}
-const stepBtn = {
-  width: 34,
-  height: 34,
-  borderRadius: 10,
-  border: '1.5px solid var(--border-strong)',
-  background: 'var(--surface)',
-  color: 'var(--text)',
-  fontSize: 17,
-  fontWeight: 800,
-  cursor: 'pointer',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-}
-const stepValue = {
-  minWidth: 26,
-  textAlign: 'center',
-  fontSize: 'clamp(15px, 1.8dvh, 19px)',
-  fontWeight: 900,
-  color: 'var(--accent)',
 }
 
 export default TriviaLobbyScreen
