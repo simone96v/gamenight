@@ -119,7 +119,7 @@ const EmojiQuiz = () => {
         questionStartedAt={eq.questionStartedAt}
         players={eq.players}
         localPlayerId={eq.localPlayerId}
-        gameName="Emoji Quiz"
+        gameName="Movie Quiz"
         gameEmoji="🎬"
         onComplete={eq.handleCountdownComplete}
       />
@@ -204,7 +204,7 @@ const EmojiQuiz = () => {
             stats={questionsPlayed > 0 ? [
               { label: 'Indovinate', value: `${correct}/${questionsPlayed}` },
             ] : []}
-            replayLabel="Prossimo round →"
+            replayLabel="Prossimo round"
             onReplay={handleNextRound}
             onChangeGame={handleChangeGame}
           />
@@ -217,7 +217,7 @@ const EmojiQuiz = () => {
         <SoloResultScreen
           player={me}
           gameEmoji="🎬"
-          gameName="Emoji Quiz"
+          gameName="Movie Quiz"
           primaryValue={score}
           primaryLabel="punti"
           stats={totalQuestions > 0 ? [

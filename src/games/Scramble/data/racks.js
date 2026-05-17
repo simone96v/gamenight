@@ -70,11 +70,22 @@ export function pickRoundRacks(seedInt, count = 3) {
   return out
 }
 
+// Mescola un rack garantendo che il risultato NON coincida con la stringa
+// originale (che è sempre un pangram, cioè una parola valida): le tessere
+// devono apparire in disordine, mai già pronte a formare la soluzione.
 export function shuffleRack(rack, rng = Math.random) {
+  if (!rack || rack.length < 2) return rack
+  const original = rack
   const arr = rack.split('')
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1))
-    ;[arr[i], arr[j]] = [arr[j], arr[i]]
+  for (let attempt = 0; attempt < 20; attempt++) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1))
+      ;[arr[i], arr[j]] = [arr[j], arr[i]]
+    }
+    const shuffled = arr.join('')
+    if (shuffled !== original) return shuffled
   }
+  // Fallback: scambia le prime due lettere, garantito diverso dall'originale.
+  ;[arr[0], arr[1]] = [arr[1], arr[0]]
   return arr.join('')
 }

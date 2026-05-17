@@ -103,7 +103,7 @@ const BlobJumpLobbyScreen = () => {
       players={players}
       canControl={canControl}
       launching={launching}
-      startLabel="🦘 Via!"
+      startLabel="Via!"
       onStart={handleStart}
       onBack={handleBack}
     />

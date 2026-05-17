@@ -94,7 +94,7 @@ const SentenzaFinal = ({
           {isHost ? (
             <div style={{ display: 'flex', gap: 8, width: '100%' }}>
               <Button variant="secondary" width="full" onClick={onChangeGame} disabled={advancing}>
-                🎮 Cambia gioco
+                Cambia gioco
               </Button>
               <Button
                 variant="primary"
@@ -103,7 +103,7 @@ const SentenzaFinal = ({
                 disabled={advancing}
                 style={accentBtnStyle(C.accent)}
               >
-                {advancing ? '...' : '🔄 Rigioca'}
+                {advancing ? '...' : 'Rigioca'}
               </Button>
             </div>
           ) : (

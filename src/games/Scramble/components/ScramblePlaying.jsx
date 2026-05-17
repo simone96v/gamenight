@@ -261,7 +261,7 @@ const ScramblePlaying = ({
               disabled={!canSubmit}
               style={canSubmit ? { ...accentBtnStyle(C.accent), flex: 1 } : { flex: 1 }}
             >
-              {dictLoading ? '⏳ Caricamento...' : '✓ Invia'}
+              {dictLoading ? 'Caricamento...' : 'Invia'}
             </Button>
           </div>
         </div>

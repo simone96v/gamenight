@@ -1,10 +1,7 @@
-// Pool statico delle domande di Emoji Quiz.
+// Pool statico delle domande di Movie Quiz.
 //
-// Carica le domande dal JSON bundlato (~110 puzzle, 5 categorie, 3 difficoltà)
-// e le serve istantaneamente. Nessuna chiamata API a runtime → loading speed
-// allineata a Trivia.
-//
-// Categorie: film | canzoni | serie_tv | videogiochi | marchi | tutte
+// Carica le domande dal JSON bundlato e filtra a film + serie TV.
+// Le altre categorie del dataset (canzoni, videogiochi, marchi) sono ignorate.
 // Difficoltà: 1 (easy) | 2 (medium) | 3 (hard)
 //
 // Lazy import + cache in memoria: async solo al primo accesso, poi istantaneo.
@@ -12,11 +9,13 @@
 let _pool = null
 let _loadPromise = null
 
+const ALLOWED_CATEGORIES = new Set(['film', 'serie_tv'])
+
 const ensurePool = async () => {
   if (_pool) return _pool
   if (_loadPromise) return _loadPromise
   _loadPromise = import('../data/questions/emojiquiz.json').then((m) => {
-    _pool = m.default
+    _pool = (m.default || []).filter((p) => ALLOWED_CATEGORIES.has(p.category))
     return _pool
   })
   return _loadPromise
@@ -32,38 +31,38 @@ const shuffle = (arr) => {
 }
 
 export const EMOJI_QUIZ_CATEGORIES = [
-  { id: 'tutte',       label: 'Tutte',         emoji: '🎲', color: '#7C3AED' },
-  { id: 'film',        label: 'Film',          emoji: '🎬', color: '#F97316' },
-  { id: 'canzoni',     label: 'Canzoni',       emoji: '🎵', color: '#3B82F6' },
-  { id: 'serie_tv',    label: 'Serie TV',      emoji: '📺', color: '#EC4899' },
-  { id: 'videogiochi', label: 'Videogiochi',   emoji: '🎮', color: '#10B981' },
-  { id: 'marchi',      label: 'Marchi',        emoji: '🏷️', color: '#F59E0B' },
+  { id: 'film',     label: 'Film',     emoji: '🎬', color: '#F97316' },
+  { id: 'serie_tv', label: 'Serie TV', emoji: '📺', color: '#EC4899' },
 ]
 
 export const getCategoryById = (id) =>
   EMOJI_QUIZ_CATEGORIES.find((c) => c.id === id) ?? EMOJI_QUIZ_CATEGORIES[0]
 
+// Difficoltà → numero usato nei puzzle JSON (null = mix di tutte le difficoltà).
+const DIFFICULTY_LEVEL = { easy: 1, medium: 2, hard: 3 }
+
 /**
- * Carica un deck di Emoji Quiz filtrato per categoria, con anti-repeat
+ * Carica un deck di Movie Quiz (film + serie TV), con anti-repeat
  * tramite localStorage. Stesso pattern di triviaSetup.buildTriviaDeck.
  *
- *   categoryId: 'tutte' | 'film' | 'canzoni' | 'serie_tv' | 'videogiochi' | 'marchi'
  *   count: numero di puzzle desiderati
+ *   difficulty: 'mix' | 'easy' | 'medium' | 'hard' (default 'mix')
  */
-export const loadEmojiQuizDeck = async (count = 7, categoryId = 'tutte') => {
+export const loadEmojiQuizDeck = async (count = 7, difficulty = 'mix') => {
   const pool = await ensurePool()
-  const filtered = categoryId === 'tutte'
-    ? pool
-    : pool.filter((p) => p.category === categoryId)
-  const basePool = filtered.length >= count * 2 ? filtered : pool
+  const lvl = DIFFICULTY_LEVEL[difficulty]
+  // Se il filtro per difficoltà lascia meno puzzle di quanti ne servono,
+  // ricado sul pool intero (meglio servire qualche puzzle off-difficulty che bloccare la partita).
+  const filtered = lvl ? pool.filter((p) => p.difficulty === lvl) : pool
+  const basePool = filtered.length >= count ? filtered : pool
 
-  const seen = loadSeen(categoryId)
+  const seen = loadSeen()
   let candidates = basePool.filter((p) => !seen.has(p.id))
 
   // Pool fresco esaurito → reset.
   if (candidates.length < count) {
     seen.clear()
-    saveSeen(categoryId, seen)
+    saveSeen(seen)
     candidates = basePool
   }
 
@@ -71,7 +70,7 @@ export const loadEmojiQuizDeck = async (count = 7, categoryId = 'tutte') => {
 
   // Marca come visti per la prossima partita.
   picked.forEach((p) => seen.add(p.id))
-  saveSeen(categoryId, seen)
+  saveSeen(seen)
 
   return picked
 }
@@ -81,32 +80,29 @@ export const preloadEmojiQuizPool = () => ensurePool()
 
 // ── Anti-repeat localStorage (mirroring src/lib/triviaSetup.js) ────────
 
-const SEEN_KEY = (cat) => `gn:emojiquiz:seen:${cat ?? 'tutte'}`
-const SEEN_CAP = 80 // ~75% del pool totale (111 puzzle)
+const SEEN_KEY = 'gn:emojiquiz:seen:movie'
+const SEEN_CAP = 40 // ~80% del pool film+serie_tv (50 puzzle)
 
-const loadSeen = (cat) => {
+const loadSeen = () => {
   try {
-    const raw = localStorage.getItem(SEEN_KEY(cat))
+    const raw = localStorage.getItem(SEEN_KEY)
     return new Set(raw ? JSON.parse(raw) : [])
   } catch {
     return new Set()
   }
 }
 
-const saveSeen = (cat, ids) => {
+const saveSeen = (ids) => {
   try {
     const arr = [...ids].slice(-SEEN_CAP)
-    localStorage.setItem(SEEN_KEY(cat), JSON.stringify(arr))
+    localStorage.setItem(SEEN_KEY, JSON.stringify(arr))
   } catch { /* localStorage pieno/disabilitato */ }
 }
 
-export const resetEmojiQuizSeen = (cat) => {
+export const resetEmojiQuizSeen = () => {
   try {
-    if (cat) localStorage.removeItem(SEEN_KEY(cat))
-    else {
-      Object.keys(localStorage)
-        .filter((k) => k.startsWith('gn:emojiquiz:seen:'))
-        .forEach((k) => localStorage.removeItem(k))
-    }
+    Object.keys(localStorage)
+      .filter((k) => k.startsWith('gn:emojiquiz:seen:'))
+      .forEach((k) => localStorage.removeItem(k))
   } catch { /* ignore */ }
 }

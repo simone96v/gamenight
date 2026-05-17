@@ -96,10 +96,10 @@ const BlobJumpFinal = ({
           {isHost ? (
             <div style={{ display: 'flex', gap: 8, width: '100%' }}>
               <Button variant="secondary" width="full" onClick={onChangeGame} disabled={advancing}>
-                🎮 Cambia gioco
+                Cambia gioco
               </Button>
               <Button variant="primary" width="full" onClick={onReplay} disabled={advancing} style={accentBtnStyle(C.accent)}>
-                {advancing ? '...' : '🔄 Gioca ancora'}
+                {advancing ? '...' : 'Gioca ancora'}
               </Button>
             </div>
           ) : (

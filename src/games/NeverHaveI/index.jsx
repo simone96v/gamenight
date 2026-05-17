@@ -132,7 +132,7 @@ const NeverHaveI = () => {
           <div style={S.footer}>
             {isHost ? (
               <Button variant="primary" width="full" onClick={handleDraw}>
-                {card ? '🔄 Prossima carta' : '🃏 Pesca'}
+                {card ? 'Prossima carta' : 'Pesca'}
               </Button>
             ) : (
               <p style={S.waiting}>👑 L'host pesca le carte</p>

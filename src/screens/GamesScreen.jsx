@@ -8,6 +8,12 @@ import ErrorBanner from '../components/ErrorBanner'
 import GradientTitle from '../components/ui/GradientTitle'
 import { useSession } from '../stores/useSession'
 import { useSettings } from '../stores/useSettings'
+
+const pickImage = (image, theme) => {
+  if (!image) return null
+  if (typeof image === 'string') return image
+  return theme === 'dark' ? image.dark : image.light
+}
 import { availableGamesFor } from '../data/games'
 import { startTriviaGame } from '../lib/triviaSetup'
 import { pushRoom, rpcInitGame } from '../lib/room'
@@ -300,7 +306,10 @@ const GamesScreen = () => {
 
 // ─── GameCard ──────────────────────────────────────────────────────────
 
-const GameCard = ({ game, index, onClick, selected, voteCount }) => (
+const GameCard = ({ game, index, onClick, selected, voteCount }) => {
+  const theme = useSettings((s) => s.theme)
+  const imageSrc = pickImage(game.image, theme)
+  return (
   <motion.button
     type="button"
     initial={{ opacity: 0, y: 18, scale: 0.94 }}
@@ -338,7 +347,7 @@ const GameCard = ({ game, index, onClick, selected, voteCount }) => (
       overflow: 'hidden',
     }}
   >
-    {/* Hero gradient con pattern + emoji */}
+    {/* Hero illustrazione */}
     <div style={{
       position: 'relative',
       width: '100%',
@@ -349,57 +358,75 @@ const GameCard = ({ game, index, onClick, selected, voteCount }) => (
       justifyContent: 'center',
       overflow: 'hidden',
     }}>
-      {/* Dot pattern decorativo */}
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        backgroundImage: 'radial-gradient(rgba(255,255,255,0.18) 1px, transparent 1px)',
-        backgroundSize: '14px 14px',
-        backgroundPosition: '0 0',
-        pointerEvents: 'none',
-        opacity: 0.6,
-      }} />
-
-      {/* Orb glow */}
-      <div style={{
-        position: 'absolute', top: -32, right: -32, width: 130, height: 130,
-        borderRadius: '50%', background: 'rgba(255,255,255,0.22)',
-        filter: 'blur(24px)', pointerEvents: 'none',
-      }} />
-      <div style={{
-        position: 'absolute', bottom: -38, left: -38, width: 110, height: 110,
-        borderRadius: '50%', background: 'rgba(255,255,255,0.14)',
-        filter: 'blur(20px)', pointerEvents: 'none',
-      }} />
-
-      {/* Emoji centrale con halo */}
-      <motion.div
-        animate={selected
-          ? { rotate: [0, -8, 8, -6, 6, 0], scale: [1, 1.06, 1] }
-          : { rotate: 0, scale: 1 }
-        }
-        transition={{ duration: 1, ease: 'easeOut' }}
-        style={{
-          position: 'relative',
-          fontSize: 'clamp(56px, 12vw, 84px)',
-          lineHeight: 1,
-          filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.22))',
-          zIndex: 1,
-        }}
-      >
-        {/* Halo dietro emoji */}
-        <div style={{
-          position: 'absolute',
-          top: '50%', left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '140%', height: '140%',
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 65%)',
-          pointerEvents: 'none',
-          zIndex: -1,
-        }} />
-        {game.emoji}
-      </motion.div>
+      {imageSrc ? (
+        <motion.img
+          src={imageSrc}
+          alt={game.name}
+          loading="lazy"
+          draggable={false}
+          animate={selected
+            ? { scale: [1, 1.04, 1] }
+            : { scale: 1 }
+          }
+          transition={{ duration: 0.8, ease: 'easeOut' }}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            display: 'block',
+          }}
+        />
+      ) : (
+        <>
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundImage: 'radial-gradient(rgba(255,255,255,0.18) 1px, transparent 1px)',
+            backgroundSize: '14px 14px',
+            backgroundPosition: '0 0',
+            pointerEvents: 'none',
+            opacity: 0.6,
+          }} />
+          <div style={{
+            position: 'absolute', top: -32, right: -32, width: 130, height: 130,
+            borderRadius: '50%', background: 'rgba(255,255,255,0.22)',
+            filter: 'blur(24px)', pointerEvents: 'none',
+          }} />
+          <div style={{
+            position: 'absolute', bottom: -38, left: -38, width: 110, height: 110,
+            borderRadius: '50%', background: 'rgba(255,255,255,0.14)',
+            filter: 'blur(20px)', pointerEvents: 'none',
+          }} />
+          <motion.div
+            animate={selected
+              ? { rotate: [0, -8, 8, -6, 6, 0], scale: [1, 1.06, 1] }
+              : { rotate: 0, scale: 1 }
+            }
+            transition={{ duration: 1, ease: 'easeOut' }}
+            style={{
+              position: 'relative',
+              fontSize: 'clamp(56px, 12vw, 84px)',
+              lineHeight: 1,
+              filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.22))',
+              zIndex: 1,
+            }}
+          >
+            <div style={{
+              position: 'absolute',
+              top: '50%', left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '140%', height: '140%',
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(255,255,255,0.40) 0%, rgba(255,255,255,0) 65%)',
+              pointerEvents: 'none',
+              zIndex: -1,
+            }} />
+            {game.emoji}
+          </motion.div>
+        </>
+      )}
 
       {/* Badge voti (top-right) */}
       {voteCount > 0 && (
@@ -485,6 +512,7 @@ const GameCard = ({ game, index, onClick, selected, voteCount }) => (
       </span>
     </div>
   </motion.button>
-)
+  )
+}
 
 export default GamesScreen

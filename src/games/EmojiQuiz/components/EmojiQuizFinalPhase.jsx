@@ -216,7 +216,7 @@ const EmojiQuizFinalPhase = ({
                 disabled={advancing}
                 style={accentBtnStyle(C.accent)}
               >
-                {advancing ? '...' : (sessionHasMoreRounds ? 'Prossimo round →' : 'Rigioca')}
+                {advancing ? '...' : (sessionHasMoreRounds ? 'Prossimo round' : 'Rigioca')}
               </Button>
             </div>
           ) : (

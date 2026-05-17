@@ -131,8 +131,8 @@ const BlobJumpResults = ({
               {advancing
                 ? '...'
                 : currentRoundIdx + 1 >= totalRounds
-                  ? '🏆 Classifica finale'
-                  : '➡️ Prossimo round'}
+                  ? 'Classifica finale'
+                  : 'Prossimo round'}
             </Button>
           ) : (
             <p style={S.waitText}>Aspettando il boss... 👑</p>

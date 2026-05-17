@@ -123,8 +123,10 @@ export const useTrivia = () => {
           }
           setGameState({ round_results: { ...prev, [localPlayerId]: result } })
           if (pts > 0) useSession.getState().addScore(localPlayerId, pts)
-          // Update streak on player
-          const updPlayers = s.players.map((p) =>
+          // Update streak/correctness on player. Leggi i players freschi DOPO addScore
+          // per non sovrascrivere lo score appena assegnato.
+          const freshPlayers = useSession.getState().players
+          const updPlayers = freshPlayers.map((p) =>
             p.id === localPlayerId
               ? {
                   ...p,
@@ -212,7 +214,10 @@ export const useTrivia = () => {
       return
     }
 
-    // Local: advance to next question or final
+    // Local: advance to next question or final.
+    // Il countdown 3-2-1 viene mostrato solo all'inizio della sessione (dalla
+    // lobby, dopo lo spin della categoria). Tra una domanda e l'altra dentro
+    // la stessa categoria si va dritti alla prossima domanda.
     const s = useSession.getState()
     const deck = s.gameState?.deck ?? []
     const round = (s.gameState?.current_round ?? 0) + 1
@@ -225,7 +230,7 @@ export const useTrivia = () => {
         current_question: deck[round],
         round_results: {},
       })
-      setPhaseWithTimer('countdown')
+      setPhaseWithTimer('question')
     }
     setAdvancing(false)
   }, [isOnline, isHost, advancing, roomCode, localPlayerId, setGameState, setPhase, setPhaseWithTimer])

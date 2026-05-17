@@ -173,7 +173,6 @@ const LobbyScreen = () => {
                   onClick={() => setShowShareModal(true)}
                   style={shareBtnStyle}
                 >
-                  <span style={{ fontSize: 18 }}>📤</span>
                   <span>Condividi</span>
                 </motion.button>
               </div>
@@ -314,15 +313,15 @@ const LobbyScreen = () => {
               onClick={handleStartGame}
               disabled={!canStart || starting}
               style={{
-                background: 'linear-gradient(var(--accent), var(--accent)) padding-box, linear-gradient(90deg, #8B5CF6, #3B82F6, #10B981, #F59E0B, #F43F5E, #EC4899) border-box',
+                background: 'linear-gradient(#0F172A, #0F172A) padding-box, linear-gradient(90deg, #8B5CF6, #3B82F6, #10B981, #F59E0B, #F43F5E, #EC4899) border-box',
                 border: '3px solid transparent',
                 boxShadow: '0 8px 24px rgba(0, 0, 0, 0.25)',
-                color: 'var(--bg)',
+                color: '#fff',
                 opacity: (!canStart || starting) ? 0.65 : 1,
                 pointerEvents: (!canStart || starting) ? 'none' : 'auto',
               }}
             >
-              {starting ? '...' : 'Avanti — votate il gioco →'}
+              {starting ? '...' : 'Avanti — votate il gioco'}
             </Button>
           </>
         )}
@@ -363,7 +362,9 @@ const inputStyle = {
 
 const inviteCardStyle = {
   position: 'relative',
-  background: 'linear-gradient(var(--accent), var(--accent)) padding-box, linear-gradient(135deg, #8B5CF6, #3B82F6, #10B981, #F59E0B, #F43F5E, #EC4899) border-box',
+  // Sfondo fisso scuro per garantire contrasto del testo bianco interno
+  // sia in light che in dark mode (var(--accent) diventava chiaro in dark).
+  background: 'linear-gradient(#0F172A, #0F172A) padding-box, linear-gradient(135deg, #8B5CF6, #3B82F6, #10B981, #F59E0B, #F43F5E, #EC4899) border-box',
   borderRadius: 24,
   padding: 'clamp(16px, 2.4dvh, 22px) clamp(16px, 4vw, 24px)',
   display: 'flex',

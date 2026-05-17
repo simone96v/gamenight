@@ -65,10 +65,10 @@ const GameFinalScreen = ({ emoji, title = 'Fine!', subtitle, replayPatch }) => {
         {isHost ? (
           <div style={S.btnRow}>
             <Button variant="secondary" width="full" onClick={handleChangeGame}>
-              🎮 Cambia gioco
+              Cambia gioco
             </Button>
             <Button variant="primary" width="full" onClick={handleReplay}>
-              🔄 Rigioca
+              Rigioca
             </Button>
           </div>
         ) : (

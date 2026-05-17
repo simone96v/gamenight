@@ -77,9 +77,11 @@ function playerPalette(color) {
 
 // ── Button styles ──
 const RAINBOW_BTN = {
+  // Sfondo fisso scuro + bordo multicolor: contrasto garantito sia in light
+  // che in dark mode (var(--accent) flippava chiaro/scuro col tema rompendo il testo).
   background:
-    'linear-gradient(var(--accent), var(--accent)) padding-box, linear-gradient(90deg, #8B5CF6, #3B82F6, #10B981, #F59E0B, #F43F5E, #EC4899) border-box',
-  color: 'var(--bg)',
+    'linear-gradient(#0F172A, #0F172A) padding-box, linear-gradient(90deg, #8B5CF6, #3B82F6, #10B981, #F59E0B, #F43F5E, #EC4899) border-box',
+  color: '#fff',
   border: '3px solid transparent',
   boxShadow: '0 8px 24px rgba(0, 0, 0, 0.25)',
 }

@@ -3,7 +3,6 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { BLOB_GRADIENTS } from '../utils/colors'
-import { BLOB_SHAPES } from './Blob'
 
 const MINI_EXPR_SEQ = [
   { expr: 'normal',     dur: 2500 },
@@ -87,7 +86,7 @@ const MiniBlob = ({ color, expr = 'normal', size = 42, id = 'mb' }) => {
           <stop offset="100%" stopColor="#F0ECF9" />
         </radialGradient>
       </defs>
-      <path d={BLOB_SHAPES[0]} fill={`url(#${id}-g)`} />
+      <circle cx="150" cy="150" r="145" fill={`url(#${id}-g)`} />
       <MiniBlobEyes expr={expr} lx={115} rx={185} ey={140} id={id} />
     </svg>
   )

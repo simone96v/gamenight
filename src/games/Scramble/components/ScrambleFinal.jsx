@@ -100,10 +100,10 @@ const ScrambleFinal = ({
           {isHost ? (
             <div style={{ display: 'flex', gap: 8, width: '100%' }}>
               <Button variant="secondary" width="full" onClick={onChangeGame}>
-                🎮 Cambia gioco
+                Cambia gioco
               </Button>
               <Button variant="primary" width="full" onClick={onReplay} style={accentBtnStyle(C.accent)}>
-                🔄 Gioca ancora
+                Gioca ancora
               </Button>
             </div>
           ) : (

@@ -92,13 +92,13 @@ export const useScramble = () => {
   useEffect(() => {
     if (!rack) return
     setTray([])
-    setShuffledRack(rack)
+    setShuffledRack(shuffleRack(rack))
   }, [rack, roundIdx])
 
   // Quando si entra in playing, mescola.
   useEffect(() => {
     if (currentPhase === 'scramble_playing' && rack) {
-      setShuffledRack((prev) => prev || rack)
+      setShuffledRack((prev) => prev || shuffleRack(rack))
       setTray([])
     }
   }, [currentPhase, rack])

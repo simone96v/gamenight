@@ -5,6 +5,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { haptic } from '../utils/haptic'
+import { usePlayerAccent } from '../hooks/usePlayerAccent'
 
 const STEPS = [
   { label: '3', delay: 0 },
@@ -22,6 +23,7 @@ const CountdownOverlay = ({
   gameName,        // es. "Trivia", "Mappa" — shown if no category
   gameEmoji,       // es. "🧠", "📍" — shown if no category
 }) => {
+  const C = usePlayerAccent()
   const [stepIndex, setStepIndex] = useState(-1)
   const completedRef = useRef(false)
   const lastHapticStep = useRef(-1)
@@ -93,7 +95,14 @@ const CountdownOverlay = ({
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
               style={{
                 ...S.label,
-                ...(isVia ? S.labelVia : {}),
+                color: C.accent,
+                textShadow: `0 0 60px ${C.shadow}, 0 0 120px ${C.shadowLight}`,
+                ...(isVia ? {
+                  background: C.gradient,
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  textShadow: 'none',
+                } : {}),
               }}
             >
               {step.label}
@@ -109,7 +118,7 @@ const CountdownOverlay = ({
               initial={{ scale: 0.5, opacity: 0.5 }}
               animate={{ scale: 2.5, opacity: 0 }}
               transition={{ duration: 0.9, ease: 'easeOut' }}
-              style={S.pulseRing}
+              style={{ ...S.pulseRing, borderColor: C.accent }}
             />
           )}
         </AnimatePresence>
@@ -169,7 +178,7 @@ const CountdownOverlay = ({
             key={i}
             animate={{
               scale: i <= stepIndex ? 1.3 : 1,
-              background: i <= stepIndex ? 'var(--text)' : 'var(--border-strong)',
+              background: i <= stepIndex ? C.accent : 'var(--border-strong)',
             }}
             transition={{ type: 'spring', stiffness: 400, damping: 20 }}
             style={S.dot}

@@ -32,7 +32,7 @@ const SoloResultScreen = ({
   primaryLabel = 'punti',
   stats = [],
   advancing = false,
-  replayLabel = '🔄 Rigioca',
+  replayLabel = 'Rigioca',
   onReplay,
   onChangeGame,
 }) => {
@@ -115,7 +115,7 @@ const SoloResultScreen = ({
             onClick={onChangeGame}
             disabled={advancing}
           >
-            🎮 Cambia gioco
+            Cambia gioco
           </Button>
           <Button
             variant="primary"

@@ -271,10 +271,10 @@ const CategoryWheel = ({
           }}
         >
           {spinning
-            ? '🌀 Sto spinnando...'
+            ? 'Sto spinnando...'
             : celebrating
-              ? '🎯 Caricamento...'
-              : '🎡 SPIN!'}
+              ? 'Caricamento...'
+              : 'SPIN!'}
         </motion.button>
       ) : (
         <p style={{
@@ -289,10 +289,10 @@ const CategoryWheel = ({
           justifyContent: 'center',
         }}>
           {isBusy
-            ? '🌀 La ruota gira...'
+            ? 'La ruota gira...'
             : spinnerName
-              ? `🎡 Tocca a ${spinnerName} spinnare!`
-              : '⏳ In attesa...'}
+              ? `Tocca a ${spinnerName} spinnare!`
+              : 'In attesa...'}
         </p>
       )}
     </div>

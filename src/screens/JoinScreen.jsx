@@ -205,7 +205,7 @@ const JoinScreen = () => {
               width="full"
               disabled={!canSubmit}
             >
-              {submitting ? '...' : 'Entra 🎉'}
+              {submitting ? '...' : 'Entra'}
             </Button>
           </motion.div>
         )}

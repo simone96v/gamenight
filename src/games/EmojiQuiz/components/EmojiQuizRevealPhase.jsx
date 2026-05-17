@@ -147,8 +147,8 @@ const EmojiQuizRevealPhase = ({
               {advancing
                 ? '...'
                 : hasMoreRounds
-                  ? 'Avanti tutta! →'
-                  : (isOnline ? 'Chi ha vinto?! 🏆' : 'Scopri il tuo risultato 🎯')}
+                  ? 'Avanti tutta!'
+                  : (isOnline ? 'Chi ha vinto?!' : 'Scopri il tuo risultato')}
             </Button>
           ) : (
             <p style={waitingTextStyle}>Aspettando il boss... 👑</p>

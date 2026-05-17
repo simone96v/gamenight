@@ -102,7 +102,7 @@ const GameLobbyLayout = ({
                 disabled={launching || disabled}
                 style={disabled ? undefined : accentBtnStyle(C.accent)}
               >
-                {launching ? '⏳ Caricamento...' : startLabel}
+                {launching ? 'Caricamento...' : startLabel}
               </Button>
             ) : (
               <p style={S.waitText}>Aspettando il boss... 👑</p>

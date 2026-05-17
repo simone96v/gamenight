@@ -150,7 +150,7 @@ const Trivia = () => {
               { label: 'Corrette', value: `${correct}/${roundQs * (session.roundIdx + 1)}` },
             ] : []}
             advancing={trivia.advancing}
-            replayLabel="Prossimo round →"
+            replayLabel="Prossimo round"
             onReplay={trivia.hostReplay}
             onChangeGame={handleChangeGame}
           />

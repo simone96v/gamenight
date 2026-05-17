@@ -123,8 +123,13 @@ const SoloSetupScreen = () => {
           variant="secondary"
           width="full"
           disabled={!canStart}
+          style={canStart ? {
+            background: 'linear-gradient(#0b0d14, #0b0d14) padding-box, linear-gradient(90deg, #8B5CF6, #3B82F6, #10B981, #F59E0B, #F43F5E, #EC4899) border-box',
+            border: '1.5px solid transparent',
+            color: '#fff',
+          } : undefined}
         >
-          🎮 Scegli il gioco
+          Scegli il gioco
         </Button>
       </form>
     </motion.div>

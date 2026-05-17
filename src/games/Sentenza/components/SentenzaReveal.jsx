@@ -125,8 +125,8 @@ const SentenzaReveal = ({
               {advancing
                 ? '...'
                 : hasMoreRounds
-                  ? 'Prossimo round →'
-                  : 'Classifica finale 🏆'}
+                  ? 'Prossimo round'
+                  : 'Classifica finale'}
             </Button>
           ) : (
             <p style={S.waitText}>Aspettando il prossimo round... 👑</p>

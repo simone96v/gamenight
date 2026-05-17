@@ -179,7 +179,7 @@ const ScrambleResults = ({
               disabled={advancing}
               style={accentBtnStyle(C.accent)}
             >
-              {advancing ? '...' : isLast ? '🏆 Classifica finale' : '➡️ Prossimo round'}
+              {advancing ? '...' : isLast ? 'Classifica finale' : 'Prossimo round'}
             </Button>
           ) : (
             <p style={S.waitText}>Aspettando il boss... 👑</p>

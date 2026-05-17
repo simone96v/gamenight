@@ -74,7 +74,7 @@ const QRModal = ({ open = false, onClose, joinUrl, roomCode }) => {
           Chiudi
         </Button>
         <Button variant="primary" width="full" onClick={handleCopy}>
-          {copied ? '✓ Copiato!' : '🔗 Copia link'}
+          {copied ? 'Copiato!' : 'Copia link'}
         </Button>
       </div>
     </Modal>

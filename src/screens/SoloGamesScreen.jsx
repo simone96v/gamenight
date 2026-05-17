@@ -8,7 +8,14 @@ import IconButton from '../components/ui/IconButton'
 import GradientTitle from '../components/ui/GradientTitle'
 import MiniBlob, { useMiniExpr } from '../components/MiniBlob'
 import { useSession } from '../stores/useSession'
+import { useSettings } from '../stores/useSettings'
 import { availableGamesFor } from '../data/games'
+
+const pickImage = (image, theme) => {
+  if (!image) return null
+  if (typeof image === 'string') return image
+  return theme === 'dark' ? image.dark : image.light
+}
 
 const LOBBY_ROUTES = {
   blobjump: '/blobjump-lobby',
@@ -120,7 +127,10 @@ const SoloGamesScreen = () => {
   )
 }
 
-const SoloGameCard = ({ game, index, onClick }) => (
+const SoloGameCard = ({ game, index, onClick }) => {
+  const theme = useSettings((s) => s.theme)
+  const imageSrc = pickImage(game.image, theme)
+  return (
   <motion.button
     type="button"
     initial={{ opacity: 0, y: 18, scale: 0.94 }}
@@ -159,29 +169,48 @@ const SoloGameCard = ({ game, index, onClick }) => (
       justifyContent: 'center',
       overflow: 'hidden',
     }}>
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        backgroundImage: 'radial-gradient(rgba(255,255,255,0.18) 1px, transparent 1px)',
-        backgroundSize: '14px 14px',
-        pointerEvents: 'none',
-        opacity: 0.6,
-      }} />
-      <div style={{
-        position: 'absolute', top: -32, right: -32, width: 130, height: 130,
-        borderRadius: '50%', background: 'rgba(255,255,255,0.22)',
-        filter: 'blur(24px)', pointerEvents: 'none',
-      }} />
-      <motion.div
-        style={{
-          fontSize: 'clamp(56px, 12vw, 84px)',
-          lineHeight: 1,
-          filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.22))',
-          zIndex: 1,
-        }}
-      >
-        {game.emoji}
-      </motion.div>
+      {imageSrc ? (
+        <img
+          src={imageSrc}
+          alt={game.name}
+          loading="lazy"
+          draggable={false}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            display: 'block',
+          }}
+        />
+      ) : (
+        <>
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundImage: 'radial-gradient(rgba(255,255,255,0.18) 1px, transparent 1px)',
+            backgroundSize: '14px 14px',
+            pointerEvents: 'none',
+            opacity: 0.6,
+          }} />
+          <div style={{
+            position: 'absolute', top: -32, right: -32, width: 130, height: 130,
+            borderRadius: '50%', background: 'rgba(255,255,255,0.22)',
+            filter: 'blur(24px)', pointerEvents: 'none',
+          }} />
+          <motion.div
+            style={{
+              fontSize: 'clamp(56px, 12vw, 84px)',
+              lineHeight: 1,
+              filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.22))',
+              zIndex: 1,
+            }}
+          >
+            {game.emoji}
+          </motion.div>
+        </>
+      )}
     </div>
 
     {/* Body */}
@@ -211,6 +240,7 @@ const SoloGameCard = ({ game, index, onClick }) => (
       </span>
     </div>
   </motion.button>
-)
+  )
+}
 
 export default SoloGamesScreen

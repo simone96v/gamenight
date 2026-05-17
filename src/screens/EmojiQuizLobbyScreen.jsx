@@ -1,28 +1,27 @@
-// Lobby Emoji Quiz (session mode + ruota categorie) — uses GameLobbyLayout.
+// Lobby Movie Quiz — solo stepper "Domande" + bottone Start. No categorie, no ruota.
 
-import { useEffect, useCallback, useMemo, useRef } from 'react'
+import { useEffect, useCallback, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import GameLobbyLayout from '../components/GameLobbyLayout'
-import CategoryWheel from '../components/CategoryWheel'
 import BlobLoader from '../components/BlobLoader'
 import { useSession } from '../stores/useSession'
 import { pushRoom } from '../lib/room'
 import {
   loadEmojiQuizDeck,
   preloadEmojiQuizPool,
-  EMOJI_QUIZ_CATEGORIES,
 } from '../lib/emojiQuizDeck'
-import { usePlayerAccent } from '../hooks/usePlayerAccent'
 
-const WHEEL_CATEGORIES = EMOJI_QUIZ_CATEGORIES.filter((c) => c.id !== 'tutte')
-
-const DEFAULT_TOTAL_ROUNDS = 1
 const DEFAULT_QUESTIONS = 7
-const MIN_ROUNDS = 1
-const MAX_ROUNDS = 3
 const MIN_QUESTIONS = 5
 const MAX_QUESTIONS = 15
+const DEFAULT_DIFFICULTY = 'mix'
+const DIFFICULTY_OPTIONS = [
+  { id: 'mix',    label: 'Mix' },
+  { id: 'easy',   label: 'Facile' },
+  { id: 'medium', label: 'Medio' },
+  { id: 'hard',   label: 'Difficile' },
+]
 
 const clamp = (n, min, max) => Math.max(min, Math.min(max, n))
 
@@ -32,41 +31,22 @@ const EmojiQuizLobbyScreen = () => {
   const isHost = useSession((s) => s.isHost)
   const mode = useSession((s) => s.mode)
   const roomCode = useSession((s) => s.roomCode)
-  const localPlayerId = useSession((s) => s.localPlayerId)
   const players = useSession((s) => s.players)
   const gameState = useSession((s) => s.gameState)
   const showError = useSession((s) => s.showError)
   const setAwaitingGC = useSession((s) => s.setAwaitingGameChange)
 
-  const C = usePlayerAccent()
   const isSolo = mode === 'local'
   const canControl = isHost || isSolo
 
   const session = gameState?.eqSession ?? null
-  const roundIdx = session?.roundIdx ?? 0
-  const totalRounds = session?.totalRounds ?? DEFAULT_TOTAL_ROUNDS
   const questionsPerRound = session?.questionsPerRound ?? DEFAULT_QUESTIONS
-  const categoriesPlayed = session?.categoriesPlayed ?? []
-  const spinTarget = session?.spinTarget ?? null
+  const difficulty = session?.difficulty ?? DEFAULT_DIFFICULTY
   const launching = session?.launching ?? false
 
   const launchingRef = useRef(false)
   useEffect(() => { launchingRef.current = launching }, [launching])
   useEffect(() => { launchingRef.current = false }, [])
-
-  const currentSpinner = useMemo(() => {
-    if (players.length === 0) return null
-    const seed = (roomCode || 'solo').split('').reduce((acc, c) => acc * 31 + c.charCodeAt(0), 0)
-    const idx = Math.abs(seed + roundIdx * 7919) % players.length
-    return players[idx]?.id ?? null
-  }, [roomCode, roundIdx, players])
-  const isSpinner = isSolo || localPlayerId === currentSpinner
-  const spinnerPlayer = players.find((p) => p.id === currentSpinner)
-
-  const availableCategories = useMemo(
-    () => WHEEL_CATEGORIES.filter((c) => !categoriesPlayed.includes(c.id)),
-    [categoriesPlayed],
-  )
 
   useEffect(() => { preloadEmojiQuizPool() }, [])
 
@@ -74,23 +54,16 @@ const EmojiQuizLobbyScreen = () => {
   useEffect(() => {
     if (!canControl) return
     const cur = gameState?.eqSession
-    if (cur && (cur.roundIdx ?? 0) > 0) return
-
-    const needsReset = !cur
-      || (cur.categoriesPlayed ?? []).length > 0
-      || cur.spinTarget != null
-      || cur.launching === true
-
+    const needsReset = !cur || cur.launching === true
     if (!needsReset) return
 
     const s = useSession.getState()
     const newSession = {
       roundIdx: 0,
-      totalRounds: cur?.totalRounds ?? DEFAULT_TOTAL_ROUNDS,
+      totalRounds: 1,
       questionsPerRound: cur?.questionsPerRound ?? DEFAULT_QUESTIONS,
-      categoriesPlayed: [],
+      difficulty: cur?.difficulty ?? DEFAULT_DIFFICULTY,
       currentCategory: null,
-      spinTarget: null,
       launching: false,
     }
     const newGameState = { ...s.gameState, eqSession: newSession }
@@ -124,8 +97,10 @@ const EmojiQuizLobbyScreen = () => {
     }
   }, [canControl])
 
-  const handleRoundsChange = (n) => updateSession({ totalRounds: clamp(n, MIN_ROUNDS, MAX_ROUNDS) })
-  const handleQuestionsChange = (n) => updateSession({ questionsPerRound: clamp(n, MIN_QUESTIONS, MAX_QUESTIONS) })
+  const handleQuestionsChange = (n) =>
+    updateSession({ questionsPerRound: clamp(n, MIN_QUESTIONS, MAX_QUESTIONS) })
+
+  const handleDifficultyChange = (id) => updateSession({ difficulty: id })
 
   const handleExit = useCallback(async () => {
     const s = useSession.getState()
@@ -149,27 +124,7 @@ const EmojiQuizLobbyScreen = () => {
     setAwaitingGC(false)
   }, [navigate, setAwaitingGC])
 
-  const handleRequestSpin = useCallback(() => {
-    if (!isSpinner || launchingRef.current || spinTarget) return
-    if (availableCategories.length === 0) return
-    const winIdx = Math.floor(Math.random() * availableCategories.length)
-    const winner = availableCategories[winIdx]
-    const s = useSession.getState()
-    const newSession = { ...(s.gameState?.eqSession ?? {}), spinTarget: winner.id }
-    const newGameState = { ...s.gameState, eqSession: newSession }
-    useSession.setState({ gameState: newGameState })
-    if (s.mode === 'online' && s.roomCode) {
-      pushRoom(s.roomCode, s.currentPhase, {
-        players: s.players,
-        currentIdx: s.currentIdx,
-        round: s.round,
-        activeGame: s.activeGame,
-        ...newGameState,
-      })
-    }
-  }, [isSpinner, spinTarget, availableCategories])
-
-  const handleSpinEnd = useCallback(async (category) => {
+  const handleStart = useCallback(async () => {
     if (!canControl || launchingRef.current) return
     launchingRef.current = true
 
@@ -177,23 +132,21 @@ const EmojiQuizLobbyScreen = () => {
     const freshSession = s.gameState?.eqSession ?? {}
     const launchSession = {
       ...freshSession,
-      currentCategory: category.id,
-      categoriesPlayed: [...(freshSession.categoriesPlayed ?? []), category.id],
-      spinTarget: null,
+      currentCategory: null,
       launching: true,
     }
     const launchGameState = { ...s.gameState, eqSession: launchSession }
     useSession.setState({ gameState: launchGameState })
 
     try {
-      const deck = await loadEmojiQuizDeck(launchSession.questionsPerRound ?? DEFAULT_QUESTIONS, category.id)
+      const deck = await loadEmojiQuizDeck(
+        launchSession.questionsPerRound ?? DEFAULT_QUESTIONS,
+        launchSession.difficulty ?? DEFAULT_DIFFICULTY,
+      )
       const now = new Date().toISOString()
-      const resetScores = (launchSession.roundIdx ?? 0) === 0
 
       const fullState = {
-        players: resetScores
-          ? (s.players || []).map((p) => ({ ...p, score: 0, correct_count: 0 }))
-          : s.players,
+        players: (s.players || []).map((p) => ({ ...p, score: 0, correct_count: 0 })),
         currentIdx: 0,
         round: 0,
         activeGame: 'emojiquiz',
@@ -205,9 +158,9 @@ const EmojiQuizLobbyScreen = () => {
         eqHintUsed: {},
         eqRoundResult: null,
         eqRoundLog: [],
-        eqScores: resetScores ? {} : (s.gameState?.eqScores ?? {}),
+        eqScores: {},
         eqStreaks: {},
-        eqCorrectCount: resetScores ? {} : (s.gameState?.eqCorrectCount ?? {}),
+        eqCorrectCount: {},
       }
 
       if (s.mode === 'online' && s.roomCode) {
@@ -228,7 +181,7 @@ const EmojiQuizLobbyScreen = () => {
         navigate('/game/emojiquiz', { replace: true })
       }
     } catch (e) {
-      console.error('[emojiquiz-lobby] spin end:', e)
+      console.error('[movie-quiz-lobby] start:', e)
       showError('generic')
       updateSession({ launching: false })
       launchingRef.current = false
@@ -242,17 +195,13 @@ const EmojiQuizLobbyScreen = () => {
   return (
     <GameLobbyLayout
       gameEmoji="🎬"
-      gameName="Emoji Quiz"
-      gameDescription={
-        categoriesPlayed.length === 0
-          ? 'Decifra gli emoji! La ruota decide la categoria.'
-          : `Giocate: ${categoriesPlayed.map((id) => WHEEL_CATEGORIES.find((c) => c.id === id)?.emoji ?? '').join(' ')}`
-      }
+      gameName="Movie Quiz"
+      gameDescription="Decifra gli emoji: film o serie TV."
       players={players}
       canControl={canControl}
       onBack={handleExit}
     >
-      {/* Settings */}
+      {/* Settings: solo numero domande */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -260,44 +209,64 @@ const EmojiQuizLobbyScreen = () => {
         style={settingsCard}
       >
         <div style={settingRow}>
-          <span style={settingLabelStyle}>Round</span>
-          <Stepper
-            value={totalRounds}
-            onDecrement={() => canControl && handleRoundsChange(totalRounds - 1)}
-            onIncrement={() => canControl && handleRoundsChange(totalRounds + 1)}
-            disabled={!canControl || launching || !!spinTarget || roundIdx > 0}
-            min={MIN_ROUNDS} max={MAX_ROUNDS}
-          />
-        </div>
-        <div style={{ ...settingRow, marginTop: 'clamp(6px, 1dvh, 10px)' }}>
           <span style={settingLabelStyle}>Domande</span>
           <Stepper
             value={questionsPerRound}
             onDecrement={() => canControl && handleQuestionsChange(questionsPerRound - 1)}
             onIncrement={() => canControl && handleQuestionsChange(questionsPerRound + 1)}
-            disabled={!canControl || launching || !!spinTarget || roundIdx > 0}
+            disabled={!canControl || launching}
             min={MIN_QUESTIONS} max={MAX_QUESTIONS}
           />
         </div>
+        <div style={{ ...settingRow, marginTop: 'clamp(8px, 1.2dvh, 12px)', alignItems: 'flex-start' }}>
+          <span style={settingLabelStyle}>Difficoltà</span>
+          <div style={chipRow}>
+            {DIFFICULTY_OPTIONS.map((opt) => {
+              const active = difficulty === opt.id
+              const dis = !canControl || launching
+              return (
+                <motion.button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => !dis && handleDifficultyChange(opt.id)}
+                  disabled={dis}
+                  whileHover={dis || active ? undefined : { scale: 1.04 }}
+                  whileTap={dis ? undefined : { scale: 0.96 }}
+                  style={{
+                    ...chipBtn,
+                    background: active ? 'var(--accent)' : 'var(--surface)',
+                    color: active ? 'var(--bg)' : 'var(--text)',
+                    border: active ? '1.5px solid var(--accent)' : '1.5px solid var(--border-strong)',
+                    opacity: dis && !active ? 0.5 : 1,
+                    cursor: dis ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  {opt.label}
+                </motion.button>
+              )
+            })}
+          </div>
+        </div>
       </motion.div>
 
-      {/* Wheel */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
+      {/* Start button */}
+      <motion.button
+        type="button"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+        onClick={handleStart}
+        disabled={!canControl || launching}
+        whileHover={!canControl || launching ? undefined : { scale: 1.02 }}
+        whileTap={!canControl || launching ? undefined : { scale: 0.98 }}
+        style={{
+          ...startBtn,
+          opacity: !canControl || launching ? 0.5 : 1,
+          cursor: !canControl || launching ? 'not-allowed' : 'pointer',
+        }}
       >
-        <CategoryWheel
-          categories={availableCategories}
-          spinTarget={spinTarget}
-          onRequestSpin={handleRequestSpin}
-          onSpinEnd={handleSpinEnd}
-          disabled={launching || !!spinTarget}
-          canSpin={isSpinner}
-          spinnerName={spinnerPlayer?.name ?? ''}
-        />
-      </motion.div>
+        {canControl ? 'Inizia' : 'In attesa dell\'host…'}
+      </motion.button>
     </GameLobbyLayout>
   )
 }
@@ -372,6 +341,36 @@ const stepValueStyle = {
   fontSize: 'clamp(15px, 1.8dvh, 19px)',
   fontWeight: 900,
   color: 'var(--accent)',
+}
+const chipRow = {
+  display: 'flex',
+  gap: 6,
+  flexWrap: 'wrap',
+  justifyContent: 'flex-end',
+}
+const chipBtn = {
+  padding: '6px 12px',
+  borderRadius: 999,
+  fontSize: 'clamp(12px, 1.4dvh, 14px)',
+  fontWeight: 800,
+  letterSpacing: '0.01em',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  background: 'var(--surface)',
+}
+const startBtn = {
+  marginTop: 'clamp(10px, 1.5dvh, 14px)',
+  width: '100%',
+  padding: 'clamp(12px, 1.8dvh, 16px)',
+  borderRadius: 'var(--radius-sm)',
+  border: 'none',
+  background: 'var(--accent)',
+  color: 'var(--bg)',
+  fontSize: 'clamp(15px, 2dvh, 18px)',
+  fontWeight: 900,
+  letterSpacing: '0.02em',
+  boxShadow: 'var(--shadow-sm)',
 }
 
 export default EmojiQuizLobbyScreen
