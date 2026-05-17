@@ -11,6 +11,7 @@ import Button from '../components/ui/Button'
 import GradientTitle from '../components/ui/GradientTitle'
 import ColorPicker from '../components/ColorPicker'
 import { useSession } from '../stores/useSession'
+import { validatePlayerName } from '../utils/nameValidation'
 
 const SoloSetupScreen = () => {
   const navigate = useNavigate()
@@ -18,8 +19,10 @@ const SoloSetupScreen = () => {
   const [selectedColor, setSelectedColor] = useState(null)
   const resetSession = useSession((s) => s.resetSession)
 
-  const canStart = name.trim().length > 0 && selectedColor
+  const nameStatus = validatePlayerName(name)
+  const canStart = nameStatus.valid && selectedColor
   const blobExpr = selectedColor ? 'happy' : 'normal'
+  const showNameWarning = !nameStatus.empty && !!nameStatus.reason
 
   const handleStart = () => {
     if (!canStart) return
@@ -100,6 +103,8 @@ const SoloSetupScreen = () => {
           />
         </div>
 
+        <ColorPicker selected={selectedColor} onSelect={setSelectedColor} />
+
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -111,12 +116,17 @@ const SoloSetupScreen = () => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Es. Marco"
-            style={inputStyle}
+            style={{
+              ...inputStyle,
+              borderColor: showNameWarning ? 'var(--danger)' : 'var(--border)',
+            }}
             maxLength={12}
+            aria-invalid={showNameWarning}
           />
+          {showNameWarning && (
+            <p style={nameWarningStyle} role="alert">⚠ {nameStatus.reason}</p>
+          )}
         </motion.div>
-
-        <ColorPicker selected={selectedColor} onSelect={setSelectedColor} />
 
         <Button
           type="submit"
@@ -159,6 +169,14 @@ const labelStyle = {
   letterSpacing: '0.06em',
   textTransform: 'uppercase',
   marginBottom: 'clamp(4px, 0.8dvh, 8px)',
+}
+
+const nameWarningStyle = {
+  margin: 'clamp(6px, 1dvh, 10px) 0 0',
+  color: 'var(--danger)',
+  fontSize: 'clamp(11px, 1.4dvh, 13px)',
+  fontWeight: 700,
+  lineHeight: 1.3,
 }
 
 const blobWrapStyle = {

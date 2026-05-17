@@ -10,9 +10,11 @@ import GradientTitle from '../components/ui/GradientTitle'
 import ColorPicker from '../components/ColorPicker'
 import { useSession } from '../stores/useSession'
 import { createRoom, addPlayerToRoom } from '../lib/room'
+import { validatePlayerName } from '../utils/nameValidation'
 
 const CreatePartyScreen = () => {
   const navigate = useNavigate()
+  const [partyName, setPartyName] = useState('')
   const [name, setName] = useState('')
   const [selectedColor, setSelectedColor] = useState(null)
   const [creating, setCreating] = useState(false)
@@ -20,19 +22,25 @@ const CreatePartyScreen = () => {
   const resetSession = useSession((s) => s.resetSession)
   const showError = useSession((s) => s.showError)
 
-  const canCreate = name.trim().length > 0 && selectedColor && !creating
+  const partyStatus = validatePlayerName(partyName, { maxLen: 24 })
+  const nameStatus = validatePlayerName(name)
+  const canCreate = partyStatus.valid && nameStatus.valid && selectedColor && !creating
   const blobExpr = selectedColor ? 'happy' : 'normal'
+  const showNameWarning = !nameStatus.empty && !!nameStatus.reason
+  const showPartyWarning = !partyStatus.empty && !!partyStatus.reason
 
   const handleCreate = async () => {
     if (!canCreate) return
     setCreating(true)
     resetSession()
 
+    const cleanPartyName = partyName.trim()
     const { code, error } = await createRoom({
       players: [],
       categoryVotes: {},
       gameVotes: {},
       selectedGame: null,
+      partyName: cleanPartyName,
     })
     if (error || !code) {
       showError('generic')
@@ -56,6 +64,9 @@ const CreatePartyScreen = () => {
     }
 
     setOnlineMode(code, true, playerId)
+    // Salva il nome del party nello gameState locale così è già visibile
+    // appena entriamo in lobby (prima dell'eventuale roundtrip Realtime).
+    useSession.setState((s) => ({ gameState: { ...(s.gameState || {}), partyName: cleanPartyName } }))
     setCreating(false)
     navigate('/lobby')
   }
@@ -114,6 +125,31 @@ const CreatePartyScreen = () => {
           />
         </div>
 
+        <ColorPicker selected={selectedColor} onSelect={setSelectedColor} />
+
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.08 }}
+          style={cardStyle}
+        >
+          <div style={labelStyle}>🎉 Nome del party</div>
+          <input
+            value={partyName}
+            onChange={(e) => setPartyName(e.target.value)}
+            placeholder="Es. Serata Pizza"
+            style={{
+              ...inputStyle,
+              borderColor: showPartyWarning ? 'var(--danger)' : 'var(--border)',
+            }}
+            maxLength={24}
+            aria-invalid={showPartyWarning}
+          />
+          {showPartyWarning && (
+            <p style={nameWarningStyle} role="alert">⚠ {partyStatus.reason}</p>
+          )}
+        </motion.div>
+
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -125,12 +161,17 @@ const CreatePartyScreen = () => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Es. Marco"
-            style={inputStyle}
+            style={{
+              ...inputStyle,
+              borderColor: showNameWarning ? 'var(--danger)' : 'var(--border)',
+            }}
             maxLength={12}
+            aria-invalid={showNameWarning}
           />
+          {showNameWarning && (
+            <p style={nameWarningStyle} role="alert">⚠ {nameStatus.reason}</p>
+          )}
         </motion.div>
-
-        <ColorPicker selected={selectedColor} onSelect={setSelectedColor} />
 
         <Button
           type="submit"
@@ -187,6 +228,14 @@ const blobWrapStyle = {
   alignItems: 'center',
   flexShrink: 0,
   margin: 'clamp(4px, 1dvh, 10px) 0',
+}
+
+const nameWarningStyle = {
+  margin: 'clamp(6px, 1dvh, 10px) 0 0',
+  color: 'var(--danger)',
+  fontSize: 'clamp(11px, 1.4dvh, 13px)',
+  fontWeight: 700,
+  lineHeight: 1.3,
 }
 
 const inputStyle = {

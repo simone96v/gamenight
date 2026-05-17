@@ -75,16 +75,13 @@ const GamesScreen = () => {
         trivia:    'trivia_lobby',
         mappa:     'mappa_lobby',
         blobjump:  'blobjump_lobby',
+        catchblob: 'catchblob_lobby',
         scramble:  'scramble_lobby',
         emojiquiz: 'emojiquiz_lobby',
-        sentenza:  'sentenza_lobby',
       }
       const lobbyPhase = LOBBY_PHASE[winnerId]
       if (lobbyPhase) {
-        const extra = winnerId === 'sentenza'
-          ? { sentenzaRounds: session.gameState?.sentenzaRounds ?? 8 }
-          : {}
-        const pushRes = await pushRoom(roomCode, lobbyPhase, { ...baseState, ...extra })
+        const pushRes = await pushRoom(roomCode, lobbyPhase, baseState)
         if (pushRes.error) {
           showError('generic')
           setLaunching(false)

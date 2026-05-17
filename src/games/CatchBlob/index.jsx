@@ -1,17 +1,17 @@
 import { lazy, Suspense, useState, useCallback, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useBlobJump } from './useBlobJump'
+import { useCatchBlob } from './useCatchBlob'
 import { useSession } from '../../stores/useSession'
 import { pushRoom } from '../../lib/room'
 import CountdownOverlay from '../../components/CountdownOverlay'
 import Spinner from '../../components/ui/Spinner'
-import BlobJumpLeaderboard from './components/BlobJumpLeaderboard'
-import { submitBlobJumpScore } from './useBlobJumpLeaderboard'
+import CatchBlobLeaderboard from './components/CatchBlobLeaderboard'
+import { submitCatchBlobScore } from './useCatchBlobLeaderboard'
 
 const retryImport = (fn) => fn().catch(() => new Promise((r) => setTimeout(r, 1500)).then(fn))
 
-const BlobJumpPlaying = lazy(() => retryImport(() => import('./components/BlobJumpPlaying')))
-const BlobJumpResults = lazy(() => retryImport(() => import('./components/BlobJumpResults')))
+const CatchBlobPlaying = lazy(() => retryImport(() => import('./components/CatchBlobPlaying')))
+const CatchBlobResults = lazy(() => retryImport(() => import('./components/CatchBlobResults')))
 
 const Loading = () => (
   <div className="flex items-center justify-center" style={{ flex: 1 }}>
@@ -19,37 +19,36 @@ const Loading = () => (
   </div>
 )
 
-const BlobJump = () => {
-  const bj = useBlobJump()
+const CatchBlob = () => {
+  const cb = useCatchBlob()
   const navigate = useNavigate()
   const setAwaitingGameChange = useSession((s) => s.setAwaitingGameChange)
   const [replaying, setReplaying] = useState(false)
   const [lbOpen, setLbOpen] = useState(false)
   const submitFiredRef = useRef(false)
 
-  // Submit del best score globale + auto-apertura overlay quando entra in blobjump_final.
+  // Submit globale + apri overlay quando entriamo in final
   useEffect(() => {
-    if (bj.currentPhase !== 'blobjump_final') {
+    if (cb.currentPhase !== 'catchblob_final') {
       submitFiredRef.current = false
       return
     }
     if (submitFiredRef.current) return
     submitFiredRef.current = true
 
-    const me = bj.players.find((p) => p.id === bj.localPlayerId)
-    const score = bj.totalScores?.[bj.localPlayerId] ?? me?.score ?? 0
+    const me = cb.players.find((p) => p.id === cb.localPlayerId)
+    const score = cb.totalScores?.[cb.localPlayerId] ?? me?.score ?? 0
     if (!me || score <= 0) {
-      // Niente da submittare (player non trovato o 0 metri) → apri comunque per consultazione
       setLbOpen(true)
       return
     }
-    submitBlobJumpScore({
+    submitCatchBlobScore({
       score,
       playerName: me.name || 'Anonimo',
       color: me.color,
-      source: bj.isOnline ? 'online' : 'solo',
+      source: cb.isOnline ? 'online' : 'solo',
     }).then(() => setLbOpen(true))
-  }, [bj.currentPhase, bj.players, bj.localPlayerId, bj.totalScores, bj.isOnline])
+  }, [cb.currentPhase, cb.players, cb.localPlayerId, cb.totalScores, cb.isOnline])
 
   const handleChangeGame = useCallback(async () => {
     const s = useSession.getState()
@@ -87,7 +86,7 @@ const BlobJump = () => {
         players: resetPlayers,
         currentIdx: 0,
         round: 0,
-        activeGame: 'blobjump',
+        activeGame: 'catchblob',
         currentSeed: newSeed,
         currentRoundIdx: 0,
         totalRounds: 1,
@@ -96,7 +95,7 @@ const BlobJump = () => {
         roundFinished: {},
         totalScores: {},
       }
-      await pushRoom(s.roomCode, 'blobjump_countdown', fullState, now)
+      await pushRoom(s.roomCode, 'catchblob_countdown', fullState, now)
     } else {
       useSession.setState({
         players: resetPlayers,
@@ -109,78 +108,75 @@ const BlobJump = () => {
           roundFinished: {},
           totalScores: {},
         },
-        currentPhase: 'blobjump_countdown',
+        currentPhase: 'catchblob_countdown',
         questionStartedAt: now,
       })
     }
     setReplaying(false)
   }, [replaying])
 
-  if (bj.currentPhase === 'blobjump_countdown') {
+  if (cb.currentPhase === 'catchblob_countdown') {
     return (
       <CountdownOverlay
-        questionStartedAt={bj.questionStartedAt}
+        questionStartedAt={cb.questionStartedAt}
         onComplete={() => {}}
-        players={bj.players}
-        localPlayerId={bj.localPlayerId}
-        gameName="Blob Jump"
-        gameEmoji="🦘"
+        players={cb.players}
+        localPlayerId={cb.localPlayerId}
+        gameName="Catch The Blob"
+        gameEmoji="🧺"
       />
     )
   }
 
-  if (bj.currentPhase === 'blobjump_playing') {
+  if (cb.currentPhase === 'catchblob_playing') {
     return (
       <Suspense fallback={<Loading />}>
-        <BlobJumpPlaying
-          seed={bj.currentSeed}
-          blobColor={bj.blobColor}
-          isExpired={bj.isExpired}
-          scoreSubmitted={bj.scoreSubmitted}
-          onSubmitScore={bj.submitScore}
-          onUpdateScore={bj.updateScorePeriodic}
-          players={bj.players}
-          localPlayerId={bj.localPlayerId}
-          isOnline={bj.isOnline}
-          isHost={bj.isHost}
-          onGoToClassifica={bj.goToClassifica}
+        <CatchBlobPlaying
+          seed={cb.currentSeed}
+          blobColor={cb.blobColor}
+          isExpired={cb.isExpired}
+          scoreSubmitted={cb.scoreSubmitted}
+          onSubmitScore={cb.submitScore}
+          onUpdateScore={cb.updateScorePeriodic}
+          players={cb.players}
+          localPlayerId={cb.localPlayerId}
+          isOnline={cb.isOnline}
+          isHost={cb.isHost}
+          onGoToClassifica={cb.goToClassifica}
         />
       </Suspense>
     )
   }
 
-  if (bj.currentPhase === 'blobjump_results') {
+  if (cb.currentPhase === 'catchblob_results') {
     return (
       <Suspense fallback={<Loading />}>
-        <BlobJumpResults
-          players={bj.players}
-          localPlayerId={bj.localPlayerId}
-          isHost={bj.isHost}
-          roundScores={bj.roundScores}
-          currentRoundIdx={bj.currentRoundIdx}
-          totalRounds={bj.totalRounds}
-          advancing={bj.advancing}
-          onAdvance={bj.hostAdvance}
+        <CatchBlobResults
+          players={cb.players}
+          localPlayerId={cb.localPlayerId}
+          isHost={cb.isHost}
+          roundScores={cb.roundScores}
+          currentRoundIdx={cb.currentRoundIdx}
+          totalRounds={cb.totalRounds}
+          advancing={cb.advancing}
+          onAdvance={cb.hostAdvance}
         />
       </Suspense>
     )
   }
 
-  if (bj.currentPhase === 'blobjump_final') {
-    // L'ex BlobJumpFinal è fuso in BlobJumpResults via isFinal=true.
-    // Stessa visualizzazione (height bars + leaderboard) ma bottoni cambiano in
-    // "Rigioca / Cambia gioco" + "Classifica globale".
+  if (cb.currentPhase === 'catchblob_final') {
     return (
       <>
         <Suspense fallback={<Loading />}>
-          <BlobJumpResults
-            players={bj.players}
-            localPlayerId={bj.localPlayerId}
-            isHost={bj.isHost || !bj.isOnline}
-            roundScores={bj.totalScores}
-            totalScores={bj.totalScores}
-            currentRoundIdx={bj.currentRoundIdx}
-            totalRounds={bj.totalRounds}
+          <CatchBlobResults
+            players={cb.players}
+            localPlayerId={cb.localPlayerId}
+            isHost={cb.isHost || !cb.isOnline}
+            roundScores={cb.totalScores}
+            totalScores={cb.totalScores}
+            currentRoundIdx={cb.currentRoundIdx}
+            totalRounds={cb.totalRounds}
             advancing={replaying}
             isFinal
             onReplay={handleReplay}
@@ -188,7 +184,7 @@ const BlobJump = () => {
             onShowLeaderboard={() => setLbOpen(true)}
           />
         </Suspense>
-        <BlobJumpLeaderboard open={lbOpen} onClose={() => setLbOpen(false)} />
+        <CatchBlobLeaderboard open={lbOpen} onClose={() => setLbOpen(false)} />
       </>
     )
   }
@@ -196,4 +192,4 @@ const BlobJump = () => {
   return <Loading />
 }
 
-export default BlobJump
+export default CatchBlob

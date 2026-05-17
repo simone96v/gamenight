@@ -11,6 +11,7 @@ import { useSession } from '../stores/useSession'
 import { useSettings } from '../stores/useSettings'
 import { addPlayerToRoom, pushRoom, closeRoom } from '../lib/room'
 import { AVATAR_COLORS } from '../utils/colors'
+import { validatePlayerName } from '../utils/nameValidation'
 import MiniBlob, { useMiniExpr } from '../components/MiniBlob'
 
 const containerVariants = {
@@ -35,6 +36,7 @@ const LobbyScreen = () => {
   const roomCode = useSession((s) => s.roomCode)
   const players = useSession((s) => s.players)
   const localPlayerId = useSession((s) => s.localPlayerId)
+  const partyName = useSession((s) => s.gameState?.partyName)
   const removePlayer = useSession((s) => s.removePlayer)
   const setOnlineMode = useSession((s) => s.setOnlineMode)
   const resetSession = useSession((s) => s.resetSession)
@@ -50,9 +52,12 @@ const LobbyScreen = () => {
 
   const [adding, setAdding] = useState(false)
 
+  const nameStatus = validatePlayerName(name)
+  const showNameWarning = !nameStatus.empty && !!nameStatus.reason
+
   const handleAdd = async () => {
+    if (!nameStatus.valid || players.length >= 8 || adding || !selectedColor) return
     const trimmed = name.trim()
-    if (!trimmed || players.length >= 8 || adding || !selectedColor) return
     setAdding(true)
     const playerId =
       crypto.randomUUID?.() ??
@@ -134,7 +139,7 @@ const LobbyScreen = () => {
           animate={{ opacity: 1, y: 0 }}
           style={{ textAlign: 'center', flexShrink: 0 }}
         >
-          <GradientTitle as="h1" size="lg">Party in corso</GradientTitle>
+          <GradientTitle as="h1" size="lg">{partyName || 'Party in corso'}</GradientTitle>
           <p style={{
             margin: '6px 0 0',
             color: 'var(--muted)',
@@ -237,19 +242,28 @@ const LobbyScreen = () => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Es. Marco"
-                style={inputStyle}
+                style={{
+                  ...inputStyle,
+                  borderColor: showNameWarning ? 'var(--danger)' : 'var(--border)',
+                }}
                 maxLength={12}
                 autoFocus
+                aria-invalid={showNameWarning}
               />
               <Button
                 type="submit"
                 variant="primary"
-                disabled={!name.trim() || adding || !selectedColor}
+                disabled={!nameStatus.valid || adding || !selectedColor}
                 style={{ flexShrink: 0, padding: '0 16px', boxShadow: 'none', height: 'clamp(44px, 6dvh, 56px)' }}
               >
                 {adding ? '...' : 'Entra'}
               </Button>
             </form>
+            {showNameWarning && (
+              <p style={{ margin: '6px 0 0', color: 'var(--danger)', fontSize: 'clamp(11px, 1.4dvh, 13px)', fontWeight: 700, lineHeight: 1.3 }} role="alert">
+                ⚠ {nameStatus.reason}
+              </p>
+            )}
           </motion.div>
         )}
 

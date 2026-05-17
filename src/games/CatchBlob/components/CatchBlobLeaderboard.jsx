@@ -1,6 +1,4 @@
-// BlobJumpLeaderboard — overlay fullscreen della classifica globale.
-// Mostra top 20 + posizione del device locale (anche se fuori dalla top).
-// Highlight della riga del giocatore corrente. Refresh manuale + automatico on mount.
+// CatchBlobLeaderboard — overlay fullscreen della classifica globale Catch The Blob.
 
 import { useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -10,17 +8,12 @@ import GradientTitle from '../../../components/ui/GradientTitle'
 import MiniBlob, { useMiniExpr } from '../../../components/MiniBlob'
 import { accentBtnStyle } from '../../../theme/gameColors'
 import { usePlayerAccent } from '../../../hooks/usePlayerAccent'
-import { useBlobJumpLeaderboard } from '../useBlobJumpLeaderboard'
+import { useCatchBlobLeaderboard } from '../useCatchBlobLeaderboard'
 
-// Variante "leggibile" dell'accent: mescola col text-color del tema così il
-// risultato è sempre contrastato (più scuro in light, più chiaro in dark)
-// pur mantenendo l'hue del colore giocatore.
 const accentText = (accent) => `color-mix(in srgb, ${accent} 55%, var(--text))`
 
 const SPRING = { type: 'spring', stiffness: 320, damping: 26 }
 
-// Medaglie podio: gold/silver/bronze. Silver scuro (Zinc 500) per garantire
-// contrasto ≥4.5:1 anche su surface bianca (era #A1A1AA, contrasto borderline).
 const MEDAL = { 1: '#F59E0B', 2: '#71717A', 3: '#B45309' }
 
 const Row = ({ rank, name, score, color, isMe, accent, expr }) => {
@@ -50,7 +43,7 @@ const Row = ({ rank, name, score, color, isMe, accent, expr }) => {
         {rank ? `${rank}` : '—'}
       </span>
       <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <MiniBlob color={color || '#9CA3AF'} expr={isMe ? expr : 'normal'} size={28} id={`lb-${rank}-${name}`} />
+        <MiniBlob color={color || '#9CA3AF'} expr={isMe ? expr : 'normal'} size={28} id={`cb-lb-${rank}-${name}`} />
       </div>
       <span style={{
         fontWeight: 700,
@@ -69,16 +62,16 @@ const Row = ({ rank, name, score, color, isMe, accent, expr }) => {
         color: 'var(--text)',
         fontVariantNumeric: 'tabular-nums',
       }}>
-        {score}<span style={{ fontSize: '0.65em', color: 'var(--muted)', marginLeft: 3 }}>m</span>
+        {score}<span style={{ fontSize: '0.65em', color: 'var(--muted)', marginLeft: 3 }}>pt</span>
       </span>
     </div>
   )
 }
 
-const BlobJumpLeaderboard = ({ open, onClose }) => {
+const CatchBlobLeaderboard = ({ open, onClose }) => {
   const C = usePlayerAccent()
   const expr = useMiniExpr()
-  const { top, me, deviceId, loading, refresh } = useBlobJumpLeaderboard({ enabled: open })
+  const { top, me, deviceId, loading, refresh } = useCatchBlobLeaderboard({ enabled: open })
 
   const inTop = useMemo(
     () => top.some((row) => row.device_id === deviceId),
@@ -89,7 +82,7 @@ const BlobJumpLeaderboard = ({ open, onClose }) => {
     <AnimatePresence>
       {open && (
         <motion.div
-          key="lb-overlay"
+          key="cb-lb-overlay"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -117,7 +110,6 @@ const BlobJumpLeaderboard = ({ open, onClose }) => {
               minHeight: 0,
             }}
           >
-            {/* Header */}
             <div style={{
               display: 'flex',
               alignItems: 'center',
@@ -134,13 +126,12 @@ const BlobJumpLeaderboard = ({ open, onClose }) => {
                   fontSize: 'clamp(11px, 1.4dvh, 13px)',
                   fontWeight: 600,
                 }}>
-                  Blob Jump · best score per giocatore
+                  Catch The Blob · best score per giocatore
                 </p>
               </div>
               <IconButton ariaLabel="Chiudi classifica" onClick={onClose} size="md">✕</IconButton>
             </div>
 
-            {/* Tua posizione — pill tintato col colore giocatore (testo dark/light auto) */}
             <motion.div
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
@@ -198,12 +189,11 @@ const BlobJumpLeaderboard = ({ open, onClose }) => {
                   color: accentText(C.accent),
                 }}>
                   {me.score ?? 0}
-                  <span style={{ fontSize: '0.55em', marginLeft: 4, opacity: 0.7 }}>m</span>
+                  <span style={{ fontSize: '0.55em', marginLeft: 4, opacity: 0.7 }}>pt</span>
                 </div>
               </div>
             </motion.div>
 
-            {/* Top */}
             <div style={{
               flex: 1,
               minHeight: 0,
@@ -235,7 +225,6 @@ const BlobJumpLeaderboard = ({ open, onClose }) => {
                 ))
               )}
 
-              {/* Riga "tu fuori dalla top" se non in top */}
               {!loading && me.rank && !inTop && (
                 <>
                   <div style={{
@@ -258,7 +247,6 @@ const BlobJumpLeaderboard = ({ open, onClose }) => {
               )}
             </div>
 
-            {/* Footer */}
             <div style={{ display: 'flex', gap: 8 }}>
               <Button variant="secondary" width="full" onClick={refresh}>Aggiorna</Button>
               <Button variant="primary" width="full" onClick={onClose} style={accentBtnStyle(C.accent)}>
@@ -272,4 +260,4 @@ const BlobJumpLeaderboard = ({ open, onClose }) => {
   )
 }
 
-export default BlobJumpLeaderboard
+export default CatchBlobLeaderboard

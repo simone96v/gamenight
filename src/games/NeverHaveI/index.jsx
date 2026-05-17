@@ -13,9 +13,12 @@ import { rpcUpdateGameState } from '../../lib/room'
 import CARDS from '../../data/questions/never-have-i.json'
 import { haptic } from '../../utils/haptic'
 
+// IMPORTANTE: nhi_used NON viene resettato così, su Rigioca, le carte già
+// pescate in questa sessione non rientrano nel pool — l'handleDraw filtra
+// `available = pool.filter(c => !used.includes(c))` e fa auto-reset quando
+// si esaurisce. Senza questo, dopo Rigioca uscivano subito le stesse carte.
 const REPLAY_PATCH = {
   nhi_card: null,
-  nhi_used: [],
   nhi_count: 0,
   nhi_phase: 'idle',
 }

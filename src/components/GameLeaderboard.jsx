@@ -1,5 +1,5 @@
 // GameLeaderboard — schermata canonica di fine partita per TUTTI i giochi.
-// Sostituisce: FinalPhase, MappaFinal, SentenzaFinal, EmojiQuizFinalPhase,
+// Sostituisce: FinalPhase, MappaFinal, EmojiQuizFinalPhase,
 //              BlobJumpFinal, ScrambleFinal, SoloResultScreen.
 //
 // Struttura:

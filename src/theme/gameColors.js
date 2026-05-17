@@ -20,15 +20,6 @@ const GAME_COLORS = {
     badgeBorder: 'rgba(124, 58, 237, 0.18)',
     hoverGlow: '0 8px 20px rgba(124, 58, 237, 0.4)',
   },
-  sentenza: {
-    accent: '#6366F1',
-    accentLight: '#818CF8',
-    gradient: 'linear-gradient(135deg, #6366F1 0%, #818CF8 100%)',
-    shadow: 'rgba(99, 102, 241, 0.35)',
-    shadowLight: 'rgba(99, 102, 241, 0.18)',
-    badgeBorder: 'rgba(99, 102, 241, 0.18)',
-    hoverGlow: '0 8px 20px rgba(99, 102, 241, 0.4)',
-  },
   neverHaveI: {
     accent: '#F97316',
     accentLight: '#FB923C',
@@ -55,6 +46,15 @@ const GAME_COLORS = {
     shadowLight: 'rgba(20, 184, 166, 0.18)',
     badgeBorder: 'rgba(20, 184, 166, 0.18)',
     hoverGlow: '0 8px 20px rgba(20, 184, 166, 0.4)',
+  },
+  catchblob: {
+    accent: '#D97706',
+    accentLight: '#FCD34D',
+    gradient: 'linear-gradient(135deg, #D97706 0%, #FCD34D 100%)',
+    shadow: 'rgba(217, 119, 6, 0.35)',
+    shadowLight: 'rgba(217, 119, 6, 0.18)',
+    badgeBorder: 'rgba(217, 119, 6, 0.18)',
+    hoverGlow: '0 8px 20px rgba(217, 119, 6, 0.4)',
   },
 }
 

@@ -8,7 +8,6 @@ import { ConnectionContext } from './contexts/connection'
 import ErrorBoundary from './components/ErrorBoundary'
 import HomeScreen from './screens/HomeScreen'
 import InstallPrompt from './components/InstallPrompt'
-import FloatingBlobs from './components/FloatingBlobs'
 
 const ModeScreen = lazy(() => import('./screens/ModeScreen'))
 const CreatePartyScreen = lazy(() => import('./screens/CreatePartyScreen'))
@@ -21,7 +20,6 @@ const GameHubScreen = lazy(() => import('./screens/GameHubScreen'))
 const GameScreen = lazy(() => import('./screens/GameScreen'))
 const TriviaLobbyScreen = lazy(() => import('./screens/TriviaLobbyScreen'))
 const MappaLobbyScreen = lazy(() => import('./screens/MappaLobbyScreen'))
-const SentenzaLobbyScreen = lazy(() => import('./screens/SentenzaLobbyScreen'))
 const BlobJumpLobbyScreen = lazy(() => import('./screens/BlobJumpLobbyScreen'))
 const EmojiQuizLobbyScreen = lazy(() => import('./screens/EmojiQuizLobbyScreen'))
 const ScrambleLobbyScreen = lazy(() => import('./screens/ScrambleLobbyScreen'))
@@ -30,8 +28,9 @@ const ScoreboardScreen = lazy(() => import('./screens/ScoreboardScreen'))
 const SoloSetupScreen = lazy(() => import('./screens/SoloSetupScreen'))
 const SoloGamesScreen = lazy(() => import('./screens/SoloGamesScreen'))
 const MappaTest = lazy(() => import('./games/Mappa/MappaTest'))
-const SentenzaTest = lazy(() => import('./games/Sentenza/SentenzaTest'))
 const BlobJumpTest = lazy(() => import('./games/BlobJump/BlobJumpTest'))
+const BlobDashTest = lazy(() => import('./games/BlobDash/BlobDashTest'))
+const CatchBlobTest = lazy(() => import('./games/CatchBlob/CatchBlobTest'))
 
 function App() {
   useHostCleanup()
@@ -42,9 +41,6 @@ function App() {
     <ErrorBoundary>
       <ConnectionContext.Provider value={status}>
         <InstallPrompt />
-        {/* FloatingBlobs è OUTSIDE <Routes> → istanza unica, sopravvive ai cambi route
-            mantenendo posizioni e velocità del loop fisico. */}
-        <FloatingBlobs />
         <Suspense>
           <Routes>
             <Route path="/" element={<HomeScreen />} />
@@ -60,7 +56,6 @@ function App() {
             <Route path="/hub" element={<GameHubScreen />} />
             <Route path="/trivia-lobby" element={<TriviaLobbyScreen />} />
             <Route path="/mappa-lobby" element={<MappaLobbyScreen />} />
-            <Route path="/sentenza-lobby" element={<SentenzaLobbyScreen />} />
             <Route path="/blobjump-lobby" element={<BlobJumpLobbyScreen />} />
             <Route path="/emojiquiz-lobby" element={<EmojiQuizLobbyScreen />} />
             <Route path="/scramble-lobby" element={<ScrambleLobbyScreen />} />
@@ -68,8 +63,9 @@ function App() {
             <Route path="/round-end" element={<RoundEndScreen />} />
             <Route path="/scoreboard" element={<ScoreboardScreen />} />
             <Route path="/test/mappa" element={<MappaTest />} />
-            <Route path="/test/sentenza" element={<SentenzaTest />} />
             <Route path="/test/blobjump" element={<BlobJumpTest />} />
+            <Route path="/test/blobdash" element={<BlobDashTest />} />
+            <Route path="/test/catchblob" element={<CatchBlobTest />} />
           </Routes>
         </Suspense>
       </ConnectionContext.Provider>

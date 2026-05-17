@@ -10,6 +10,7 @@ import GradientTitle from '../components/ui/GradientTitle'
 import ColorPicker from '../components/ColorPicker'
 import { addPlayerToRoom, getRoom } from '../lib/room'
 import { useSession } from '../stores/useSession'
+import { validatePlayerName } from '../utils/nameValidation'
 
 const CODE_ALPHABET = 'BCDFGHJKLMNPRSTVWX'
 
@@ -20,6 +21,7 @@ const JoinScreen = () => {
   const [name, setName] = useState('')
   const [selectedColor, setSelectedColor] = useState(null)
   const [takenColors, setTakenColors] = useState([])
+  const [partyNamePreview, setPartyNamePreview] = useState('')
   const [roomChecked, setRoomChecked] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const setOnlineMode = useSession((s) => s.setOnlineMode)
@@ -32,6 +34,7 @@ const JoinScreen = () => {
     if (filtered.length < 4) {
       setRoomChecked(false)
       setTakenColors([])
+      setPartyNamePreview('')
     }
   }
 
@@ -44,10 +47,12 @@ const JoinScreen = () => {
       if (error || !room) {
         setRoomChecked(true)
         setTakenColors([])
+        setPartyNamePreview('')
         return
       }
       const players = Array.isArray(room.state?.players) ? room.state.players : []
       setTakenColors(players.map((p) => p.color))
+      setPartyNamePreview(room.state?.partyName || '')
       if (selectedColor && players.some((p) => p.color === selectedColor)) {
         setSelectedColor(null)
       }
@@ -57,8 +62,10 @@ const JoinScreen = () => {
     return () => { cancelled = true }
   }, [code])
 
-  const canSubmit = code.length === 4 && name.trim().length > 0 && selectedColor && !submitting
+  const nameStatus = validatePlayerName(name)
+  const canSubmit = code.length === 4 && nameStatus.valid && selectedColor && !submitting
   const showForm = code.length === 4
+  const showNameWarning = !nameStatus.empty && !!nameStatus.reason
 
   const handleSubmit = async (e) => {
     e?.preventDefault()
@@ -140,6 +147,15 @@ const JoinScreen = () => {
           />
         </div>
 
+        {/* Color picker — sopra gli input testuali per coerenza con le altre schermate */}
+        {showForm && (
+          <ColorPicker
+            takenColors={takenColors}
+            selected={selectedColor}
+            onSelect={setSelectedColor}
+          />
+        )}
+
         {/* Code input */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -161,6 +177,24 @@ const JoinScreen = () => {
             }}
             maxLength={4}
           />
+          {showForm && roomChecked && partyNamePreview && (
+            <motion.p
+              key={partyNamePreview}
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+              style={{
+                margin: '8px 0 0',
+                textAlign: 'center',
+                color: 'var(--text)',
+                fontFamily: "'Baloo 2', cursive",
+                fontWeight: 700,
+                fontSize: 'clamp(14px, 1.8dvh, 17px)',
+              }}
+            >
+              🎉 {partyNamePreview}
+            </motion.p>
+          )}
         </motion.div>
 
         {/* Name input */}
@@ -176,19 +210,17 @@ const JoinScreen = () => {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Es. Marco"
-              style={inputStyle}
+              style={{
+                ...inputStyle,
+                borderColor: showNameWarning ? 'var(--danger)' : 'var(--border)',
+              }}
               maxLength={12}
+              aria-invalid={showNameWarning}
             />
+            {showNameWarning && (
+              <p style={nameWarningStyle} role="alert">⚠ {nameStatus.reason}</p>
+            )}
           </motion.div>
-        )}
-
-        {/* Color picker */}
-        {showForm && (
-          <ColorPicker
-            takenColors={takenColors}
-            selected={selectedColor}
-            onSelect={setSelectedColor}
-          />
         )}
 
         {/* Entra button */}
@@ -230,6 +262,14 @@ const labelStyle = {
   letterSpacing: '0.06em',
   textTransform: 'uppercase',
   marginBottom: 'clamp(4px, 0.8dvh, 8px)',
+}
+
+const nameWarningStyle = {
+  margin: 'clamp(6px, 1dvh, 10px) 0 0',
+  color: 'var(--danger)',
+  fontSize: 'clamp(11px, 1.4dvh, 13px)',
+  fontWeight: 700,
+  lineHeight: 1.3,
 }
 
 const blobWrapStyle = {
