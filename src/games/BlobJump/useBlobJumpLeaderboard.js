@@ -10,42 +10,27 @@ const TABLE = 'blobjump_scores'
 const TOP_LIMIT = 20
 
 /**
- * Upsert del best score per device. Aggiorna sempre nome+colore;
- * sovrascrive lo score solo se il nuovo è maggiore.
- * Ritorna { promoted: boolean } — true se questo run ha migliorato il record.
+ * Submit del best score: scrittura SOLO via RPC server-side `submit_score`.
+ * Le policy RLS bloccano upsert/insert/update diretti da anon. La RPC fa
+ * sanity check (range, rate limit 2s, plausibilità ≤ prev*3+50) e fa
+ * upsert con GREATEST. Ritorna { promoted, newBest, previousScore }.
  */
 export async function submitBlobJumpScore({ score, playerName, color, source = 'solo' }) {
   if (!Number.isFinite(score) || score < 0) return { error: 'invalid_score' }
-  const deviceId = getDeviceId()
-  const cleanName = (playerName || 'Anonimo').toString().slice(0, 24).trim() || 'Anonimo'
-
-  // Pre-check del record corrente per capire se è una promotion (UX).
-  let previousScore = -1
-  try {
-    const { data: existing } = await supabase
-      .from(TABLE)
-      .select('score')
-      .eq('device_id', deviceId)
-      .maybeSingle()
-    if (existing) previousScore = existing.score ?? -1
-  } catch {/* ignora, l'upsert seguente è autoritativo */}
-
-  const newBest = Math.max(previousScore, score)
-  const promoted = score > previousScore
-
-  const { error } = await supabase
-    .from(TABLE)
-    .upsert({
-      device_id: deviceId,
-      player_name: cleanName,
-      score: newBest,
-      color: color ?? null,
-      source,
-      updated_at: new Date().toISOString(),
-    }, { onConflict: 'device_id' })
-
+  const { data, error } = await supabase.rpc('submit_score', {
+    p_game: 'blobjump',
+    p_device_id: getDeviceId(),
+    p_player_name: (playerName || 'Anonimo').toString().slice(0, 24).trim() || 'Anonimo',
+    p_score: Math.floor(score),
+    p_color: color ?? null,
+    p_source: source,
+  })
   if (error) return { error: error.message }
-  return { promoted, newBest, previousScore }
+  return {
+    promoted: !!data?.promoted,
+    newBest: data?.newBest ?? score,
+    previousScore: data?.previousScore ?? -1,
+  }
 }
 
 /** Top N giocatori ordinati per score desc, tie-break per updated_at asc (chi l'ha fatto prima). */

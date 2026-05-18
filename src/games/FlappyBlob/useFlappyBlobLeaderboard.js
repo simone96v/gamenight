@@ -9,37 +9,23 @@ import { getDeviceId } from '../../utils/device'
 const TABLE = 'flappyblob_scores'
 const TOP_LIMIT = 20
 
+// Vedi nota in useSnakeLeaderboard: scrittura solo via RPC `submit_score`.
 export async function submitFlappyBlobScore({ score, playerName, color, source = 'solo' }) {
   if (!Number.isFinite(score) || score < 0) return { error: 'invalid_score' }
-  const deviceId = getDeviceId()
-  const cleanName = (playerName || 'Anonimo').toString().slice(0, 24).trim() || 'Anonimo'
-
-  let previousScore = -1
-  try {
-    const { data: existing } = await supabase
-      .from(TABLE)
-      .select('score')
-      .eq('device_id', deviceId)
-      .maybeSingle()
-    if (existing) previousScore = existing.score ?? -1
-  } catch {/* upsert below is authoritative */}
-
-  const newBest = Math.max(previousScore, score)
-  const promoted = score > previousScore
-
-  const { error } = await supabase
-    .from(TABLE)
-    .upsert({
-      device_id: deviceId,
-      player_name: cleanName,
-      score: newBest,
-      color: color ?? null,
-      source,
-      updated_at: new Date().toISOString(),
-    }, { onConflict: 'device_id' })
-
+  const { data, error } = await supabase.rpc('submit_score', {
+    p_game: 'flappyblob',
+    p_device_id: getDeviceId(),
+    p_player_name: (playerName || 'Anonimo').toString().slice(0, 24).trim() || 'Anonimo',
+    p_score: Math.floor(score),
+    p_color: color ?? null,
+    p_source: source,
+  })
   if (error) return { error: error.message }
-  return { promoted, newBest, previousScore }
+  return {
+    promoted: !!data?.promoted,
+    newBest: data?.newBest ?? score,
+    previousScore: data?.previousScore ?? -1,
+  }
 }
 
 export async function fetchTopFlappyBlobScores(limit = TOP_LIMIT) {
