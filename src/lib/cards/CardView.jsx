@@ -1,16 +1,27 @@
 // CardView — render visuale di una carta italiana (face-up o face-down).
-// Stile: carta avorio bordata col colore del seme, etichetta corta in alto-sinistra,
-// grande simbolo del seme al centro. Coerente col brand BlobParty (Baloo 2, ombre soft).
+// Usa uno sprite sheet `/cards/italian-deck.png` (4 righe × 10 colonne) per
+// disegnare le 40 carte Piacentine. CSS background-position seleziona la cella.
+//
+// Mappatura nello sprite:
+//   - righe: coppe(0), denari(1), bastoni(2), spade(3)
+//   - colonne: valore 1-10 → col 0-9 (asso, 2..7, fante, cavallo, re)
+//
+// Aspect ratio source: ~0.72 (275×384 per cella su 2752×1536).
+// SIZE_PRESETS allineati a 0.72 per evitare distorsioni dello sprite.
 
 import { motion } from 'framer-motion'
-import { SUIT_SYMBOLS, SUIT_COLORS, VALUE_LABELS, SHORT_LABELS } from './italianDeck'
+
+const SPRITE_URL = '/cards/italian-deck.png'
+const COLS = 10
+const ROWS = 4
+const SUIT_ROW = { coppe: 0, denari: 1, bastoni: 2, spade: 3 }
 
 const SIZE_PRESETS = {
-  xs: { w: 44, h: 64 },
-  sm: { w: 60, h: 86 },
-  md: { w: 76, h: 108 },
-  lg: { w: 96, h: 138 },
-  xl: { w: 120, h: 172 },
+  xs: { w: 46, h: 64 },
+  sm: { w: 62, h: 86 },
+  md: { w: 78, h: 108 },
+  lg: { w: 100, h: 138 },
+  xl: { w: 124, h: 172 },
 }
 
 const CardView = ({
@@ -32,9 +43,8 @@ const CardView = ({
     height: dims.h,
     borderRadius: dims.w * 0.11,
     boxShadow: highlight
-      ? `0 0 0 3px var(--text), 0 6px 16px rgba(0,0,0,0.20)`
+      ? '0 0 0 3px var(--text), 0 6px 16px rgba(0,0,0,0.20)'
       : '0 2px 10px rgba(0,0,0,0.15)',
-    display: 'flex',
     cursor: isInteractive ? 'pointer' : 'default',
     userSelect: 'none',
     WebkitUserSelect: 'none',
@@ -45,7 +55,7 @@ const CardView = ({
     ...style,
   }
 
-  // Carta coperta — back design tipo "blob" giallo su sfondo scuro.
+  // Carta coperta: back design "blob giallo su nero".
   if (faceDown) {
     return (
       <motion.div
@@ -56,13 +66,13 @@ const CardView = ({
         style={{
           ...base,
           background: 'linear-gradient(135deg, #1F2937 0%, #374151 60%, #1F2937 100%)',
-          border: `2px solid #4B5563`,
+          border: '2px solid #4B5563',
+          display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           position: 'relative',
         }}
       >
-        {/* pattern blob giallo al centro */}
         <div
           style={{
             width: dims.w * 0.5,
@@ -78,10 +88,12 @@ const CardView = ({
 
   if (!card) return null
 
-  const color = SUIT_COLORS[card.suit]
-  const symbol = SUIT_SYMBOLS[card.suit]
-  const shortLabel = SHORT_LABELS[card.value]
-  const fullLabel = VALUE_LABELS[card.value]
+  const row = SUIT_ROW[card.suit] ?? 0
+  const col = Math.max(0, Math.min(COLS - 1, (card.value || 1) - 1))
+  // CSS sprite percentage formula: con background-size {COLS*100}% {ROWS*100}%,
+  // la position si calcola come col/(COLS-1)*100% e row/(ROWS-1)*100%.
+  const bgPosX = `${(col / (COLS - 1)) * 100}%`
+  const bgPosY = `${(row / (ROWS - 1)) * 100}%`
 
   return (
     <motion.div
@@ -92,42 +104,14 @@ const CardView = ({
       style={{
         ...base,
         background: '#FEFCE8',
-        border: `2px solid ${color}`,
-        flexDirection: 'column',
-        padding: dims.w * 0.08,
-        position: 'relative',
+        border: '1.5px solid #1F2937',
+        backgroundImage: `url(${SPRITE_URL})`,
+        backgroundSize: `${COLS * 100}% ${ROWS * 100}%`,
+        backgroundPosition: `${bgPosX} ${bgPosY}`,
+        backgroundRepeat: 'no-repeat',
       }}
-      aria-label={`${fullLabel} di ${card.suit}`}
-    >
-      {/* angolo top-left: valore + suit */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: 1 }}>
-        <span
-          style={{
-            fontSize: dims.w * 0.24,
-            fontWeight: 900,
-            color,
-            fontFamily: "'Baloo 2', cursive",
-            letterSpacing: '-0.04em',
-          }}
-        >
-          {shortLabel}
-        </span>
-        <span style={{ fontSize: dims.w * 0.18, marginTop: -2 }}>{symbol}</span>
-      </div>
-
-      {/* centro: grande simbolo */}
-      <div
-        style={{
-          flex: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: dims.w * 0.55,
-        }}
-      >
-        {symbol}
-      </div>
-    </motion.div>
+      aria-label={`${card.value} di ${card.suit}`}
+    />
   )
 }
 
