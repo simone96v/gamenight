@@ -8,10 +8,8 @@ const AppHeader = ({ actions = null, leading = null }) => {
   const isHost = useSession((s) => s.isHost)
   const roomCode = useSession((s) => s.roomCode)
   const resetSession = useSession((s) => s.resetSession)
-  const players = useSession((s) => s.players)
-  const localPlayerId = useSession((s) => s.localPlayerId)
-  const localPlayer = players.find((p) => p.id === localPlayerId)
-  const blobColor = localPlayer?.color || '#8B5CF6'
+  // Mascotte ufficiale Blob Party — sempre giallo, indipendente dal colore del giocatore.
+  const MASCOT_COLOR = '#F59E0B'
   const expr = useMiniExpr()
   const accent = 'var(--text)'
 
@@ -47,7 +45,7 @@ const AppHeader = ({ actions = null, leading = null }) => {
         }}
         aria-label="Blob Party"
       >
-        <MiniBlob color={blobColor} expr={expr} size={26} id="app-header-blob" />
+        <MiniBlob color={MASCOT_COLOR} expr={expr} size={26} id="app-header-blob" />
         <span
           style={{
             fontFamily: "'Baloo 2', cursive",
