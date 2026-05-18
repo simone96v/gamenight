@@ -46,6 +46,7 @@ const GameCard = ({
 }) => {
   const imageSrc = pickImage(game.image, theme)
   const isVote = mode === 'vote'
+  const isLocked = !!game.locked
 
   return (
     <motion.button
@@ -53,25 +54,30 @@ const GameCard = ({
       initial={{ opacity: 0, y: 18, scale: 0.94 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ delay: index * 0.05, ...SPRING }}
-      whileHover={{
+      whileHover={!isLocked ? {
         scale: 1.025,
         y: -4,
         boxShadow: selected
           ? `0 0 0 4px rgba(0, 0, 0, 0.22), 0 24px 48px ${game.shadow}`
           : `0 16px 36px rgba(31, 41, 55, 0.14), 0 0 0 1px var(--border) inset`,
-      }}
-      whileTap={{
+      } : {}}
+      whileTap={!isLocked ? {
         scale: 0.97,
         y: 0,
-      }}
-      onClick={onClick}
+      } : {}}
+      onClick={isLocked ? undefined : onClick}
       aria-pressed={selected}
+      aria-disabled={isLocked}
+      disabled={isLocked}
       style={{
         ...S.card,
         border: selected ? '2.5px solid var(--accent)' : '1px solid var(--border)',
         boxShadow: selected
           ? `0 0 0 4px rgba(0, 0, 0, 0.20), 0 18px 36px ${game.shadow}`
           : `0 10px 22px rgba(31, 41, 55, 0.08), 0 0 0 1px var(--border) inset`,
+        opacity: isLocked ? 0.62 : 1,
+        cursor: isLocked ? 'not-allowed' : 'pointer',
+        filter: isLocked ? 'grayscale(0.4)' : 'none',
       }}
     >
       {/* Hero illustrazione */}
@@ -105,10 +111,20 @@ const GameCard = ({
           </>
         )}
 
-        {/* Difficulty badge — top-left */}
-        <div style={S.diffBadge}>
-          <DifficultyDots level={game.difficulty ?? 1} />
-        </div>
+        {/* Difficulty badge — top-left (nascosto sui locked) */}
+        {!isLocked && (
+          <div style={S.diffBadge}>
+            <DifficultyDots level={game.difficulty ?? 1} />
+          </div>
+        )}
+
+        {/* Locked badge — bottom-left sui placeholder */}
+        {isLocked && (
+          <div style={S.lockedBadge}>
+            <span style={{ fontSize: 11 }}>🔒</span>
+            <span>Prossimamente</span>
+          </div>
+        )}
 
         {/* Vote count badge — top-right (solo modalità voto) */}
         {isVote && voteCount > 0 && (
@@ -236,6 +252,23 @@ const S = {
     backdropFilter: 'blur(8px)',
     display: 'inline-flex',
     alignItems: 'center',
+    zIndex: 2,
+  },
+  lockedBadge: {
+    position: 'absolute',
+    bottom: 8,
+    left: 8,
+    background: 'rgba(0,0,0,0.55)',
+    color: '#fff',
+    padding: '4px 10px',
+    borderRadius: 999,
+    backdropFilter: 'blur(8px)',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 5,
+    fontSize: 11,
+    fontWeight: 800,
+    letterSpacing: '0.02em',
     zIndex: 2,
   },
   diffDots: {

@@ -5,6 +5,7 @@ import { useSession } from '../../stores/useSession'
 import { pushRoom } from '../../lib/room'
 import Spinner from '../../components/ui/Spinner'
 import GameLeaderboard from '../../components/GameLeaderboard'
+import SoloEndScreen from '../../components/SoloEndScreen'
 import { loadMappaDeck } from '../../lib/mappaDeck'
 
 const retryImport = (fn) => fn().catch(() => new Promise((r) => setTimeout(r, 1500)).then(fn))
@@ -40,6 +41,8 @@ const Mappa = () => {
       activeGame: null,
       selectedCategory: s.gameState?.selectedCategory ?? null,
       categoryVotes: s.gameState?.categoryVotes ?? {},
+      selectedGameCategory: s.gameState?.selectedGameCategory ?? null,
+      gameCategoryVotes: {},
       gameVotes: {},
       selectedGame: null,
     }
@@ -146,6 +149,28 @@ const Mappa = () => {
   }
 
   if (mappa.currentPhase === 'mappa_final') {
+    // Solo single-player → modale compatta.
+    if (!mappa.isOnline) {
+      const me = mappa.players.find((p) => p.id === mappa.localPlayerId) ?? mappa.players[0]
+      const score = me?.score ?? 0
+      return (
+        <SoloEndScreen
+          open
+          gameEmoji="🗺️"
+          gameName="Mappa"
+          player={me}
+          primaryValue={score}
+          primaryLabel="punti"
+          stats={mappa.totalQuestions > 0
+            ? [{ label: 'luoghi', value: mappa.totalQuestions }]
+            : []}
+          advancing={replaying}
+          onReplay={handleReplay}
+          onChangeGame={handleChangeGame}
+        />
+      )
+    }
+
     return (
       <GameLeaderboard
         players={mappa.players}

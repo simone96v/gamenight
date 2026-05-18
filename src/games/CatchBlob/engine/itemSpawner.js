@@ -1,50 +1,54 @@
-import { GAME_WIDTH, ITEM, ITEM_WEIGHTS, SPAWN } from './physics'
-import { AVATAR_COLORS } from '../../../utils/colors'
+import { GAME_WIDTH, ITEM, BASKET, getWaveForElapsed } from './physics'
 
-/**
- * Pick item kind from weighted distribution.
- * Bomb weight grows slightly with elapsed time for added pressure.
- */
-function pickKind(rng, elapsed) {
-  // Boost bomb up to +3% by 60s
-  const bombBoost = Math.min(0.03, elapsed * 0.0005)
-  const w = {
-    right: ITEM_WEIGHTS.right,
-    wrong: ITEM_WEIGHTS.wrong - bombBoost,
-    bomb:  ITEM_WEIGHTS.bomb + bombBoost,
-    star:  ITEM_WEIGHTS.star,
+const IN_FLIGHT_EST_SEC = 4.0
+const REACH_FACTOR = 0.6
+
+// Within the malus pool, bombs are more common than skulls (60/40).
+const BOMB_VS_SKULL = 0.6
+
+function pickKind(rng, wave) {
+  const r = rng()
+  if (r < wave.malusRate) {
+    return rng() < BOMB_VS_SKULL ? 'bomb' : 'skull'
   }
-  const total = w.right + w.wrong + w.bomb + w.star
-  const r = rng() * total
-  if (r < w.right) return 'right'
-  if (r < w.right + w.wrong) return 'wrong'
-  if (r < w.right + w.wrong + w.bomb) return 'bomb'
-  return 'star'
+  if (r < wave.malusRate + wave.starRate) return 'star'
+  return 'right'
 }
 
 /**
- * For a "wrong" blob, pick a color different from the player's.
- * Uses RNG so the choice is deterministic per spawn.
+ * Spawn one item. `state` keeps inter-spawn memory for fair positioning:
+ *   state.lastRightSpawn = { x, t } | null
+ *
+ * Guarantee: two consecutive right blobs in flight at the same time
+ * are placed so the basket can physically reach both.
  */
-function pickWrongColor(rng, playerColor) {
-  const others = AVATAR_COLORS.filter((c) => c !== playerColor)
-  return others[Math.floor(rng() * others.length)]
-}
-
-/**
- * Spawn one item. Returns an object the engine pushes into its item list.
- * Color decided client-side based on player color, but kind/x come from seeded RNG.
- */
-export function spawnItem(rng, elapsed, playerColor) {
-  const kind = pickKind(rng, elapsed)
+export function spawnItem(rng, elapsed, playerColor, state = {}) {
+  const wave = getWaveForElapsed(elapsed)
+  const kind = pickKind(rng, wave)
   const margin = ITEM.RADIUS + 6
-  const x = margin + rng() * (GAME_WIDTH - margin * 2)
-  const speedMul = Math.min(ITEM.SPEED_RAMP_CAP, 1 + elapsed * ITEM.SPEED_RAMP_PER_SEC)
-  const vy0 = ITEM.BASE_FALL_SPEED * speedMul
 
-  let color = null
-  if (kind === 'right') color = playerColor
-  else if (kind === 'wrong') color = pickWrongColor(rng, playerColor)
+  let x
+  if (kind === 'right' && state.lastRightSpawn) {
+    const dt = elapsed - state.lastRightSpawn.t
+    if (dt > 0 && dt < IN_FLIGHT_EST_SEC) {
+      const maxDx = BASKET.MOVE_SPEED * dt * REACH_FACTOR
+      const lastX = state.lastRightSpawn.x
+      const lo = Math.max(margin, lastX - maxDx)
+      const hi = Math.min(GAME_WIDTH - margin, lastX + maxDx)
+      x = lo + rng() * Math.max(0, hi - lo)
+    } else {
+      x = margin + rng() * (GAME_WIDTH - margin * 2)
+    }
+  } else {
+    x = margin + rng() * (GAME_WIDTH - margin * 2)
+  }
+
+  const vy0 = ITEM.BASE_FALL_SPEED * wave.fallSpeedMul
+  const color = kind === 'right' ? playerColor : null
+
+  if (kind === 'right') {
+    state.lastRightSpawn = { x, t: elapsed }
+  }
 
   return {
     kind,
@@ -55,16 +59,11 @@ export function spawnItem(rng, elapsed, playerColor) {
     rotSpeed: (rng() - 0.5) * 1.2,
     color,
     born: elapsed,
-    settled: false, // becomes true once caught or missed
+    settled: false,
   }
 }
 
-/**
- * Current spawn interval (seconds) — eases from START_INTERVAL → MIN_INTERVAL over RAMP_SECONDS.
- */
+/** Spawn cadence (seconds between spawns) for the current wave. */
 export function currentSpawnInterval(elapsed) {
-  const t = Math.min(1, elapsed / SPAWN.RAMP_SECONDS)
-  // Ease-out so early game has more breathing room
-  const eased = 1 - Math.pow(1 - t, 2)
-  return SPAWN.START_INTERVAL + (SPAWN.MIN_INTERVAL - SPAWN.START_INTERVAL) * eased
+  return getWaveForElapsed(elapsed).spawnInterval
 }

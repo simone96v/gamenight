@@ -1,13 +1,13 @@
-// Lobby Blob Jump — solo single player (multiplayer rimosso, endless game).
+// Lobby Flappy Blob — solo single player (multiplayer rimosso, endless game).
 
 import { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import GameLobbyLayout from '../components/GameLobbyLayout'
 import IconButton from '../components/ui/IconButton'
-import BlobJumpLeaderboard from '../games/BlobJump/components/BlobJumpLeaderboard'
+import FlappyBlobLeaderboard from '../games/FlappyBlob/components/FlappyBlobLeaderboard'
 import { useSession } from '../stores/useSession'
 
-const BlobJumpLobbyScreen = () => {
+const FlappyBlobLobbyScreen = () => {
   const navigate = useNavigate()
   const players = useSession((s) => s.players)
   const showError = useSession((s) => s.showError)
@@ -29,11 +29,11 @@ const BlobJumpLobbyScreen = () => {
           ...(s.gameState || {}),
           currentSeed: seed,
         },
-        currentPhase: 'blobjump_countdown',
+        currentPhase: 'flappyblob_countdown',
         questionStartedAt: now,
-        activeGame: 'blobjump',
+        activeGame: 'flappyblob',
       })
-      navigate('/game/blobjump', { replace: true })
+      navigate('/game/flappyblob', { replace: true })
     } catch {
       showError('generic')
       setLaunching(false)
@@ -47,8 +47,8 @@ const BlobJumpLobbyScreen = () => {
   return (
     <>
       <GameLobbyLayout
-        gameName="Blob Jump"
-        gameDescription="Salta più in alto! Endless: il tuo blob rimbalza verso il cielo."
+        gameName="Flappy Blob"
+        gameDescription="Tap per far volare il blob fra i tubi. Un colpo e sei fuori."
         players={players}
         canControl={true}
         launching={launching}
@@ -58,9 +58,9 @@ const BlobJumpLobbyScreen = () => {
           <IconButton ariaLabel="Classifica globale" onClick={() => setLbOpen(true)}>🏆</IconButton>
         }
       />
-      <BlobJumpLeaderboard open={lbOpen} onClose={() => setLbOpen(false)} />
+      <FlappyBlobLeaderboard open={lbOpen} onClose={() => setLbOpen(false)} />
     </>
   )
 }
 
-export default BlobJumpLobbyScreen
+export default FlappyBlobLobbyScreen

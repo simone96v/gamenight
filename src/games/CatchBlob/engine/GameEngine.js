@@ -1,4 +1,4 @@
-import { GAME_WIDTH, GAME_HEIGHT, BASKET, ITEM, COMBO } from './physics'
+import { GAME_WIDTH, GAME_HEIGHT, BASKET, ITEM, COMBO, getWaveForElapsed } from './physics'
 import { createRNG } from './rng'
 import { spawnItem, currentSpawnInterval } from './itemSpawner'
 import { InputManager } from './input'
@@ -18,13 +18,15 @@ function comboMultFor(hits) {
 }
 
 export class GameEngine {
-  constructor(canvas, seed, blobColor, onScoreUpdate, onDeath) {
+  constructor(canvas, seed, blobColor, onScoreUpdate, onDeath, onWaveChange) {
     this.canvas = canvas
     this.ctx = canvas.getContext('2d')
     this.seed = seed
     this.blobColor = blobColor || '#8B5CF6'
     this.onScoreUpdate = onScoreUpdate
     this.onDeath = onDeath
+    this.onWaveChange = onWaveChange
+    this.currentWaveId = 1
 
     const grad = BLOB_GRADIENTS[this.blobColor]
     this.blobGrad = grad || [this.blobColor, this.blobColor, this.blobColor]
@@ -45,6 +47,7 @@ export class GameEngine {
 
     this.elapsed = 0
     this.nextSpawnAt = 0    // schedule using elapsed-time accumulator
+    this.spawnState = { lastRightSpawn: null } // memory for fair right-blob positioning
 
     this.isDead = false
     this.rafId = null
@@ -100,14 +103,22 @@ export class GameEngine {
     if (this.basket.x < halfW) { this.basket.x = halfW; this.basket.vx = 0 }
     if (this.basket.x > GAME_WIDTH - halfW) { this.basket.x = GAME_WIDTH - halfW; this.basket.vx = 0 }
 
+    // Detect wave transitions and notify UI
+    const wave = getWaveForElapsed(this.elapsed)
+    if (wave.id !== this.currentWaveId) {
+      this.currentWaveId = wave.id
+      this.onWaveChange?.(wave)
+    }
+
     // Spawn schedule
     if (this.elapsed >= this.nextSpawnAt) {
-      this.items.push(spawnItem(this.rng, this.elapsed, this.blobColor))
+      this.items.push(spawnItem(this.rng, this.elapsed, this.blobColor, this.spawnState))
       this.nextSpawnAt = this.elapsed + currentSpawnInterval(this.elapsed)
     }
 
     // Update falling items
     const basketTop = BASKET.Y
+    const basketBottom = BASKET.Y + BASKET.HEIGHT
     const basketLeft = this.basket.x - halfW
     const basketRight = this.basket.x + halfW
 
@@ -115,25 +126,33 @@ export class GameEngine {
       const it = this.items[i]
       if (it.settled) continue
 
+      const prevItemBottom = it.y + ITEM.RADIUS // before integrating this frame
       it.vy += ITEM.FALL_GRAVITY * dt
       it.y += it.vy * dt
       it.rot += it.rotSpeed * dt
 
       const itemBottom = it.y + ITEM.RADIUS
+      const itemTop = it.y - ITEM.RADIUS
       const itemLeft = it.x - ITEM.RADIUS * 0.65
       const itemRight = it.x + ITEM.RADIUS * 0.65
 
-      // Catch detection: bottom of item crosses basket top with horizontal overlap
-      if (itemBottom >= basketTop && itemBottom <= basketTop + 16 && it.vy > 0) {
-        if (itemRight >= basketLeft && itemLeft <= basketRight) {
+      // Swept catch: only the instant the item bottom crosses the basket top
+      // from above. Prevents the "side-vacuum" bug where moving the basket
+      // sideways into an item that's already below basketTop would catch it.
+      // After this single-frame window, the item is past the mouth — it can't
+      // be caught anymore, only missed when it exits at the bottom.
+      if (!it.pastBasket && it.vy > 0 && prevItemBottom < basketTop && itemBottom >= basketTop) {
+        const hOverlap = itemRight >= basketLeft && itemLeft <= basketRight
+        if (hOverlap) {
           this._handleCatch(it)
           this.items.splice(i, 1)
           continue
         }
+        it.pastBasket = true
       }
 
-      // Missed: fully past basket
-      if (it.y - ITEM.RADIUS > GAME_HEIGHT) {
+      // Missed: item top is fully past the basket bottom (immediate feedback).
+      if (itemTop > basketBottom + 4) {
         this._handleMiss(it)
         this.items.splice(i, 1)
       }
@@ -179,36 +198,37 @@ export class GameEngine {
       this.scorePulse = 1
       this._spawnBurst(item.x, BASKET.Y, item.color, 10)
       this._showPickup(`+${pts}`, item.color, item.x, BASKET.Y - 10)
-      this.onScoreUpdate?.(this.score)
+      this.onScoreUpdate?.(this.score, { combo: this.combo, mult })
     } else if (item.kind === 'star') {
       this.score += 50
       this.flashAlpha = 0.45
       this.scorePulse = 1
       this._spawnBurst(item.x, BASKET.Y, '#facc15', 14)
       this._showPickup('+50 ⭐', '#facc15', item.x, BASKET.Y - 10)
-      this.onScoreUpdate?.(this.score)
-    } else if (item.kind === 'wrong') {
-      this.lastDeathReason = 'wrong_color'
-      this._spawnBurst(item.x, BASKET.Y, item.color, 16)
-      this.shakeMag = 10
-      this.die()
+      this.onScoreUpdate?.(this.score, { combo: this.combo, mult: comboMultFor(this.combo) })
     } else if (item.kind === 'bomb') {
       this.lastDeathReason = 'bomb'
       this._spawnBurst(item.x, BASKET.Y, '#1a1a1a', 22)
       this._spawnBurst(item.x, BASKET.Y, '#dc2626', 14)
       this.shakeMag = 18
       this.die()
+    } else if (item.kind === 'skull') {
+      this.lastDeathReason = 'skull'
+      this._spawnBurst(item.x, BASKET.Y, '#e5e7eb', 18)
+      this._spawnBurst(item.x, BASKET.Y, '#52525b', 12)
+      this.shakeMag = 14
+      this.die()
     }
   }
 
   _handleMiss(item) {
     if (item.kind === 'right') {
-      this.lastDeathReason = 'missed_right'
-      this._spawnBurst(item.x, GAME_HEIGHT - 10, item.color, 12)
-      this.shakeMag = 8
-      this.die()
+      // Endless rule: missing a blob doesn't kill — just breaks the combo
+      // and shows a small puff. Only catching a malus kills.
+      this.combo = 0
+      this._spawnBurst(item.x, GAME_HEIGHT - 10, item.color, 6)
     }
-    // wrong / bomb / star missed: no penalty
+    // bomb / skull / star missed: no penalty
   }
 
   _spawnBurst(x, y, color, count) {
@@ -289,10 +309,12 @@ export class GameEngine {
       ctx.save()
       ctx.translate(it.x, it.y)
       ctx.rotate(it.rot)
-      if (it.kind === 'right' || it.kind === 'wrong') {
-        this._drawBlobItem(ctx, ITEM.RADIUS, it.color, it.kind === 'wrong')
+      if (it.kind === 'right') {
+        this._drawBlobItem(ctx, ITEM.RADIUS, it.color)
       } else if (it.kind === 'bomb') {
         this._drawBomb(ctx, ITEM.RADIUS)
+      } else if (it.kind === 'skull') {
+        this._drawSkull(ctx, ITEM.RADIUS)
       } else if (it.kind === 'star') {
         this._drawStar(ctx, ITEM.RADIUS)
       }
@@ -300,7 +322,7 @@ export class GameEngine {
     }
   }
 
-  _drawBlobItem(ctx, r, hex, isWrong) {
+  _drawBlobItem(ctx, r, hex) {
     const grad = BLOB_GRADIENTS[hex] || [hex, hex, hex]
     const [light, mid, dark] = grad
     // Body
@@ -353,18 +375,65 @@ export class GameEngine {
     ctx.stroke()
     ctx.lineCap = 'butt'
 
-    // Wrong-color tag: subtle pencil "×" badge in top-right (cue you should avoid)
-    if (isWrong) {
-      ctx.strokeStyle = 'rgba(31, 41, 55, 0.55)'
-      ctx.lineWidth = 1.5
-      ctx.lineCap = 'round'
-      const bx = r * 0.65, by = -r * 0.7, s = r * 0.18
-      ctx.beginPath()
-      ctx.moveTo(bx - s, by - s); ctx.lineTo(bx + s, by + s)
-      ctx.moveTo(bx + s, by - s); ctx.lineTo(bx - s, by + s)
-      ctx.stroke()
-      ctx.lineCap = 'butt'
-    }
+  }
+
+  _drawSkull(ctx, r) {
+    // Skull dome + jaw
+    ctx.fillStyle = '#e5e7eb'
+    ctx.strokeStyle = '#1f2937'
+    ctx.lineWidth = 1.5
+    ctx.beginPath()
+    ctx.moveTo(-r * 0.85, -r * 0.15)
+    ctx.bezierCurveTo(-r * 1.05, -r * 0.85, -r * 0.45, -r, 0, -r)
+    ctx.bezierCurveTo(r * 0.45, -r, r * 1.05, -r * 0.85, r * 0.85, -r * 0.15)
+    ctx.lineTo(r * 0.62, r * 0.20)
+    ctx.lineTo(r * 0.42, r * 0.52)
+    ctx.lineTo(r * 0.16, r * 0.62)
+    ctx.lineTo(-r * 0.16, r * 0.62)
+    ctx.lineTo(-r * 0.42, r * 0.52)
+    ctx.lineTo(-r * 0.62, r * 0.20)
+    ctx.closePath()
+    ctx.fill()
+    ctx.stroke()
+
+    // Eye sockets — black holes
+    ctx.fillStyle = '#0a0a0a'
+    ctx.beginPath()
+    ctx.ellipse(-r * 0.30, -r * 0.32, r * 0.22, r * 0.28, 0, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.beginPath()
+    ctx.ellipse(r * 0.30, -r * 0.32, r * 0.22, r * 0.28, 0, 0, Math.PI * 2)
+    ctx.fill()
+
+    // Tiny eye glints (faint)
+    ctx.fillStyle = 'rgba(255,255,255,0.65)'
+    ctx.beginPath()
+    ctx.arc(-r * 0.22, -r * 0.40, r * 0.04, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.beginPath()
+    ctx.arc(r * 0.38, -r * 0.40, r * 0.04, 0, Math.PI * 2)
+    ctx.fill()
+
+    // Nose hole — triangle
+    ctx.fillStyle = '#0a0a0a'
+    ctx.beginPath()
+    ctx.moveTo(0, r * 0.02)
+    ctx.lineTo(-r * 0.10, r * 0.20)
+    ctx.lineTo(r * 0.10, r * 0.20)
+    ctx.closePath()
+    ctx.fill()
+
+    // Teeth — couple of vertical lines on jaw
+    ctx.strokeStyle = '#1f2937'
+    ctx.lineWidth = 1
+    ctx.beginPath()
+    ctx.moveTo(-r * 0.22, r * 0.38)
+    ctx.lineTo(-r * 0.22, r * 0.58)
+    ctx.moveTo(0, r * 0.38)
+    ctx.lineTo(0, r * 0.62)
+    ctx.moveTo(r * 0.22, r * 0.38)
+    ctx.lineTo(r * 0.22, r * 0.58)
+    ctx.stroke()
   }
 
   _drawBomb(ctx, r) {

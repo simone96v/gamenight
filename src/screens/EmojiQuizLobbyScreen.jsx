@@ -119,6 +119,8 @@ const EmojiQuizLobbyScreen = () => {
       activeGame: null,
       selectedCategory: s.gameState?.selectedCategory ?? null,
       categoryVotes: s.gameState?.categoryVotes ?? {},
+      selectedGameCategory: s.gameState?.selectedGameCategory ?? null,
+      gameCategoryVotes: {},
       gameVotes: {},
       selectedGame: null,
     }

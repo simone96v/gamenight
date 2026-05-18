@@ -95,7 +95,7 @@ const BlobJumpLeaderboard = ({ open, onClose }) => {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.18 }}
           style={{
-            position: 'fixed', inset: 0, zIndex: 50,
+            position: 'fixed', inset: 0, zIndex: 70,
             background: 'color-mix(in srgb, var(--bg) 92%, transparent)',
             backdropFilter: 'blur(10px)',
             display: 'flex', justifyContent: 'center', alignItems: 'stretch',

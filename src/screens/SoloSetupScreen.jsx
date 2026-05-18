@@ -46,7 +46,7 @@ const SoloSetupScreen = () => {
       }],
     })
 
-    navigate('/solo/games')
+    navigate('/solo/category')
   }
 
   return (

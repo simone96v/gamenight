@@ -12,25 +12,34 @@ export const BASKET = {
 
 export const ITEM = {
   RADIUS: 16,
-  BASE_FALL_SPEED: 165,        // px/s at t=0
-  FALL_GRAVITY: 28,            // px/s² — gentle accel so falls feel weighty
-  SPEED_RAMP_PER_SEC: 0.018,   // +1.8% per second
-  SPEED_RAMP_CAP: 2.4,         // 2.4× base after long survival
+  BASE_FALL_SPEED: 165,        // px/s at base wave (multiplied by wave.fallSpeedMul)
+  FALL_GRAVITY: 28,            // gentle accel so falls feel weighty
 }
 
-// Spawn cadence ramp (seconds between spawns)
-export const SPAWN = {
-  START_INTERVAL: 1.0,
-  MIN_INTERVAL: 0.42,
-  RAMP_SECONDS: 75,            // reach min interval in ~75s
-}
+// Difficulty waves. Each wave defines a chunk of game time with its own
+// spawn cadence, fall speed multiplier, and malus probability. The transition
+// between waves is signaled to the UI via onWaveChange so it can pop a banner.
+//
+// Tuning principles:
+//   - Wave 1 is a calm intro (no malus) so the player can learn controls.
+//   - Wave 2 onward introduces malus and progressively shortens the spawn
+//     interval and speeds up falls.
+//   - Wave 6 is the perpetual "survival" tier — game stays here forever once
+//     reached, so it must remain challenging but not deterministic-death.
+export const WAVES = [
+  { id: 1, name: 'Calma',          until: 12,       spawnInterval: 1.10, fallSpeedMul: 1.00, malusRate: 0.00, starRate: 0.08 },
+  { id: 2, name: 'Risveglio',      until: 35,       spawnInterval: 0.95, fallSpeedMul: 1.15, malusRate: 0.18, starRate: 0.06 },
+  { id: 3, name: 'Pressione',      until: 75,       spawnInterval: 0.82, fallSpeedMul: 1.32, malusRate: 0.28, starRate: 0.05 },
+  { id: 4, name: 'Frenesia',       until: 130,      spawnInterval: 0.68, fallSpeedMul: 1.52, malusRate: 0.34, starRate: 0.05 },
+  { id: 5, name: 'Caos',           until: 200,      spawnInterval: 0.56, fallSpeedMul: 1.80, malusRate: 0.40, starRate: 0.04 },
+  { id: 6, name: 'Sopravvivenza',  until: Infinity, spawnInterval: 0.46, fallSpeedMul: 2.10, malusRate: 0.45, starRate: 0.04 },
+]
 
-// Item type weights (must sum to 1 for clarity)
-export const ITEM_WEIGHTS = {
-  right:  0.55,
-  wrong:  0.35,
-  bomb:   0.05,
-  star:   0.05,
+export function getWaveForElapsed(elapsed) {
+  for (const w of WAVES) {
+    if (elapsed < w.until) return w
+  }
+  return WAVES[WAVES.length - 1]
 }
 
 // Combo thresholds (catches → multiplier)

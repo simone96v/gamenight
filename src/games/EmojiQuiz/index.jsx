@@ -8,6 +8,7 @@ import { pushRoom } from '../../lib/room'
 import CountdownOverlay from '../../components/CountdownOverlay'
 import BlobLoader from '../../components/BlobLoader'
 import GameLeaderboard from '../../components/GameLeaderboard'
+import SoloEndScreen from '../../components/SoloEndScreen'
 import { useEmojiQuiz } from './useEmojiQuiz'
 import { TOTAL_ROUNDS } from './config'
 import EmojiQuizQuestionPhase from './components/EmojiQuizQuestionPhase'
@@ -60,6 +61,8 @@ const EmojiQuiz = () => {
       activeGame: null,
       selectedCategory: s.gameState?.selectedCategory ?? null,
       categoryVotes: s.gameState?.categoryVotes ?? {},
+      selectedGameCategory: s.gameState?.selectedGameCategory ?? null,
+      gameCategoryVotes: {},
       gameVotes: {},
       selectedGame: null,
     }
@@ -192,6 +195,24 @@ const EmojiQuiz = () => {
       : eq.sessionTotalRounds > 1
         ? `Score cumulativo dei ${eq.sessionTotalRounds} round`
         : ''
+
+    // Solo single-player a fine session → modale compatta.
+    if (!eq.isOnline && !moreRounds) {
+      const me = playersWithScores.find((p) => p.id === eq.localPlayerId) ?? playersWithScores[0]
+      return (
+        <SoloEndScreen
+          open
+          gameEmoji="🎬"
+          gameName="Movie Quiz"
+          player={me}
+          primaryValue={me?.score ?? 0}
+          primaryLabel="punti"
+          stats={[{ label: 'indovinate', value: me?.correct_count ?? 0 }]}
+          onReplay={handleReplay}
+          onChangeGame={handleChangeGame}
+        />
+      )
+    }
 
     return (
       <GameLeaderboard

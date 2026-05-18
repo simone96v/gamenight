@@ -2,12 +2,13 @@ import { useEffect, useRef, useImperativeHandle, forwardRef } from 'react'
 import { GAME_WIDTH, GAME_HEIGHT } from '../engine/physics'
 import { GameEngine } from '../engine/GameEngine'
 
-const CatchBlobGame = forwardRef(({ seed, blobColor, onScoreUpdate, onDeath, onWaveChange }, ref) => {
+const FlappyBlobGame = forwardRef(({ seed, blobColor, onScoreUpdate, onDeath }, ref) => {
   const canvasRef = useRef(null)
   const engineRef = useRef(null)
 
   useImperativeHandle(ref, () => ({
     getEngine: () => engineRef.current,
+    flap: () => engineRef.current?.flap(),
   }), [])
 
   useEffect(() => {
@@ -20,14 +21,23 @@ const CatchBlobGame = forwardRef(({ seed, blobColor, onScoreUpdate, onDeath, onW
     const ctx = canvas.getContext('2d')
     ctx.scale(dpr, dpr)
 
-    const engine = new GameEngine(canvas, seed, blobColor, onScoreUpdate, onDeath, onWaveChange)
+    const engine = new GameEngine(canvas, seed, blobColor, onScoreUpdate, onDeath)
     engineRef.current = engine
     engine.start()
 
-    return () => engine.stop()
+    // Pause on visibility loss (avoid unfair deaths)
+    const onVis = () => {
+      if (document.hidden) engine.input?.suspend()
+      else engine.input?.resume()
+    }
+    document.addEventListener('visibilitychange', onVis)
+
+    return () => {
+      engine.stop()
+      document.removeEventListener('visibilitychange', onVis)
+    }
   }, [seed]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Responsive sizing — fit canvas to parent while preserving aspect ratio
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -53,10 +63,12 @@ const CatchBlobGame = forwardRef(({ seed, blobColor, onScoreUpdate, onDeath, onW
         touchAction: 'none',
         userSelect: 'none',
         WebkitUserSelect: 'none',
+        WebkitTapHighlightColor: 'transparent',
+        cursor: 'pointer',
       }}
     />
   )
 })
 
-CatchBlobGame.displayName = 'CatchBlobGame'
-export default CatchBlobGame
+FlappyBlobGame.displayName = 'FlappyBlobGame'
+export default FlappyBlobGame

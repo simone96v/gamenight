@@ -1,68 +1,18 @@
-import { useState, useCallback, useRef, useMemo } from 'react'
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import BlobJumpGame from './BlobJumpGame'
+import FlappyBlobGame from './FlappyBlobGame'
 import AppHeader from '../../../components/AppHeader'
 import IconButton from '../../../components/ui/IconButton'
 import { BLOB_GRADIENTS } from '../../../utils/colors'
 import { usePlayerAccent } from '../../../hooks/usePlayerAccent'
+import { haptic } from '../../../utils/haptic'
 
-// ── Half-screen touch zone ──────────────────────────────────
-const HalfZone = ({ side, gameRef, disabled }) => {
-  const onStart = useCallback((e) => {
-    e.preventDefault()
-    if (disabled) return
-    gameRef.current?.getEngine()?.input?.setExternalDirection(side)
-  }, [side, disabled, gameRef])
-
-  const onEnd = useCallback((e) => {
-    e.preventDefault()
-    gameRef.current?.getEngine()?.input?.clearExternalDirection()
-  }, [gameRef])
-
-  return (
-    <div
-      onTouchStart={onStart}
-      onTouchEnd={onEnd}
-      onTouchCancel={onEnd}
-      onMouseDown={onStart}
-      onMouseUp={onEnd}
-      onMouseLeave={onEnd}
-      style={{
-        position: 'absolute',
-        top: 0,
-        bottom: 0,
-        ...(side < 0 ? { left: 0, right: '50%' } : { left: '50%', right: 0 }),
-        zIndex: 5,
-        touchAction: 'none',
-        userSelect: 'none',
-        WebkitUserSelect: 'none',
-        WebkitTapHighlightColor: 'transparent',
-        display: 'flex',
-        alignItems: 'flex-end',
-        justifyContent: side < 0 ? 'flex-start' : 'flex-end',
-        padding: 'clamp(16px, 3dvh, 28px) clamp(20px, 5vw, 32px)',
-        cursor: 'pointer',
-      }}
-    >
-      <span style={{
-        fontSize: 'clamp(22px, 4dvh, 32px)',
-        fontWeight: 900,
-        color: 'rgba(0,0,0,0.13)',
-        pointerEvents: 'none',
-        userSelect: 'none',
-      }}>
-        {side < 0 ? '←' : '→'}
-      </span>
-    </div>
-  )
-}
-
-// ── Main component ────────────────────────────────────────
-const BlobJumpPlaying = ({
+const FlappyBlobPlaying = ({
   seed,
   blobColor,
   scoreSubmitted,
   onSubmitScore,
+  localBest,
 }) => {
   const C = usePlayerAccent()
   const navigate = useNavigate()
@@ -74,67 +24,62 @@ const BlobJumpPlaying = ({
   const handleScore = useCallback((s) => {
     setScore(s)
     scoreRef.current = s
+    haptic.tick()
   }, [])
 
   const handleDeath = useCallback((s) => {
     setScore(s)
     scoreRef.current = s
     setDead(true)
-    onSubmitScore(s)
+    haptic.heavy()
+    onSubmitScore?.(s)
   }, [onSubmitScore])
 
-  const handleTimeUp = useCallback((s) => {
-    setScore(s)
-    scoreRef.current = s
-    onSubmitScore(s)
-  }, [onSubmitScore])
+  useEffect(() => {
+    if (dead && !scoreSubmitted) onSubmitScore?.(scoreRef.current)
+  }, [dead, scoreSubmitted, onSubmitScore])
 
   const handleExit = useCallback(() => {
     navigate('/solo/games', { replace: true })
   }, [navigate])
 
   const accentLight = useMemo(() => BLOB_GRADIENTS[blobColor]?.[0] || blobColor, [blobColor])
-  const ctrlDisabled = dead || scoreSubmitted
+  const showBest = typeof localBest === 'number' && localBest > 0
 
   return (
     <div style={S.container}>
-      {/* ── App header ── */}
       <AppHeader
         accentColor={C.accent}
         leading={<IconButton ariaLabel="Esci" onClick={handleExit}>←</IconButton>}
       />
 
-      {/* ── Game area (fullscreen below header) ── */}
       <div style={S.gameArea}>
-        <BlobJumpGame
+        <FlappyBlobGame
           ref={gameRef}
           seed={seed}
           blobColor={blobColor}
-          duration={0}
-          forceStop={false}
           onScoreUpdate={handleScore}
           onDeath={handleDeath}
-          onTimeUp={handleTimeUp}
         />
 
-        {/* Score HUD */}
         <div style={S.hud} aria-live="polite" aria-atomic>
           <div style={S.scoreChip}>
-            <span style={{ ...S.scoreArrow, color: accentLight }} aria-hidden="true">↑</span>
+            <span style={{ ...S.scoreArrow, color: accentLight }} aria-hidden="true">●</span>
             <span style={S.scoreValue}>{score}</span>
-            <span style={S.scoreUnit}>m</span>
+            <span style={S.scoreUnit}>pt</span>
           </div>
+          {showBest && (
+            <div style={S.bestChip} aria-label={`Record personale ${Math.max(localBest, score)}`}>
+              <span style={{ ...S.bestLabel, color: accentLight }}>BEST</span>
+              <span style={S.bestValue}>{Math.max(localBest, score)}</span>
+            </div>
+          )}
         </div>
-
-        {/* Left / right half-screen touch zones */}
-        <HalfZone side={-1} gameRef={gameRef} disabled={ctrlDisabled} />
-        <HalfZone side={1}  gameRef={gameRef} disabled={ctrlDisabled} />
       </div>
     </div>
   )
 }
 
-// ── Styles ────────────────────────────────────────────────
 const S = {
   container: {
     display: 'flex',
@@ -160,13 +105,14 @@ const S = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
+    gap: 10,
     pointerEvents: 'none',
     zIndex: 10,
   },
   scoreChip: {
     display: 'inline-flex',
     alignItems: 'baseline',
-    gap: 3,
+    gap: 4,
     background: 'rgba(0,0,0,0.68)',
     backdropFilter: 'blur(10px)',
     WebkitBackdropFilter: 'blur(10px)',
@@ -194,6 +140,30 @@ const S = {
     fontWeight: 700,
     color: 'rgba(255,255,255,0.48)',
   },
+  bestChip: {
+    display: 'inline-flex',
+    alignItems: 'baseline',
+    gap: 6,
+    background: 'rgba(0,0,0,0.45)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
+    padding: '4px 12px',
+    borderRadius: 999,
+    border: '1px solid rgba(255,255,255,0.08)',
+  },
+  bestLabel: {
+    fontSize: 11,
+    fontWeight: 800,
+    letterSpacing: '0.08em',
+    lineHeight: 1,
+  },
+  bestValue: {
+    fontSize: 15,
+    fontWeight: 800,
+    color: 'rgba(255,255,255,0.92)',
+    fontVariantNumeric: 'tabular-nums',
+    lineHeight: 1,
+  },
 }
 
-export default BlobJumpPlaying
+export default FlappyBlobPlaying

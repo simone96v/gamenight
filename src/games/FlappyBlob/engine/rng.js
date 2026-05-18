@@ -1,4 +1,4 @@
-// Mulberry32 — deterministic PRNG. Stesso seed = stessa sequenza su tutti i client.
+// Mulberry32 — deterministic PRNG. Same seed = same pipe layout for all clients.
 export function createRNG(seed) {
   let s = seed | 0
   return function () {

@@ -11,6 +11,7 @@ import { pushRoom } from '../../lib/room'
 import CountdownOverlay from '../../components/CountdownOverlay'
 import BlobLoader from '../../components/BlobLoader'
 import Spinner from '../../components/ui/Spinner'
+import SoloEndScreen from '../../components/SoloEndScreen'
 import { pickRoundRacks } from './data/racks'
 import { SCRAMBLE_CONSTANTS } from './useScramble'
 
@@ -47,6 +48,8 @@ const Scramble = () => {
       activeGame: null,
       selectedCategory: s.gameState?.selectedCategory ?? null,
       categoryVotes: s.gameState?.categoryVotes ?? {},
+      selectedGameCategory: s.gameState?.selectedGameCategory ?? null,
+      gameCategoryVotes: {},
       gameVotes: {},
       selectedGame: null,
     }
@@ -163,9 +166,26 @@ const Scramble = () => {
   }
 
   if (sc.currentPhase === 'scramble_final') {
-    // L'ex ScrambleFinal è fuso in ScrambleResults via isFinal=true.
-    // Stessa visualizzazione (hero + leaderboard + word chips) ma bottoni cambiano in
-    // "Rigioca / Cambia gioco" e i punti sono cumulativi.
+    // Solo single-player → modale compatta.
+    if (!sc.isOnline) {
+      const me = sc.players.find((p) => p.id === sc.localPlayerId) ?? sc.players[0]
+      const score = sc.scrambleScores?.[sc.localPlayerId] ?? me?.score ?? 0
+      const wordsCount = (sc.scrambleWords?.[sc.localPlayerId] || []).length
+      return (
+        <SoloEndScreen
+          open
+          gameEmoji="🔤"
+          gameName="Scramble"
+          player={me}
+          primaryValue={score}
+          primaryLabel="punti"
+          stats={wordsCount > 0 ? [{ label: 'parole', value: wordsCount }] : []}
+          onReplay={handleReplay}
+          onChangeGame={handleChangeGame}
+        />
+      )
+    }
+
     return (
       <Suspense fallback={<Loading />}>
         <ScrambleResults
@@ -179,7 +199,7 @@ const Scramble = () => {
           scrambleRoundResults={sc.scrambleScores}
           scrambleScores={sc.scrambleScores}
           scrambleWords={sc.scrambleWords}
-          isHost={sc.isHost || !sc.isOnline}
+          isHost={sc.isHost}
           isOnline={sc.isOnline}
           isFinal
           onExit={handleChangeGame}

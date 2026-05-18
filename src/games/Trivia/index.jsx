@@ -11,6 +11,7 @@ import WheelPhase from './phases/WheelPhase'
 import QuestionPhase from './phases/QuestionPhase'
 import RevealPhase from './phases/RevealPhase'
 import GameLeaderboard from '../../components/GameLeaderboard'
+import SoloEndScreen from '../../components/SoloEndScreen'
 import { useSession } from '../../stores/useSession'
 import { pushRoom } from '../../lib/room'
 
@@ -51,6 +52,8 @@ const Trivia = () => {
       activeGame: null,
       selectedCategory: s.gameState?.selectedCategory ?? null,
       categoryVotes: s.gameState?.categoryVotes ?? {},
+      selectedGameCategory: s.gameState?.selectedGameCategory ?? null,
+      gameCategoryVotes: {},
       gameVotes: {},
       selectedGame: null,
     }
@@ -140,6 +143,27 @@ const Trivia = () => {
       : isSessionMode
         ? `Score cumulativo dei ${session.totalRounds} round`
         : ''
+
+    // Solo single-player a fine partita → modale compatta (non c'è classifica globale per Trivia).
+    if (!trivia.isOnline && !hasMoreRounds) {
+      const me = trivia.players.find((p) => p.id === trivia.localPlayerId) ?? trivia.players[0]
+      const score = me?.score ?? 0
+      const correct = me?.correct_count ?? 0
+      return (
+        <SoloEndScreen
+          open
+          gameEmoji="🧠"
+          gameName="Trivia"
+          player={me}
+          primaryValue={score}
+          primaryLabel="punti"
+          stats={[{ label: 'corrette', value: correct }]}
+          advancing={trivia.advancing}
+          onReplay={trivia.hostReplay}
+          onChangeGame={handleChangeGame}
+        />
+      )
+    }
 
     return (
       <GameLeaderboard

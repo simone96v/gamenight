@@ -1,67 +1,33 @@
+// Lobby Catch The Blob — solo single player (multiplayer rimosso, endless game).
+
 import { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import GameLobbyLayout from '../components/GameLobbyLayout'
 import IconButton from '../components/ui/IconButton'
 import CatchBlobLeaderboard from '../games/CatchBlob/components/CatchBlobLeaderboard'
 import { useSession } from '../stores/useSession'
-import { pushRoom } from '../lib/room'
 
 const CatchBlobLobbyScreen = () => {
   const navigate = useNavigate()
-  const isHost = useSession((s) => s.isHost)
-  const mode = useSession((s) => s.mode)
   const players = useSession((s) => s.players)
   const showError = useSession((s) => s.showError)
-  const setAwaitingGC = useSession((s) => s.setAwaitingGameChange)
 
-  const isSolo = mode === 'local'
-  const canControl = isHost || isSolo
   const [launching, setLaunching] = useState(false)
   const [lbOpen, setLbOpen] = useState(false)
 
   const handleStart = useCallback(async () => {
-    if (!canControl || launching) return
+    if (launching) return
     setLaunching(true)
-
     try {
       const seed = Math.floor(Math.random() * 2147483647)
       const now = new Date().toISOString()
       const s = useSession.getState()
 
-      const fullState = {
-        players: (s.players || []).map((p) => ({ ...p, score: 0 })),
-        currentIdx: 0,
-        round: 0,
-        activeGame: 'catchblob',
-        selectedGame: 'catchblob',
-        currentSeed: seed,
-        currentRoundIdx: 0,
-        totalRounds: 1,
-        roundDuration: 0,
-        roundScores: {},
-        roundFinished: {},
-        totalScores: {},
-      }
-
-      if (s.mode === 'online' && s.roomCode) {
-        const pushRes = await pushRoom(s.roomCode, 'catchblob_countdown', fullState, now)
-        if (pushRes.error) {
-          showError('generic')
-          setLaunching(false)
-          return
-        }
-      }
-
       useSession.setState({
-        players: fullState.players,
+        players: (s.players || []).map((p) => ({ ...p, score: 0 })),
         gameState: {
+          ...(s.gameState || {}),
           currentSeed: seed,
-          currentRoundIdx: 0,
-          totalRounds: 1,
-          roundDuration: 0,
-          roundScores: {},
-          roundFinished: {},
-          totalScores: {},
         },
         currentPhase: 'catchblob_countdown',
         questionStartedAt: now,
@@ -72,39 +38,19 @@ const CatchBlobLobbyScreen = () => {
       showError('generic')
       setLaunching(false)
     }
-  }, [canControl, launching, showError, navigate])
+  }, [launching, showError, navigate])
 
   const handleBack = useCallback(() => {
-    const s = useSession.getState()
-    if (s.mode !== 'online') {
-      navigate('/solo/games', { replace: true })
-      return
-    }
-    setAwaitingGC(true)
-    navigate('/games', { replace: true })
-    const fullState = {
-      players: s.players,
-      currentIdx: s.currentIdx,
-      round: s.round,
-      activeGame: null,
-      selectedCategory: s.gameState?.selectedCategory ?? null,
-      categoryVotes: s.gameState?.categoryVotes ?? {},
-      gameVotes: {},
-      selectedGame: null,
-    }
-    if (s.roomCode) {
-      pushRoom(s.roomCode, 'game_voting', fullState)
-    }
-    setAwaitingGC(false)
-  }, [navigate, setAwaitingGC])
+    navigate('/solo/games', { replace: true })
+  }, [navigate])
 
   return (
     <>
       <GameLobbyLayout
         gameName="Catch The Blob"
-        gameDescription="Acchiappa i blob del tuo colore col cesto. Sbagli? Sei fuori."
+        gameDescription="Acchiappa i blob del tuo colore, evita bombe e teschi. Endless: sopravvivi finché puoi."
         players={players}
-        canControl={canControl}
+        canControl={true}
         launching={launching}
         onStart={handleStart}
         onBack={handleBack}

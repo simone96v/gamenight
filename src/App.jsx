@@ -15,12 +15,15 @@ const JoinScreen = lazy(() => import('./screens/JoinScreen'))
 const WaitingScreen = lazy(() => import('./screens/WaitingScreen'))
 const LobbyScreen = lazy(() => import('./screens/LobbyScreen'))
 const CategoryScreen = lazy(() => import('./screens/CategoryScreen'))
+const GameCategoryScreen = lazy(() => import('./screens/GameCategoryScreen'))
 const GamesScreen = lazy(() => import('./screens/GamesScreen'))
 const GameHubScreen = lazy(() => import('./screens/GameHubScreen'))
 const GameScreen = lazy(() => import('./screens/GameScreen'))
 const TriviaLobbyScreen = lazy(() => import('./screens/TriviaLobbyScreen'))
 const MappaLobbyScreen = lazy(() => import('./screens/MappaLobbyScreen'))
 const BlobJumpLobbyScreen = lazy(() => import('./screens/BlobJumpLobbyScreen'))
+const CatchBlobLobbyScreen = lazy(() => import('./screens/CatchBlobLobbyScreen'))
+const FlappyBlobLobbyScreen = lazy(() => import('./screens/FlappyBlobLobbyScreen'))
 const EmojiQuizLobbyScreen = lazy(() => import('./screens/EmojiQuizLobbyScreen'))
 const ScrambleLobbyScreen = lazy(() => import('./screens/ScrambleLobbyScreen'))
 const RoundEndScreen = lazy(() => import('./screens/RoundEndScreen'))
@@ -29,7 +32,6 @@ const SoloSetupScreen = lazy(() => import('./screens/SoloSetupScreen'))
 const SoloGamesScreen = lazy(() => import('./screens/SoloGamesScreen'))
 const MappaTest = lazy(() => import('./games/Mappa/MappaTest'))
 const BlobJumpTest = lazy(() => import('./games/BlobJump/BlobJumpTest'))
-const BlobDashTest = lazy(() => import('./games/BlobDash/BlobDashTest'))
 const CatchBlobTest = lazy(() => import('./games/CatchBlob/CatchBlobTest'))
 
 function App() {
@@ -50,13 +52,17 @@ function App() {
             <Route path="/waiting" element={<WaitingScreen />} />
             <Route path="/lobby" element={<LobbyScreen />} />
             <Route path="/category" element={<CategoryScreen />} />
+            <Route path="/game-category" element={<GameCategoryScreen />} />
             <Route path="/games" element={<GamesScreen />} />
             <Route path="/solo" element={<SoloSetupScreen />} />
+            <Route path="/solo/category" element={<GameCategoryScreen />} />
             <Route path="/solo/games" element={<SoloGamesScreen />} />
             <Route path="/hub" element={<GameHubScreen />} />
             <Route path="/trivia-lobby" element={<TriviaLobbyScreen />} />
             <Route path="/mappa-lobby" element={<MappaLobbyScreen />} />
             <Route path="/blobjump-lobby" element={<BlobJumpLobbyScreen />} />
+            <Route path="/catchblob-lobby" element={<CatchBlobLobbyScreen />} />
+            <Route path="/flappyblob-lobby" element={<FlappyBlobLobbyScreen />} />
             <Route path="/emojiquiz-lobby" element={<EmojiQuizLobbyScreen />} />
             <Route path="/scramble-lobby" element={<ScrambleLobbyScreen />} />
             <Route path="/game/:gameId" element={<GameScreen />} />
@@ -64,7 +70,6 @@ function App() {
             <Route path="/scoreboard" element={<ScoreboardScreen />} />
             <Route path="/test/mappa" element={<MappaTest />} />
             <Route path="/test/blobjump" element={<BlobJumpTest />} />
-            <Route path="/test/blobdash" element={<BlobDashTest />} />
             <Route path="/test/catchblob" element={<CatchBlobTest />} />
           </Routes>
         </Suspense>

@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react'
 import BlobJumpGame from './components/BlobJumpGame'
-import BlobJumpDeath from './components/BlobJumpDeath'
 
 const TEST_SEED = 48291037
 const TEST_COLOR = '#8B5CF6'
@@ -8,24 +7,14 @@ const DURATION = 60
 
 const BlobJumpTest = () => {
   const [score, setScore] = useState(0)
-  const [dead, setDead] = useState(false)
   const [gameKey, setGameKey] = useState(0)
-  const [timeUp, setTimeUp] = useState(false)
 
   const handleScore = useCallback((s) => setScore(s), [])
-  const handleDeath = useCallback((s) => {
-    setScore(s)
-    setDead(true)
-  }, [])
-  const handleTimeUp = useCallback((s) => {
-    setScore(s)
-    setTimeUp(true)
-  }, [])
+  const handleDeath = useCallback((s) => setScore(s), [])
+  const handleTimeUp = useCallback((s) => setScore(s), [])
 
   const restart = () => {
     setScore(0)
-    setDead(false)
-    setTimeUp(false)
     setGameKey((k) => k + 1)
   }
 
@@ -42,16 +31,12 @@ const BlobJumpTest = () => {
           onTimeUp={handleTimeUp}
         />
 
-        {/* Score overlay */}
         <div style={styles.scoreOverlay}>
           <span style={styles.scoreValue}>{score}</span>
           <span style={styles.scoreUnit}>m</span>
         </div>
 
-        {dead && <BlobJumpDeath score={score} blobColor={TEST_COLOR} onRestart={restart} />}
-        {timeUp && !dead && (
-          <BlobJumpDeath score={score} blobColor={TEST_COLOR} onRestart={restart} />
-        )}
+        <button onClick={restart} style={styles.restartBtn}>↻ Restart</button>
       </div>
     </div>
   )
@@ -98,6 +83,19 @@ const styles = {
     fontWeight: 700,
     color: 'rgba(255,255,255,0.7)',
     textShadow: '0 2px 6px rgba(0,0,0,0.3)',
+  },
+  restartBtn: {
+    position: 'absolute',
+    top: 12,
+    right: 16,
+    padding: '8px 14px',
+    background: 'rgba(0,0,0,0.55)',
+    color: '#fff',
+    border: '1px solid rgba(255,255,255,0.18)',
+    borderRadius: 999,
+    fontWeight: 700,
+    cursor: 'pointer',
+    zIndex: 10,
   },
 }
 

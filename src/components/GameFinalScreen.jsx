@@ -28,6 +28,7 @@ const GameFinalScreen = ({ emoji, title = 'Fine!', subtitle, replayPatch }) => {
     const s = useSession.getState()
     const newGameState = {
       ...s.gameState,
+      gameCategoryVotes: {},
       gameVotes: {},
       selectedGame: null,
     }

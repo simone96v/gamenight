@@ -91,6 +91,8 @@ const LobbyScreen = () => {
     const s = useSession.getState()
     const newGameState = {
       ...(s.gameState || {}),
+      gameCategoryVotes: {},
+      selectedGameCategory: null,
       gameVotes: {},
       selectedGame: null,
     }
@@ -102,7 +104,7 @@ const LobbyScreen = () => {
       settings: { numQuestions },
       ...newGameState,
     }
-    const { error } = await pushRoom(roomCode, 'game_voting', fullState)
+    const { error } = await pushRoom(roomCode, 'category_voting', fullState)
     if (error) {
       console.error('[Lobby] proceed error:', error)
       showError('generic')
@@ -335,7 +337,7 @@ const LobbyScreen = () => {
                 pointerEvents: (!canStart || starting) ? 'none' : 'auto',
               }}
             >
-              {starting ? '...' : 'Avanti — votate il gioco'}
+              {starting ? '...' : 'Avanti — scegliete la categoria'}
             </Button>
           </>
         )}

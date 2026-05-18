@@ -20,6 +20,7 @@ const REDIRECT_DELAY_MS = 2500
 const phaseToPath = (phase) => {
   switch (phase) {
     case 'lobby':       return '/lobby'
+    case 'category_voting': return '/game-category'
     case 'game_voting': return '/games'
     case 'trivia_lobby': return '/trivia-lobby'
     case 'trivia_wheel': return '/game/trivia'
@@ -32,16 +33,8 @@ const phaseToPath = (phase) => {
     case 'mappa_question':    return '/game/mappa'
     case 'mappa_reveal':      return '/game/mappa'
     case 'mappa_final':       return '/game/mappa'
-    case 'blobjump_lobby':        return '/blobjump-lobby'
-    case 'blobjump_countdown':    return '/game/blobjump'
-    case 'blobjump_playing':      return '/game/blobjump'
-    case 'blobjump_results':      return '/game/blobjump'
-    case 'blobjump_final':        return '/game/blobjump'
-    case 'catchblob_lobby':        return '/catchblob-lobby'
-    case 'catchblob_countdown':    return '/game/catchblob'
-    case 'catchblob_playing':      return '/game/catchblob'
-    case 'catchblob_results':      return '/game/catchblob'
-    case 'catchblob_final':        return '/game/catchblob'
+    // Endless games (blobjump/catchblob/flappyblob) sono single-player only,
+    // niente sync remoto. Le loro phase non sono mai pushate su `rooms`.
     case 'emojiquiz_lobby':       return '/emojiquiz-lobby'
     case 'emojiquiz_countdown':   return '/game/emojiquiz'
     case 'emojiquiz_playing':     return '/game/emojiquiz'

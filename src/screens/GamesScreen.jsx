@@ -1,5 +1,6 @@
 // GamesScreen — votazione del gioco (multiplayer).
-// Griglia 2 colonne con GameCard condivise. Header con progresso voti.
+// Filtra per la categoria scelta nello step precedente (selectedGameCategory).
+// Header con progresso voti.
 
 import { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
@@ -10,7 +11,7 @@ import GameCard from '../components/GameCard'
 import MiniBlob, { useMiniExpr } from '../components/MiniBlob'
 import { useSession } from '../stores/useSession'
 import { useSettings } from '../stores/useSettings'
-import { availableGamesFor } from '../data/games'
+import { availableGamesFor, getGameCategory } from '../data/games'
 import { pushRoom, rpcInitGame } from '../lib/room'
 
 const GamesScreen = () => {
@@ -27,6 +28,7 @@ const GamesScreen = () => {
 
   const [launching, setLaunching] = useState(false)
 
+  const selectedGameCategory = gameState?.selectedGameCategory ?? null
   const gameVotes = useMemo(() => gameState?.gameVotes ?? {}, [gameState?.gameVotes])
   const myVote = gameVotes[localPlayerId] ?? null
   const totalPlayers = players.length
@@ -38,9 +40,11 @@ const GamesScreen = () => {
     return counts
   }, [gameVotes])
 
+  const category = getGameCategory(selectedGameCategory)
+
   const games = useMemo(
-    () => availableGamesFor({ mode: 'online', categoryId: null }),
-    [],
+    () => availableGamesFor({ mode: 'online', categoryId: null, gameCategory: selectedGameCategory }),
+    [selectedGameCategory],
   )
 
   useEffect(() => {
@@ -69,13 +73,13 @@ const GamesScreen = () => {
         selectedGame: winnerId,
         selectedCategory: session.gameState?.selectedCategory ?? null,
         categoryVotes: session.gameState?.categoryVotes ?? {},
+        selectedGameCategory: session.gameState?.selectedGameCategory ?? null,
+        gameCategoryVotes: session.gameState?.gameCategoryVotes ?? {},
       }
 
       const LOBBY_PHASE = {
         trivia:    'trivia_lobby',
         mappa:     'mappa_lobby',
-        blobjump:  'blobjump_lobby',
-        catchblob: 'catchblob_lobby',
         scramble:  'scramble_lobby',
         emojiquiz: 'emojiquiz_lobby',
       }
@@ -114,6 +118,30 @@ const GamesScreen = () => {
     castVote('gameVotes', game.id)
   }
 
+  // Se senza categoria selezionata e siamo host, riporta a category_voting.
+  // I non-host non possono fare push: useRoomSync li seguirà.
+  useEffect(() => {
+    if (!isHost) return
+    if (currentPhase !== 'game_voting') return
+    if (selectedGameCategory) return
+    ;(async () => {
+      const s = useSession.getState()
+      const fullState = {
+        players: s.players,
+        currentIdx: s.currentIdx,
+        round: s.round,
+        activeGame: null,
+        selectedCategory: s.gameState?.selectedCategory ?? null,
+        categoryVotes: s.gameState?.categoryVotes ?? {},
+        gameCategoryVotes: {},
+        selectedGameCategory: null,
+        gameVotes: {},
+        selectedGame: null,
+      }
+      await pushRoom(roomCode, 'category_voting', fullState)
+    })()
+  }, [isHost, currentPhase, selectedGameCategory, roomCode])
+
   return (
     <motion.div
       className="screen screen-narrow"
@@ -141,13 +169,14 @@ const GamesScreen = () => {
           flexDirection: 'column',
           gap: 'clamp(14px, 2dvh, 22px)',
         }}>
-          {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             style={{ textAlign: 'center', flexShrink: 0 }}
           >
-            <GradientTitle as="h1" size="xl">Scegli il gioco</GradientTitle>
+            <GradientTitle as="h1" size="xl">
+              {category ? `${category.emoji} ${category.label}` : 'Scegli il gioco'}
+            </GradientTitle>
             <p style={subtitle}>
               {totalVotes === 0
                 ? 'Tocca una card per votare'
@@ -159,14 +188,12 @@ const GamesScreen = () => {
             </p>
           </motion.div>
 
-          {/* Progress strip giocatori */}
           <VoteProgressStrip
             players={players}
             gameVotes={gameVotes}
             expr={expr}
           />
 
-          {/* Grid card */}
           <div style={grid}>
             {games.map((g, i) => (
               <GameCard

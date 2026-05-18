@@ -1,5 +1,3 @@
-// CatchBlobLeaderboard — overlay fullscreen della classifica globale Catch The Blob.
-
 import { useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Button from '../../../components/ui/Button'
@@ -8,12 +6,10 @@ import GradientTitle from '../../../components/ui/GradientTitle'
 import MiniBlob, { useMiniExpr } from '../../../components/MiniBlob'
 import { accentBtnStyle } from '../../../theme/gameColors'
 import { usePlayerAccent } from '../../../hooks/usePlayerAccent'
-import { useCatchBlobLeaderboard } from '../useCatchBlobLeaderboard'
+import { useFlappyBlobLeaderboard } from '../useFlappyBlobLeaderboard'
 
 const accentText = (accent) => `color-mix(in srgb, ${accent} 55%, var(--text))`
-
 const SPRING = { type: 'spring', stiffness: 320, damping: 26 }
-
 const MEDAL = { 1: '#F59E0B', 2: '#71717A', 3: '#B45309' }
 
 const Row = ({ rank, name, score, color, isMe, accent, expr }) => {
@@ -43,7 +39,7 @@ const Row = ({ rank, name, score, color, isMe, accent, expr }) => {
         {rank ? `${rank}` : '—'}
       </span>
       <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <MiniBlob color={color || '#9CA3AF'} expr={isMe ? expr : 'normal'} size={28} id={`cb-lb-${rank}-${name}`} />
+        <MiniBlob color={color || '#9CA3AF'} expr={isMe ? expr : 'normal'} size={28} id={`fb-lb-${rank}-${name}`} />
       </div>
       <span style={{
         fontWeight: 700,
@@ -68,10 +64,10 @@ const Row = ({ rank, name, score, color, isMe, accent, expr }) => {
   )
 }
 
-const CatchBlobLeaderboard = ({ open, onClose }) => {
+const FlappyBlobLeaderboard = ({ open, onClose }) => {
   const C = usePlayerAccent()
   const expr = useMiniExpr()
-  const { top, me, deviceId, loading, refresh } = useCatchBlobLeaderboard({ enabled: open })
+  const { top, me, deviceId, loading, refresh } = useFlappyBlobLeaderboard({ enabled: open })
 
   const inTop = useMemo(
     () => top.some((row) => row.device_id === deviceId),
@@ -82,13 +78,13 @@ const CatchBlobLeaderboard = ({ open, onClose }) => {
     <AnimatePresence>
       {open && (
         <motion.div
-          key="cb-lb-overlay"
+          key="fb-lb-overlay"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.18 }}
           style={{
-            position: 'fixed', inset: 0, zIndex: 70,
+            position: 'fixed', inset: 0, zIndex: 50,
             background: 'color-mix(in srgb, var(--bg) 92%, transparent)',
             backdropFilter: 'blur(10px)',
             display: 'flex', justifyContent: 'center', alignItems: 'stretch',
@@ -126,7 +122,7 @@ const CatchBlobLeaderboard = ({ open, onClose }) => {
                   fontSize: 'clamp(11px, 1.4dvh, 13px)',
                   fontWeight: 600,
                 }}>
-                  Catch The Blob · score endless
+                  Flappy Blob · best score per giocatore
                 </p>
               </div>
               <IconButton ariaLabel="Chiudi classifica" onClick={onClose} size="md">✕</IconButton>
@@ -260,4 +256,4 @@ const CatchBlobLeaderboard = ({ open, onClose }) => {
   )
 }
 
-export default CatchBlobLeaderboard
+export default FlappyBlobLeaderboard

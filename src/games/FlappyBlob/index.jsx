@@ -1,16 +1,16 @@
 import { lazy, Suspense, useState, useCallback, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useBlobJump } from './useBlobJump'
+import { useFlappyBlob } from './useFlappyBlob'
 import { useSession } from '../../stores/useSession'
 import CountdownOverlay from '../../components/CountdownOverlay'
 import Spinner from '../../components/ui/Spinner'
 import SoloEndScreen from '../../components/SoloEndScreen'
-import BlobJumpLeaderboard from './components/BlobJumpLeaderboard'
-import { submitBlobJumpScore } from './useBlobJumpLeaderboard'
+import FlappyBlobLeaderboard from './components/FlappyBlobLeaderboard'
+import { submitFlappyBlobScore, fetchPlayerRank } from './useFlappyBlobLeaderboard'
 
 const retryImport = (fn) => fn().catch(() => new Promise((r) => setTimeout(r, 1500)).then(fn))
 
-const BlobJumpPlaying = lazy(() => retryImport(() => import('./components/BlobJumpPlaying')))
+const FlappyBlobPlaying = lazy(() => retryImport(() => import('./components/FlappyBlobPlaying')))
 
 const Loading = () => (
   <div className="flex items-center justify-center" style={{ flex: 1 }}>
@@ -18,32 +18,44 @@ const Loading = () => (
   </div>
 )
 
-const BlobJump = () => {
-  const bj = useBlobJump()
+const FlappyBlob = () => {
+  const fb = useFlappyBlob()
   const navigate = useNavigate()
   const [replaying, setReplaying] = useState(false)
   const [lbOpen, setLbOpen] = useState(false)
+  const [localBest, setLocalBest] = useState(0)
   const submitFiredRef = useRef(false)
 
-  // Submit del best score globale appena entriamo in final.
+  // Fetch local best on mount (for HUD display)
   useEffect(() => {
-    if (bj.currentPhase !== 'blobjump_final') {
+    let cancelled = false
+    fetchPlayerRank().then((r) => {
+      if (!cancelled && typeof r?.score === 'number') setLocalBest(r.score)
+    }).catch(() => {})
+    return () => { cancelled = true }
+  }, [])
+
+  // Submit best score globally on final
+  useEffect(() => {
+    if (fb.currentPhase !== 'flappyblob_final') {
       submitFiredRef.current = false
       return
     }
     if (submitFiredRef.current) return
     submitFiredRef.current = true
 
-    const me = bj.players.find((p) => p.id === bj.localPlayerId)
+    const me = fb.players.find((p) => p.id === fb.localPlayerId)
     const score = me?.score ?? 0
     if (!me || score <= 0) return
-    submitBlobJumpScore({
+    submitFlappyBlobScore({
       score,
       playerName: me.name || 'Anonimo',
       color: me.color,
       source: 'solo',
+    }).then((res) => {
+      if (typeof res?.newBest === 'number') setLocalBest(res.newBest)
     })
-  }, [bj.currentPhase, bj.players, bj.localPlayerId])
+  }, [fb.currentPhase, fb.players, fb.localPlayerId])
 
   const handleChangeGame = useCallback(() => {
     navigate('/solo/games', { replace: true })
@@ -56,59 +68,59 @@ const BlobJump = () => {
     const now = new Date().toISOString()
     const s = useSession.getState()
     const resetPlayers = (s.players || []).map((p) => ({ ...p, score: 0 }))
-    // Solo: skip countdown — Rigioca deve essere istantaneo.
     useSession.setState({
       players: resetPlayers,
       gameState: { ...(s.gameState || {}), currentSeed: newSeed },
-      currentPhase: 'blobjump_playing',
+      currentPhase: 'flappyblob_playing',
       questionStartedAt: now,
     })
     setReplaying(false)
   }, [replaying])
 
-  if (bj.currentPhase === 'blobjump_countdown') {
+  if (fb.currentPhase === 'flappyblob_countdown') {
     return (
       <CountdownOverlay
-        questionStartedAt={bj.questionStartedAt}
+        questionStartedAt={fb.questionStartedAt}
         onComplete={() => {}}
-        players={bj.players}
-        localPlayerId={bj.localPlayerId}
-        gameName="Blob Jump"
-        gameEmoji="🦘"
+        players={fb.players}
+        localPlayerId={fb.localPlayerId}
+        gameName="Flappy Blob"
+        gameEmoji="🐤"
       />
     )
   }
 
-  if (bj.currentPhase === 'blobjump_playing') {
+  if (fb.currentPhase === 'flappyblob_playing') {
     return (
       <Suspense fallback={<Loading />}>
-        <BlobJumpPlaying
-          seed={bj.currentSeed}
-          blobColor={bj.blobColor}
-          scoreSubmitted={bj.scoreSubmitted}
-          onSubmitScore={bj.submitScore}
+        <FlappyBlobPlaying
+          seed={fb.currentSeed}
+          blobColor={fb.blobColor}
+          scoreSubmitted={fb.scoreSubmitted}
+          onSubmitScore={fb.submitScore}
+          localBest={localBest}
         />
       </Suspense>
     )
   }
 
-  if (bj.currentPhase === 'blobjump_final') {
-    const me = bj.players.find((p) => p.id === bj.localPlayerId)
-    const height = me?.score ?? 0
+  if (fb.currentPhase === 'flappyblob_final') {
+    const me = fb.players.find((p) => p.id === fb.localPlayerId)
+    const score = me?.score ?? 0
     return (
       <>
         <SoloEndScreen
-          gameEmoji="🦘"
-          gameName="Blob Jump"
+          gameEmoji="🐤"
+          gameName="Flappy Blob"
           player={me}
-          primaryValue={height}
-          primaryLabel="metri"
+          primaryValue={score}
+          primaryLabel="punti"
           advancing={replaying}
           onReplay={handleReplay}
           onChangeGame={handleChangeGame}
           onLeaderboard={() => setLbOpen(true)}
         />
-        <BlobJumpLeaderboard open={lbOpen} onClose={() => setLbOpen(false)} />
+        <FlappyBlobLeaderboard open={lbOpen} onClose={() => setLbOpen(false)} />
       </>
     )
   }
@@ -116,4 +128,4 @@ const BlobJump = () => {
   return <Loading />
 }
 
-export default BlobJump
+export default FlappyBlob

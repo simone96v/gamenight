@@ -1,7 +1,7 @@
 // SoloGamesScreen — selezione gioco per modalità solo (click diretto, no voto).
-// Stessa griglia di GamesScreen ma con GameCard in modalità 'solo'.
+// Filtra per la categoria scelta nello step precedente (selectedGameCategory).
 
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import AppHeader from '../components/AppHeader'
@@ -11,11 +11,12 @@ import GameCard from '../components/GameCard'
 import MiniBlob, { useMiniExpr } from '../components/MiniBlob'
 import { useSession } from '../stores/useSession'
 import { useSettings } from '../stores/useSettings'
-import { availableGamesFor } from '../data/games'
+import { availableGamesFor, getGameCategory } from '../data/games'
 
 const LOBBY_ROUTES = {
   blobjump: '/blobjump-lobby',
   catchblob: '/catchblob-lobby',
+  flappyblob: '/flappyblob-lobby',
   mappa: '/mappa-lobby',
   trivia: '/trivia-lobby',
   emojiquiz: '/emojiquiz-lobby',
@@ -25,12 +26,24 @@ const LOBBY_ROUTES = {
 const SoloGamesScreen = () => {
   const navigate = useNavigate()
   const player = useSession((s) => s.players[0])
+  const selectedGameCategory = useSession((s) => s.gameState?.selectedGameCategory)
   const theme = useSettings((s) => s.theme)
   const expr = useMiniExpr()
 
-  const games = availableGamesFor({ mode: 'local', categoryId: null })
+  // Senza categoria selezionata → torna allo step categoria.
+  useEffect(() => {
+    if (!selectedGameCategory) navigate('/solo/category', { replace: true })
+  }, [selectedGameCategory, navigate])
+
+  const category = getGameCategory(selectedGameCategory)
+  const games = availableGamesFor({
+    mode: 'local',
+    categoryId: null,
+    gameCategory: selectedGameCategory,
+  })
 
   const handlePick = useCallback((game) => {
+    if (game.locked) return
     const route = LOBBY_ROUTES[game.id]
     if (!route) return
 
@@ -42,6 +55,8 @@ const SoloGamesScreen = () => {
     navigate(route)
   }, [navigate])
 
+  if (!selectedGameCategory) return null
+
   return (
     <motion.div
       className="screen screen-narrow"
@@ -51,7 +66,7 @@ const SoloGamesScreen = () => {
     >
       <AppHeader
         leading={
-          <IconButton ariaLabel="Indietro" onClick={() => navigate('/solo', { replace: true })}>
+          <IconButton ariaLabel="Indietro" onClick={() => navigate('/solo/category', { replace: true })}>
             ←
           </IconButton>
         }
@@ -75,13 +90,14 @@ const SoloGamesScreen = () => {
           flexDirection: 'column',
           gap: 'clamp(14px, 2dvh, 22px)',
         }}>
-          {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             style={{ textAlign: 'center', flexShrink: 0 }}
           >
-            <GradientTitle as="h1" size="xl">Scegli il gioco</GradientTitle>
+            <GradientTitle as="h1" size="xl">
+              {category ? `${category.emoji} ${category.label}` : 'Scegli il gioco'}
+            </GradientTitle>
             {player && (
               <div style={playerRowWrap}>
                 <div
@@ -98,7 +114,6 @@ const SoloGamesScreen = () => {
             )}
           </motion.div>
 
-          {/* Grid */}
           <div style={grid}>
             {games.map((g, i) => (
               <GameCard

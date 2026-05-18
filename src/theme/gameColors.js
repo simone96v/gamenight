@@ -47,6 +47,15 @@ const GAME_COLORS = {
     badgeBorder: 'rgba(20, 184, 166, 0.18)',
     hoverGlow: '0 8px 20px rgba(20, 184, 166, 0.4)',
   },
+  flappyblob: {
+    accent: '#F59E0B',
+    accentLight: '#FBBF24',
+    gradient: 'linear-gradient(135deg, #FBBF24 0%, #F59E0B 50%, #B45309 100%)',
+    shadow: 'rgba(245, 158, 11, 0.35)',
+    shadowLight: 'rgba(245, 158, 11, 0.18)',
+    badgeBorder: 'rgba(245, 158, 11, 0.18)',
+    hoverGlow: '0 8px 20px rgba(245, 158, 11, 0.4)',
+  },
   catchblob: {
     accent: '#D97706',
     accentLight: '#FCD34D',
