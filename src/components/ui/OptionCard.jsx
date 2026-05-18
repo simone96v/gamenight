@@ -24,16 +24,12 @@ const OptionCard = ({
     whileHover={!disabled ? {
       scale: 1.02,
       y: -4,
-      boxShadow: selected
-        ? `0 0 0 4px var(--accent), 0 20px 48px ${option.shadow}`
-        : `0 20px 48px ${option.shadow}`,
+      boxShadow: `0 20px 48px ${option.shadow}`,
     } : {}}
     whileTap={!disabled ? {
       scale: 0.97,
       y: 0,
-      boxShadow: selected
-        ? `0 0 0 4px var(--accent), 0 4px 12px ${option.shadow}`
-        : `0 4px 12px ${option.shadow}`,
+      boxShadow: `0 4px 12px ${option.shadow}`,
     } : {}}
     onClick={disabled ? undefined : () => { haptic.light(); onClick?.() }}
     disabled={disabled}
@@ -41,10 +37,13 @@ const OptionCard = ({
       width: '100%',
       background: option.bg,
       borderRadius: 22,
-      border: selected ? '3px solid var(--surface)' : (option.border || '1px solid rgba(255,255,255,0.15)'),
-      boxShadow: selected
-        ? `0 0 0 4px var(--accent), 0 10px 28px ${option.shadow}`
-        : `0 10px 28px ${option.shadow}`,
+      // Default border integer-px per evitare sub-pixel artefatti su bordi
+      // arrotondati. Quando il bg è chiaro (option.textColor presente) usiamo
+      // il border-token coerente col tema invece del bianco semitrasparente.
+      border: selected
+        ? '2px solid var(--accent)'
+        : (option.border || (option.textColor ? '1px solid var(--border)' : '1px solid rgba(255,255,255,0.15)')),
+      boxShadow: `0 10px 28px ${option.shadow}`,
       padding: 'clamp(18px, 2.5dvh, 24px) clamp(18px, 4vw, 24px)',
       display: 'flex',
       alignItems: 'center',
@@ -54,6 +53,10 @@ const OptionCard = ({
       textAlign: 'left',
       position: 'relative',
       overflow: 'hidden',
+      outline: 'none',
+      boxSizing: 'border-box',
+      WebkitBackfaceVisibility: 'hidden',
+      WebkitTapHighlightColor: 'transparent',
     }}
   >
     {!option.textColor && <div style={{
@@ -75,11 +78,17 @@ const OptionCard = ({
         color: option.textColor || '#fff',
         letterSpacing: '-0.01em',
         marginBottom: 3,
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
       }}>{option.title ?? option.label}</div>
       <div style={{
         fontSize: 'clamp(12px, 1.6dvh, 14px)',
         color: option.textColor ? 'var(--muted)' : 'rgba(255,255,255,0.85)',
         lineHeight: 1.35,
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
       }}>{option.description}</div>
     </div>
 

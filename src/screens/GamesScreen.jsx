@@ -1,8 +1,8 @@
-// GamesScreen — votazione del gioco (multiplayer).
-// Filtra per la categoria scelta nello step precedente (selectedGameCategory).
-// Header con progresso voti.
+// GamesScreen — scelta del gioco (multiplayer).
+// Online: SOLO l'host può scegliere; gli altri vedono "Aspetta il boss".
+// Filtra per la categoria strutturale scelta nello step precedente.
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import AppHeader from '../components/AppHeader'
 import ErrorBanner from '../components/ErrorBanner'
@@ -14,14 +14,19 @@ import { useSettings } from '../stores/useSettings'
 import { availableGamesFor, getGameCategory } from '../data/games'
 import { pushRoom, rpcInitGame } from '../lib/room'
 
+const LOBBY_PHASE = {
+  trivia:    'trivia_lobby',
+  mappa:     'mappa_lobby',
+  scramble:  'scramble_lobby',
+  emojiquiz: 'emojiquiz_lobby',
+}
+
 const GamesScreen = () => {
   const isHost = useSession((s) => s.isHost)
   const roomCode = useSession((s) => s.roomCode)
-  const localPlayerId = useSession((s) => s.localPlayerId)
   const players = useSession((s) => s.players)
   const gameState = useSession((s) => s.gameState)
   const currentPhase = useSession((s) => s.currentPhase)
-  const castVote = useSession((s) => s.castVote)
   const showError = useSession((s) => s.showError)
   const theme = useSettings((s) => s.theme)
   const expr = useMiniExpr()
@@ -29,17 +34,6 @@ const GamesScreen = () => {
   const [launching, setLaunching] = useState(false)
 
   const selectedGameCategory = gameState?.selectedGameCategory ?? null
-  const gameVotes = useMemo(() => gameState?.gameVotes ?? {}, [gameState?.gameVotes])
-  const myVote = gameVotes[localPlayerId] ?? null
-  const totalPlayers = players.length
-  const totalVotes = Object.keys(gameVotes).length
-
-  const voteCounts = useMemo(() => {
-    const counts = {}
-    Object.values(gameVotes).forEach((v) => { counts[v] = (counts[v] || 0) + 1 })
-    return counts
-  }, [gameVotes])
-
   const category = getGameCategory(selectedGameCategory)
 
   const games = useMemo(
@@ -47,79 +41,7 @@ const GamesScreen = () => {
     [selectedGameCategory],
   )
 
-  useEffect(() => {
-    if (!isHost) return
-    if (currentPhase !== 'game_voting') return
-    if (totalPlayers === 0 || totalVotes < totalPlayers) return
-    if (launching) return
-
-    const counts = {}
-    Object.values(gameVotes).forEach((v) => { counts[v] = (counts[v] || 0) + 1 })
-    const values = Object.keys(counts)
-    if (values.length === 0) return
-    const max = Math.max(...Object.values(counts))
-    const winners = values.filter((k) => counts[k] === max)
-    const winnerId = winners[Math.floor(Math.random() * winners.length)]
-
-    const launch = async () => {
-      setLaunching(true)
-      const session = useSession.getState()
-      const basePlayers = (session.players || []).map((p) => ({ ...p, score: 0 }))
-      const baseState = {
-        players: basePlayers,
-        currentIdx: 0,
-        round: 0,
-        activeGame: winnerId,
-        selectedGame: winnerId,
-        selectedCategory: session.gameState?.selectedCategory ?? null,
-        categoryVotes: session.gameState?.categoryVotes ?? {},
-        selectedGameCategory: session.gameState?.selectedGameCategory ?? null,
-        gameCategoryVotes: session.gameState?.gameCategoryVotes ?? {},
-      }
-
-      const LOBBY_PHASE = {
-        trivia:    'trivia_lobby',
-        mappa:     'mappa_lobby',
-        scramble:  'scramble_lobby',
-        emojiquiz: 'emojiquiz_lobby',
-      }
-      const lobbyPhase = LOBBY_PHASE[winnerId]
-      if (lobbyPhase) {
-        const pushRes = await pushRoom(roomCode, lobbyPhase, baseState)
-        if (pushRes.error) {
-          showError('generic')
-          setLaunching(false)
-        }
-        return
-      }
-
-      const phaseMap = { neverhave: 'play_neverhave' }
-      const newPhase = phaseMap[winnerId]
-      if (!newPhase) {
-        showError('generic')
-        setLaunching(false)
-        return
-      }
-      const { error } = await rpcInitGame(roomCode, winnerId, newPhase)
-      if (error) {
-        console.error('[Games] init game error:', error)
-        showError('generic')
-        setLaunching(false)
-      }
-    }
-    launch()
-  }, [
-    isHost, currentPhase, totalPlayers, totalVotes,
-    gameVotes, roomCode, launching, showError,
-  ])
-
-  const handlePick = (game) => {
-    if (launching || game.locked) return
-    castVote('gameVotes', game.id)
-  }
-
-  // Se senza categoria selezionata e siamo host, riporta a category_voting.
-  // I non-host non possono fare push: useRoomSync li seguirà.
+  // Senza categoria selezionata e siamo host → riporta a category_voting.
   useEffect(() => {
     if (!isHost) return
     if (currentPhase !== 'game_voting') return
@@ -142,12 +64,55 @@ const GamesScreen = () => {
     })()
   }, [isHost, currentPhase, selectedGameCategory, roomCode])
 
+  const handlePick = useCallback(async (game) => {
+    if (launching || game.locked || !isHost) return
+    setLaunching(true)
+
+    const s = useSession.getState()
+    const basePlayers = (s.players || []).map((p) => ({ ...p, score: 0 }))
+    const baseState = {
+      players: basePlayers,
+      currentIdx: 0,
+      round: 0,
+      activeGame: game.id,
+      selectedGame: game.id,
+      selectedCategory: s.gameState?.selectedCategory ?? null,
+      categoryVotes: s.gameState?.categoryVotes ?? {},
+      selectedGameCategory: s.gameState?.selectedGameCategory ?? null,
+      gameCategoryVotes: s.gameState?.gameCategoryVotes ?? {},
+    }
+
+    const lobbyPhase = LOBBY_PHASE[game.id]
+    if (lobbyPhase) {
+      const pushRes = await pushRoom(roomCode, lobbyPhase, baseState)
+      if (pushRes.error) {
+        showError('generic')
+        setLaunching(false)
+      }
+      return
+    }
+
+    const phaseMap = { neverhave: 'play_neverhave' }
+    const newPhase = phaseMap[game.id]
+    if (!newPhase) {
+      showError('generic')
+      setLaunching(false)
+      return
+    }
+    const { error } = await rpcInitGame(roomCode, game.id, newPhase)
+    if (error) {
+      console.error('[Games] init game error:', error)
+      showError('generic')
+      setLaunching(false)
+    }
+  }, [launching, isHost, roomCode, showError])
+
   return (
     <motion.div
       className="screen screen-narrow"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2 }}
+      transition={{ duration: 0.18 }}
     >
       <AppHeader />
       <ErrorBanner />
@@ -172,27 +137,22 @@ const GamesScreen = () => {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
             style={{ textAlign: 'center', flexShrink: 0 }}
           >
             <GradientTitle as="h1" size="xl">
               {category ? `${category.emoji} ${category.label}` : 'Scegli il gioco'}
             </GradientTitle>
             <p style={subtitle}>
-              {totalVotes === 0
-                ? 'Tocca una card per votare'
-                : myVote
-                  ? totalVotes === totalPlayers
-                    ? 'Tutti hanno votato!'
-                    : `Hai votato · ${totalVotes}/${totalPlayers}`
-                  : `${totalVotes}/${totalPlayers} hanno votato`}
+              {isHost
+                ? 'Tocca una card per avviare'
+                : 'Aspetta che il boss scelga... 👑'}
             </p>
           </motion.div>
 
-          <VoteProgressStrip
-            players={players}
-            gameVotes={gameVotes}
-            expr={expr}
-          />
+          {!isHost && (
+            <WaitingStrip players={players} expr={expr} />
+          )}
 
           <div style={grid}>
             {games.map((g, i) => (
@@ -201,10 +161,9 @@ const GamesScreen = () => {
                 game={g}
                 index={i}
                 onClick={() => handlePick(g)}
-                selected={myVote === g.id}
-                voteCount={voteCounts[g.id] || 0}
-                mode="vote"
+                mode="solo"
                 theme={theme}
+                disabled={launching || !isHost}
               />
             ))}
           </div>
@@ -213,9 +172,10 @@ const GamesScreen = () => {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.15 }}
               style={launchBanner}
             >
-              ⚡ Avvio del gioco vincitore...
+              ⚡ Avvio del gioco...
             </motion.div>
           )}
         </div>
@@ -224,46 +184,23 @@ const GamesScreen = () => {
   )
 }
 
-const VoteProgressStrip = ({ players, gameVotes, expr }) => {
+const WaitingStrip = ({ players, expr }) => {
   if (!players?.length) return null
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.05 }}
+      transition={{ duration: 0.15 }}
       style={progressStrip}
     >
-      {players.map((p) => {
-        const voted = !!gameVotes[p.id]
-        return (
-          <div key={p.id} style={voterCell}>
-            <div style={{
-              ...voterBlob,
-              opacity: voted ? 1 : 0.45,
-              filter: voted ? 'none' : 'grayscale(0.3)',
-            }}>
-              <MiniBlob
-                color={p.color}
-                expr={expr}
-                size={28}
-                id={`voter-${p.id}`}
-              />
-              {voted && (
-                <div style={voterCheck} aria-label="Ha votato">
-                  ✓
-                </div>
-              )}
-            </div>
-            <span style={{
-              ...voterName,
-              color: voted ? 'var(--text)' : 'var(--muted)',
-              fontWeight: voted ? 800 : 600,
-            }}>
-              {p.name}
-            </span>
+      {players.map((p) => (
+        <div key={p.id} style={voterCell}>
+          <div style={voterBlob}>
+            <MiniBlob color={p.color} expr={expr} size={28} id={`gs-${p.id}`} />
           </div>
-        )
-      })}
+          <span style={voterName}>{p.name}</span>
+        </div>
+      ))}
     </motion.div>
   )
 }
@@ -320,25 +257,6 @@ const voterBlob = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  transition: 'opacity 0.18s, filter 0.18s',
-}
-
-const voterCheck = {
-  position: 'absolute',
-  bottom: -2,
-  right: -4,
-  background: 'var(--success)',
-  color: '#fff',
-  fontSize: 9,
-  fontWeight: 900,
-  width: 14,
-  height: 14,
-  borderRadius: '50%',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  border: '1.5px solid var(--surface)',
-  lineHeight: 1,
 }
 
 const voterName = {
@@ -348,6 +266,8 @@ const voterName = {
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
   textAlign: 'center',
+  color: 'var(--text)',
+  fontWeight: 700,
 }
 
 export default GamesScreen

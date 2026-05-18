@@ -43,10 +43,12 @@ const GameCard = ({
   voteCount = 0,
   mode = 'solo',
   theme = 'light',
+  disabled = false,
 }) => {
   const imageSrc = pickImage(game.image, theme)
   const isVote = mode === 'vote'
   const isLocked = !!game.locked
+  const inactive = isLocked || disabled
 
   return (
     <motion.button
@@ -54,29 +56,29 @@ const GameCard = ({
       initial={{ opacity: 0, y: 18, scale: 0.94 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ delay: index * 0.05, ...SPRING }}
-      whileHover={!isLocked ? {
+      whileHover={!inactive ? {
         scale: 1.025,
         y: -4,
         boxShadow: selected
           ? `0 0 0 4px rgba(0, 0, 0, 0.22), 0 24px 48px ${game.shadow}`
           : `0 16px 36px rgba(31, 41, 55, 0.14), 0 0 0 1px var(--border) inset`,
       } : {}}
-      whileTap={!isLocked ? {
+      whileTap={!inactive ? {
         scale: 0.97,
         y: 0,
       } : {}}
-      onClick={isLocked ? undefined : onClick}
+      onClick={inactive ? undefined : onClick}
       aria-pressed={selected}
-      aria-disabled={isLocked}
-      disabled={isLocked}
+      aria-disabled={inactive}
+      disabled={inactive}
       style={{
         ...S.card,
         border: selected ? '2.5px solid var(--accent)' : '1px solid var(--border)',
         boxShadow: selected
           ? `0 0 0 4px rgba(0, 0, 0, 0.20), 0 18px 36px ${game.shadow}`
           : `0 10px 22px rgba(31, 41, 55, 0.08), 0 0 0 1px var(--border) inset`,
-        opacity: isLocked ? 0.62 : 1,
-        cursor: isLocked ? 'not-allowed' : 'pointer',
+        opacity: isLocked ? 0.62 : disabled ? 0.85 : 1,
+        cursor: inactive ? 'not-allowed' : 'pointer',
         filter: isLocked ? 'grayscale(0.4)' : 'none',
       }}
     >
