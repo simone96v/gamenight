@@ -23,6 +23,7 @@ const LOBBY_ROUTES = {
   logoquiz: '/logoquiz-lobby',
   scramble: '/scramble-lobby',
   setteemezzo: '/setteemezzo-lobby',
+  cucu: '/cucu-lobby',
 }
 
 const SoloGamesScreen = () => {
