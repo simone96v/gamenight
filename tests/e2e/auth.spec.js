@@ -24,16 +24,17 @@ test.describe('Auth — UI flow', () => {
     await expect(page.getByRole('heading', { name: /Accedi/i })).toBeVisible()
   })
 
-  test('LoginScreen: mostra Google + email/password in modalità signin', async ({ page }) => {
+  test('LoginScreen: mostra email/password in modalità signin', async ({ page }) => {
     await page.goto('/login')
-    // Bottone Google
-    await expect(page.getByRole('button', { name: /Accedi con Google/i })).toBeVisible()
     // Campi email + password (no display_name in signin)
     await expect(page.getByPlaceholder(/mario@example\.com/i)).toBeVisible()
     await expect(page.getByPlaceholder(/Almeno 6 caratteri/i)).toBeVisible()
     await expect(page.getByPlaceholder(/Es\. Marco/i)).not.toBeVisible()
     // Password dimenticata visibile solo in signin
     await expect(page.getByRole('button', { name: /Password dimenticata\?/i })).toBeVisible()
+    // Bottone Google nascosto (feature flag GOOGLE_AUTH_ENABLED=false finché
+    // OAuth non è configurato lato Supabase + Google Cloud Console).
+    await expect(page.getByRole('button', { name: /Accedi con Google/i })).not.toBeVisible()
   })
 
   test('LoginScreen: toggle a signup mostra display_name e nasconde "Password dimenticata"', async ({ page }) => {

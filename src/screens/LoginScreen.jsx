@@ -19,6 +19,12 @@ import {
 
 const NEXT_PARAM = 'next'
 
+// Feature flag: Google OAuth richiede setup nel pannello Supabase + Google Cloud
+// Console (vedi docs/AUTH-SETUP.md). Finché non è configurato, nascondiamo il
+// bottone per evitare errori "provider not enabled" agli utenti.
+// Per riattivarlo: completa il setup e cambia in `true`.
+const GOOGLE_AUTH_ENABLED = false
+
 const LoginScreen = () => {
   const navigate = useNavigate()
   const [params] = useSearchParams()
@@ -152,24 +158,28 @@ const LoginScreen = () => {
           </p>
         </motion.div>
 
-        {/* Google */}
-        <Button
-          type="button"
-          variant="secondary"
-          width="full"
-          disabled={loading}
-          onClick={handleGoogle}
-          style={{ gap: 10 }}
-        >
-          <GoogleIcon />
-          {isSignUp ? 'Iscriviti con Google' : 'Accedi con Google'}
-        </Button>
+        {/* Google (gated da feature flag — vedi commento in cima al file) */}
+        {GOOGLE_AUTH_ENABLED && (
+          <>
+            <Button
+              type="button"
+              variant="secondary"
+              width="full"
+              disabled={loading}
+              onClick={handleGoogle}
+              style={{ gap: 10 }}
+            >
+              <GoogleIcon />
+              {isSignUp ? 'Iscriviti con Google' : 'Accedi con Google'}
+            </Button>
 
-        <div style={dividerStyle}>
-          <span style={dividerLineStyle} />
-          <span style={dividerTextStyle}>oppure</span>
-          <span style={dividerLineStyle} />
-        </div>
+            <div style={dividerStyle}>
+              <span style={dividerLineStyle} />
+              <span style={dividerTextStyle}>oppure</span>
+              <span style={dividerLineStyle} />
+            </div>
+          </>
+        )}
 
         {/* Email / password */}
         <div style={cardStyle}>
