@@ -26,13 +26,16 @@ export const ITEM = {
 //     interval and speeds up falls.
 //   - Wave 6 is the perpetual "survival" tier — game stays here forever once
 //     reached, so it must remain challenging but not deterministic-death.
+// Wave 1 parte già al ritmo del vecchio "Pressione" (l'ex stage 3) con uno
+// spawn più fitto: niente warm-up, si entra subito nel gioco. Le wave
+// successive accelerano di conseguenza per mantenere la rampa di difficoltà.
 export const WAVES = [
-  { id: 1, name: 'Calma',          until: 12,       spawnInterval: 1.10, fallSpeedMul: 1.00, malusRate: 0.00, starRate: 0.08 },
-  { id: 2, name: 'Risveglio',      until: 35,       spawnInterval: 0.95, fallSpeedMul: 1.15, malusRate: 0.18, starRate: 0.06 },
-  { id: 3, name: 'Pressione',      until: 75,       spawnInterval: 0.82, fallSpeedMul: 1.32, malusRate: 0.28, starRate: 0.05 },
-  { id: 4, name: 'Frenesia',       until: 130,      spawnInterval: 0.68, fallSpeedMul: 1.52, malusRate: 0.34, starRate: 0.05 },
-  { id: 5, name: 'Caos',           until: 200,      spawnInterval: 0.56, fallSpeedMul: 1.80, malusRate: 0.40, starRate: 0.04 },
-  { id: 6, name: 'Sopravvivenza',  until: Infinity, spawnInterval: 0.46, fallSpeedMul: 2.10, malusRate: 0.45, starRate: 0.04 },
+  { id: 1, name: 'Pressione',      until: 30,       spawnInterval: 0.72, fallSpeedMul: 1.32, malusRate: 0.20, starRate: 0.06 },
+  { id: 2, name: 'Frenesia',       until: 70,       spawnInterval: 0.62, fallSpeedMul: 1.50, malusRate: 0.30, starRate: 0.05 },
+  { id: 3, name: 'Caos',           until: 120,      spawnInterval: 0.52, fallSpeedMul: 1.72, malusRate: 0.36, starRate: 0.05 },
+  { id: 4, name: 'Tempesta',       until: 180,      spawnInterval: 0.44, fallSpeedMul: 1.95, malusRate: 0.42, starRate: 0.04 },
+  { id: 5, name: 'Sopravvivenza',  until: 260,      spawnInterval: 0.38, fallSpeedMul: 2.18, malusRate: 0.46, starRate: 0.04 },
+  { id: 6, name: 'Inferno',        until: Infinity, spawnInterval: 0.32, fallSpeedMul: 2.45, malusRate: 0.50, starRate: 0.03 },
 ]
 
 export function getWaveForElapsed(elapsed) {
