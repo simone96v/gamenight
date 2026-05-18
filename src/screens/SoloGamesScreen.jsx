@@ -8,7 +8,6 @@ import AppHeader from '../components/AppHeader'
 import IconButton from '../components/ui/IconButton'
 import GradientTitle from '../components/ui/GradientTitle'
 import GameCard from '../components/GameCard'
-import MiniBlob, { useMiniExpr } from '../components/MiniBlob'
 import { useSession } from '../stores/useSession'
 import { useSettings } from '../stores/useSettings'
 import { availableGamesFor, getGameCategory } from '../data/games'
@@ -17,18 +16,19 @@ const LOBBY_ROUTES = {
   blobjump: '/blobjump-lobby',
   catchblob: '/catchblob-lobby',
   flappyblob: '/flappyblob-lobby',
+  blobdash: '/blobdash-lobby',
   mappa: '/mappa-lobby',
   trivia: '/trivia-lobby',
   emojiquiz: '/emojiquiz-lobby',
+  logoquiz: '/logoquiz-lobby',
   scramble: '/scramble-lobby',
+  setteemezzo: '/setteemezzo-lobby',
 }
 
 const SoloGamesScreen = () => {
   const navigate = useNavigate()
-  const player = useSession((s) => s.players[0])
   const selectedGameCategory = useSession((s) => s.gameState?.selectedGameCategory)
   const theme = useSettings((s) => s.theme)
-  const expr = useMiniExpr()
 
   // Senza categoria selezionata → torna allo step categoria.
   useEffect(() => {
@@ -95,23 +95,9 @@ const SoloGamesScreen = () => {
             animate={{ opacity: 1, y: 0 }}
             style={{ textAlign: 'center', flexShrink: 0 }}
           >
-            <GradientTitle as="h1" size="xl">
+            <GradientTitle as="h1" size="md">
               {category ? `${category.emoji} ${category.label}` : 'Scegli il gioco'}
             </GradientTitle>
-            {player && (
-              <div style={playerRowWrap}>
-                <div
-                  style={{
-                    ...playerBox,
-                    background: `${player.color}14`,
-                    borderColor: player.color,
-                  }}
-                >
-                  <MiniBlob color={player.color} expr={expr} size={32} id="solo-hdr" />
-                  <span style={playerName}>{player.name}</span>
-                </div>
-              </div>
-            )}
           </motion.div>
 
           <div style={grid}>
@@ -132,30 +118,6 @@ const SoloGamesScreen = () => {
   )
 }
 
-const playerRowWrap = {
-  display: 'flex',
-  justifyContent: 'center',
-  marginTop: 'clamp(10px, 1.4dvh, 14px)',
-}
-const playerBox = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: 10,
-  padding: 'clamp(4px, 0.7dvh, 6px) clamp(14px, 3vw, 18px) clamp(4px, 0.7dvh, 6px) clamp(4px, 1vw, 6px)',
-  borderRadius: 999,
-  border: '1.5px solid',
-  maxWidth: '90%',
-}
-const playerName = {
-  fontFamily: "'Baloo 2', cursive",
-  fontSize: 'clamp(14px, 1.8dvh, 18px)',
-  fontWeight: 800,
-  letterSpacing: '-0.01em',
-  color: 'var(--text)',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap',
-}
 const grid = {
   display: 'grid',
   gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',

@@ -339,16 +339,23 @@ export const GAMES = [
   }),
 
   // Classici italiani con mazzo da 40
-  placeholder('setteemezzo', 'cards', {
+  {
+    id: 'setteemezzo',
+    gameCategory: 'cards',
     name: 'Sette e Mezzo',
     emoji: '7️⃣',
+    image: { light: '/games/cards/placeholder-light.png', dark: '/games/cards/placeholder-dark.png' },
     tagline: 'Avvicinati a 7½ senza sballare',
-    description: 'Variante italiana del Black Jack con mazzo da 40. Pesca mirando a 7½: le figure valgono ½. Sballa e sei fuori. Solo vs banco o multi contro gli amici.',
+    description: 'Variante italiana del Black Jack con mazzo da 40. Pesca mirando a 7½: le figure valgono ½. Sballa e sei fuori.',
     difficulty: 1,
     minPlayers: 1,
-    maxPlayers: 6,
-    compatibility: { multi: true, single: true, excludedCategories: [] },
-  }),
+    maxPlayers: 1,
+    locked: false,
+    bg: 'linear-gradient(145deg, #FDE68A 0%, #F59E0B 55%, #92400E 100%)',
+    shadow: 'rgba(245, 158, 11, 0.40)',
+    compatibility: { multi: false, single: true, excludedCategories: [] },
+    component: lazy(() => import('../games/SetteEMezzo')),
+  },
   placeholder('briscola', 'cards', {
     name: 'Briscola',
     emoji: '🃏',
