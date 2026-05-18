@@ -177,21 +177,6 @@ export const GAMES = [
     compatibility: { multi: true, single: true, excludedCategories: [] },
     component: lazy(() => import('../games/Scramble')),
   },
-  placeholder('quiz_year', 'quiz', {
-    name: 'Anno Misterioso',
-    emoji: '📅',
-    tagline: 'Quando è successo?',
-    description: 'Un fatto storico, pop o assurdo. Indovina l\'anno: più sei vicino, più punti.',
-    difficulty: 2,
-  }),
-  placeholder('quiz_price', 'quiz', {
-    name: 'Indovina il Prezzo',
-    emoji: '💰',
-    tagline: 'Più ti avvicini, più punti',
-    description: 'Un oggetto, un prezzo nascosto. Spara la tua cifra: chi si avvicina di più si prende il round.',
-    difficulty: 2,
-  }),
-
   // ───── ARCADE (endless, solo single player) ─────
   {
     id: 'blobjump',
@@ -356,16 +341,23 @@ export const GAMES = [
     compatibility: { multi: false, single: true, excludedCategories: [] },
     component: lazy(() => import('../games/SetteEMezzo')),
   },
-  placeholder('briscola', 'cards', {
+  {
+    id: 'briscola',
+    gameCategory: 'cards',
     name: 'Briscola',
     emoji: '🃏',
+    image: { light: '/games/cards/placeholder-light.png', dark: '/games/cards/placeholder-dark.png' },
     tagline: 'Il classico trick-taking',
-    description: 'Mazzo da 40. Un seme è briscola e comanda su tutti. Solo vs AI o in coppia 2v2: chi prende l\'asso (11) e il tre (10) fa la differenza.',
+    description: 'Mazzo da 40. Un seme è briscola e comanda su tutti. 1v1 contro CPU: vince chi supera 60 punti.',
     difficulty: 2,
     minPlayers: 1,
-    maxPlayers: 4,
-    compatibility: { multi: true, single: true, excludedCategories: [] },
-  }),
+    maxPlayers: 1,
+    locked: false,
+    bg: 'linear-gradient(145deg, #6EE7B7 0%, #059669 55%, #064E3B 100%)',
+    shadow: 'rgba(5, 150, 105, 0.40)',
+    compatibility: { multi: false, single: true, excludedCategories: [] },
+    component: lazy(() => import('../games/Briscola')),
+  },
   placeholder('scopa', 'cards', {
     name: 'Scopa',
     emoji: '🧹',
