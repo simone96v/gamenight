@@ -64,10 +64,19 @@ export const getGameCategory = (id) => GAME_CATEGORIES.find((c) => c.id === id)
 // L'id deve essere univoco. `meta` permette di dargli nome/emoji/descrizione
 // reali così le 4 categorie sono pre-popolate con idee credibili — sarà
 // l'utente a vederlo come "Prossimamente" tramite il flag locked + badge UI.
+// Card artwork condivisa per i placeholder. Stessa estetica delle card reali
+// (illustrazione flat con outline marcato, light/dark). Si può override via
+// meta.image se un placeholder vuole un'illustrazione custom.
+const PLACEHOLDER_IMAGE = {
+  light: '/games/cards/placeholder-light.png',
+  dark: '/games/cards/placeholder-dark.png',
+}
+
 const placeholder = (id, gameCategory, meta = {}) => ({
   id,
   name: meta.name || 'Prossimamente',
   emoji: meta.emoji || '✨',
+  image: meta.image || PLACEHOLDER_IMAGE,
   tagline: meta.tagline || 'In arrivo',
   description: meta.description || 'Un nuovo gioco sta per arrivare. Stay tuned!',
   difficulty: meta.difficulty ?? 1,
