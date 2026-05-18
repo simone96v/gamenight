@@ -125,6 +125,9 @@ const GameCategoryScreen = () => {
                     description: descText,
                     bg: cat.bg,
                     shadow: cat.shadow,
+                    border: cat.border,
+                    textColor: cat.textColor,
+                    subtleTitle: true,
                   }}
                   index={i}
                   onClick={() => handlePick(cat)}

@@ -64,12 +64,23 @@
 *::before,
 *::after { box-sizing: border-box; }
 
+/* iOS Safari fa auto-zoom su <input>/<select>/<textarea> con font-size < 16px
+   quando ricevono il focus. Forziamo 16px minimo (clamp lascia poi crescere). */
+input, select, textarea {
+  font-size: max(16px, 1em);
+}
+
 html {
   height: 100%;
   /* Supporto safe area (notch / Dynamic Island / Android nav bar) */
   height: 100dvh;
   overflow: hidden;
   font-size: clamp(13px, 1vw + 11px, 17px);
+  /* Blocca double-tap-zoom (mantiene scroll/pan). */
+  touch-action: manipulation;
+  /* No auto-resize testo su rotate iOS / pinch Android. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -83,6 +94,7 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   position: relative;
+  touch-action: manipulation;
   /* Padding safe area — evita sovrapposizione con notch e barra nav */
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);

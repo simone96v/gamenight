@@ -8,38 +8,44 @@
 import { lazy } from 'react'
 
 // Categorie strutturali dei giochi: la prima fascia di scelta dopo la lobby.
+// Stesso stile per tutti i box (bg/shadow/border/textColor uniformi); cambiano
+// solo emoji, label e description. Border 1px integer (no sub-pixel artefatti
+// sui bordi arrotondati con anti-aliasing).
+const CATEGORY_STYLE = {
+  bg: 'var(--surface)',
+  shadow: 'rgba(0, 0, 0, 0.04)',
+  border: '1px solid var(--border)',
+  textColor: 'var(--text)',
+}
+
 export const GAME_CATEGORIES = [
   {
     id: 'quiz',
     label: 'Quiz',
     emoji: '🧠',
     description: 'Cultura, parole, intuito. Chi sa di più vince.',
-    bg: 'linear-gradient(135deg, #C7D2FE 0%, #818CF8 60%, #4F46E5 100%)',
-    shadow: 'rgba(79, 70, 229, 0.40)',
+    ...CATEGORY_STYLE,
   },
   {
     id: 'arcade',
     label: 'Arcade',
     emoji: '🕹️',
     description: 'Endless single player con classifica globale.',
-    bg: 'linear-gradient(135deg, #A7F3D0 0%, #34D399 60%, #059669 100%)',
-    shadow: 'rgba(5, 150, 105, 0.40)',
+    ...CATEGORY_STYLE,
   },
   {
     id: 'cards',
     label: 'Carte',
     emoji: '🃏',
     description: 'Pesca, leggi e... gioca.',
-    bg: 'linear-gradient(135deg, #FCA5A5 0%, #F87171 60%, #DC2626 100%)',
-    shadow: 'rgba(220, 38, 38, 0.40)',
+    ...CATEGORY_STYLE,
   },
   {
     id: 'party',
     label: 'Party',
     emoji: '🎉',
     description: 'Tutti insieme. Risate garantite.',
-    bg: 'linear-gradient(135deg, #FDE68A 0%, #F59E0B 60%, #D97706 100%)',
-    shadow: 'rgba(217, 119, 6, 0.40)',
+    ...CATEGORY_STYLE,
   },
 ]
 

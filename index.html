@@ -8,8 +8,9 @@
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
 
-    <!-- Viewport + safe areas (notch / Dynamic Island) -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- Viewport + safe areas (notch / Dynamic Island). Zoom bloccato (pinch
+         + double-tap + auto-zoom su input focus iOS) per layout PWA fisso. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 
     <!-- PWA / standalone iOS -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -58,6 +59,13 @@
     </style>
   </head>
   <body>
+    <script>
+      // Blocca pinch-zoom su iOS Safari (i meta viewport non sempre bastano nei
+      // webview/standalone) e il double-tap zoom su tutta la pagina.
+      document.addEventListener('gesturestart', function (e) { e.preventDefault() })
+      document.addEventListener('gesturechange', function (e) { e.preventDefault() })
+      document.addEventListener('gestureend', function (e) { e.preventDefault() })
+    </script>
     <div id="root"></div>
     <div id="boot-fallback">
       <div class="logo">🎉</div>
