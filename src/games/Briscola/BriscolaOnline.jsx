@@ -10,6 +10,7 @@
 //     (lo state è pubblico in JSONB). Accettabile per partite tra amici.
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { cardTableTheme } from '../_shared/cardTableTheme'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import AppHeader from '../../components/AppHeader'
@@ -298,7 +299,7 @@ const S = {
     flexDirection: 'column',
     flex: 1,
     overflow: 'hidden',
-    background: 'var(--bg)',
+    ...cardTableTheme,
   },
   center: {
     flex: 1,

@@ -12,6 +12,7 @@
 // AI CPU: scambia se carta ≤ 4, altrimenti tiene. Heuristica semplice ma plausibile.
 
 import { useReducer, useCallback, useEffect, useMemo } from 'react'
+import { cardTableTheme } from '../_shared/cardTableTheme'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import AppHeader from '../../components/AppHeader'
@@ -474,7 +475,7 @@ const S = {
     flexDirection: 'column',
     flex: 1,
     overflow: 'hidden',
-    background: 'var(--bg)',
+    ...cardTableTheme,
   },
   body: {
     flex: 1,
