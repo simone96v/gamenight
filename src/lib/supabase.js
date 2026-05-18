@@ -12,5 +12,15 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   realtime: { params: { eventsPerSecond: 10 } },
-  auth: { persistSession: false },     // non usiamo Supabase Auth
+  auth: {
+    // Auth persistente: necessario per Google OAuth + email/password.
+    // I guest restano tali finché non si autenticano; le RPC che usano device_id
+    // continuano a funzionare anche senza sessione.
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,   // gestisce il redirect OAuth (?code=...)
+    flowType: 'pkce',
+    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+    storageKey: 'gn:auth',
+  },
 })

@@ -5,6 +5,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { getDeviceId } from '../../utils/device'
+import { enrichScoresWithProfiles } from '../../lib/auth'
 
 const TABLE = 'blobjump_scores'
 const TOP_LIMIT = 20
@@ -37,12 +38,13 @@ export async function submitBlobJumpScore({ score, playerName, color, source = '
 export async function fetchTopBlobJumpScores(limit = TOP_LIMIT) {
   const { data, error } = await supabase
     .from(TABLE)
-    .select('device_id, player_name, score, color, updated_at')
+    .select('device_id, user_id, player_name, score, color, updated_at')
     .order('score', { ascending: false })
     .order('updated_at', { ascending: true })
     .limit(limit)
   if (error) return { rows: [], error: error.message }
-  return { rows: data || [] }
+  const enriched = await enrichScoresWithProfiles(data || [])
+  return { rows: enriched }
 }
 
 /**

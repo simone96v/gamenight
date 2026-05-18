@@ -11,6 +11,8 @@ import TapShockwaves from '../components/TapShockwaves'
 import { useBlobGaze } from '../hooks/useBlob'
 import { useTapShockwave } from '../hooks/useTapShockwave'
 import { useSettings } from '../stores/useSettings'
+import { useAuth } from '../stores/useAuth'
+import MiniBlob from '../components/MiniBlob'
 
 const useOptions = () => {
   const theme = useSettings((s) => s.theme)
@@ -55,8 +57,54 @@ const useOptions = () => {
 const STATS = [
   { emoji: '🧠', label: '4 categorie' },
   { emoji: '👥', label: 'Fino a 8' },
-  { emoji: '⚡', label: 'Niente account' },
+  { emoji: '⚡', label: 'Gioca subito' },
 ]
+
+// Bottone profilo/login in top-right.
+const ProfileButton = ({ profile, isAuth, onClick }) => (
+  <motion.button
+    type="button"
+    onClick={onClick}
+    whileHover={{ scale: 1.06 }}
+    whileTap={{ scale: 0.94 }}
+    transition={{ type: 'spring', stiffness: 400, damping: 22 }}
+    aria-label={isAuth ? 'Vai al profilo' : 'Accedi'}
+    style={{
+      position: 'fixed',
+      top: 'clamp(12px, 2dvh, 20px)',
+      right: 'clamp(12px, 3vw, 20px)',
+      zIndex: 10,
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: 8,
+      height: 42,
+      padding: '0 14px 0 6px',
+      borderRadius: 999,
+      background: 'var(--surface)',
+      border: '1.5px solid var(--border-strong)',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+      cursor: 'pointer',
+      fontFamily: "'Baloo 2', cursive",
+      fontWeight: 700,
+      fontSize: 13,
+      color: 'var(--text)',
+    }}
+  >
+    {isAuth ? (
+      <>
+        <MiniBlob color={profile?.blob_color || '#F59E0B'} expr="happy" size={30} id="home-profile-blob" />
+        <span style={{ maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {profile?.display_name || 'Profilo'}
+        </span>
+      </>
+    ) : (
+      <>
+        <span style={{ fontSize: 18, marginLeft: 6 }}>👤</span>
+        <span>Accedi</span>
+      </>
+    )}
+  </motion.button>
+)
 
 const StatPill = ({ emoji, label, delay }) => (
   <motion.div
@@ -168,6 +216,9 @@ const HomeScreen = () => {
   const bottomExpr = useExprCycle(4) // sfasato dal top per non blinkare insieme
   const gaze = useBlobGaze({ strength: 1 })
   const OPTIONS = useOptions()
+  const authStatus = useAuth((s) => s.status)
+  const profile = useAuth((s) => s.profile)
+  const isAuth = authStatus === 'authenticated'
 
   // Interattività blob bottom-hero: tap → shockwave + cambio expr temporaneo.
   const { tapExpr, waves, onTap, removeWave } = useTapShockwave()
@@ -186,6 +237,11 @@ const HomeScreen = () => {
       transition={{ duration: 0.25 }}
       style={{ position: 'relative' }}
     >
+      <ProfileButton
+        isAuth={isAuth}
+        profile={profile}
+        onClick={() => navigate(isAuth ? '/profile' : '/login')}
+      />
       <ErrorBanner />
 
       <div

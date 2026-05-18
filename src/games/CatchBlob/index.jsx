@@ -7,6 +7,7 @@ import Spinner from '../../components/ui/Spinner'
 import SoloEndScreen from '../../components/SoloEndScreen'
 import CatchBlobLeaderboard from './components/CatchBlobLeaderboard'
 import { submitCatchBlobScore } from './useCatchBlobLeaderboard'
+import { recordMatch } from '../../lib/auth'
 
 const retryImport = (fn) => fn().catch(() => new Promise((r) => setTimeout(r, 1500)).then(fn))
 
@@ -43,6 +44,7 @@ const CatchBlob = () => {
       color: me.color,
       source: 'solo',
     })
+    recordMatch({ gameId: 'catchblob', mode: 'solo', score, won: null })
   }, [cb.currentPhase, cb.players, cb.localPlayerId])
 
   const handleChangeGame = useCallback(() => {

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import AppHeader from '../components/AppHeader'
@@ -9,18 +9,44 @@ import IconButton from '../components/ui/IconButton'
 import GradientTitle from '../components/ui/GradientTitle'
 import ColorPicker from '../components/ColorPicker'
 import { useSession } from '../stores/useSession'
+import { useAuth } from '../stores/useAuth'
 import { createRoom, addPlayerToRoom } from '../lib/room'
 import { validatePlayerName } from '../utils/nameValidation'
 
 const CreatePartyScreen = () => {
   const navigate = useNavigate()
+  const authStatus = useAuth((s) => s.status)
+  const profile = useAuth((s) => s.profile)
   const [partyName, setPartyName] = useState('')
   const [name, setName] = useState('')
   const [selectedColor, setSelectedColor] = useState(null)
   const [creating, setCreating] = useState(false)
+  const [profileSeeded, setProfileSeeded] = useState(false)
   const setOnlineMode = useSession((s) => s.setOnlineMode)
   const resetSession = useSession((s) => s.resetSession)
   const showError = useSession((s) => s.showError)
+
+  // Gate: hosting di una party richiede login (decisione di prodotto).
+  // Guest/anonimo possono ancora join e solo.
+  useEffect(() => {
+    if (authStatus === 'guest') {
+      navigate('/login?next=/create', { replace: true })
+    }
+  }, [authStatus, navigate])
+
+  // Pre-fill da profilo durante il render (pattern canonico per derivare state da props):
+  // si attiva una sola volta — appena `profile` diventa disponibile — senza sovrascrivere
+  // edit utente successivi.
+  if (!profileSeeded && profile) {
+    setProfileSeeded(true)
+    if (profile.display_name && !name) setName(profile.display_name)
+    if (profile.blob_color && !selectedColor) setSelectedColor(profile.blob_color)
+  }
+
+  // Mentre l'auth si idrata o se non autenticato non renderizziamo la form.
+  if (authStatus === 'idle' || authStatus === 'loading' || authStatus === 'guest') {
+    return null
+  }
 
   const partyStatus = validatePlayerName(partyName, { maxLen: 24 })
   const nameStatus = validatePlayerName(name)

@@ -7,6 +7,7 @@ import Spinner from '../../components/ui/Spinner'
 import SoloEndScreen from '../../components/SoloEndScreen'
 import FlappyBlobLeaderboard from './components/FlappyBlobLeaderboard'
 import { submitFlappyBlobScore, fetchPlayerRank } from './useFlappyBlobLeaderboard'
+import { recordMatch } from '../../lib/auth'
 
 const retryImport = (fn) => fn().catch(() => new Promise((r) => setTimeout(r, 1500)).then(fn))
 
@@ -55,6 +56,7 @@ const FlappyBlob = () => {
     }).then((res) => {
       if (typeof res?.newBest === 'number') setLocalBest(res.newBest)
     })
+    recordMatch({ gameId: 'flappyblob', mode: 'solo', score, won: null })
   }, [fb.currentPhase, fb.players, fb.localPlayerId])
 
   const handleChangeGame = useCallback(() => {
