@@ -66,6 +66,20 @@ const BlobJump = () => {
     setReplaying(false)
   }, [replaying])
 
+  // Su PC: Space rigioca dalla schermata finale (stesso input usato per saltare
+  // durante il gioco, quindi naturale per la mano dell'utente). e.repeat=false
+  // evita lo spam se Space resta premuto al momento della morte.
+  useEffect(() => {
+    if (bj.currentPhase !== 'blobjump_final') return
+    const onKey = (e) => {
+      if (e.code !== 'Space' || e.repeat) return
+      e.preventDefault()
+      handleReplay()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [bj.currentPhase, handleReplay])
+
   if (bj.currentPhase === 'blobjump_countdown') {
     return (
       <CountdownOverlay

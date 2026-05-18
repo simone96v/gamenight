@@ -77,6 +77,20 @@ const FlappyBlob = () => {
     setReplaying(false)
   }, [replaying])
 
+  // Su PC: Space rigioca dalla schermata finale (stesso input usato per
+  // flap durante il gioco). e.repeat=false evita lo spam se Space resta
+  // premuto al momento della morte.
+  useEffect(() => {
+    if (fb.currentPhase !== 'flappyblob_final') return
+    const onKey = (e) => {
+      if (e.code !== 'Space' || e.repeat) return
+      e.preventDefault()
+      handleReplay()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [fb.currentPhase, handleReplay])
+
   if (fb.currentPhase === 'flappyblob_countdown') {
     return (
       <CountdownOverlay
