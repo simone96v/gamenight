@@ -7,11 +7,6 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.jsx'
-import { useAuth } from './stores/useAuth'
-
-// Idrata la sessione Supabase appena possibile (prima del render iniziale).
-// Fa una sola lettura di getSession() + registra il listener auth-state.
-useAuth.getState().bootstrap()
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

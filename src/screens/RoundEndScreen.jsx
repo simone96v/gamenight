@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import AppHeader from '../components/AppHeader'
@@ -8,7 +7,6 @@ import PlayerAvatar from '../components/PlayerAvatar'
 import { useSession } from '../stores/useSession'
 import { useSettings } from '../stores/useSettings'
 import { getCopy } from '../data/copy'
-import { recordMatch } from '../lib/auth'
 
 const containerVariants = {
   hidden: {},
@@ -25,47 +23,12 @@ const RoundEndScreen = () => {
   const mode = useSession((s) => s.mode)
   const isHost = useSession((s) => s.isHost)
   const players = useSession((s) => s.players)
-  const localPlayerId = useSession((s) => s.localPlayerId)
-  const roomCode = useSession((s) => s.roomCode)
-  const activeGame = useSession((s) => s.activeGame)
-  const round = useSession((s) => s.round)
   const setPhase = useSession((s) => s.setPhase)
   const category = useSettings((s) => s.category)
   const copy = getCopy(category)
 
   const canAct = mode === 'local' || isHost
   const sorted = [...players].sort((a, b) => b.score - a.score)
-
-  // Storico partite per il proprio user: una sola scrittura per (room, round, game).
-  // Idempotente via sessionStorage flag — sopravvive a remount/refresh nella stessa sessione.
-  const recordedRef = useRef(false)
-  useEffect(() => {
-    if (recordedRef.current) return
-    if (!localPlayerId || !activeGame) return
-    const me = players.find((p) => p.id === localPlayerId)
-    if (!me) return
-
-    const key = `gn:matchRecorded:${roomCode || 'local'}:${round}:${activeGame}`
-    try { if (sessionStorage.getItem(key)) { recordedRef.current = true; return } } catch { /* ignore */ }
-
-    recordedRef.current = true
-    const top = sorted[0]?.score ?? 0
-    const position = sorted.findIndex((p) => p.id === me.id) + 1
-    const won = top > 0 && me.score === top
-
-    recordMatch({
-      gameId: activeGame,
-      mode: mode === 'online' ? 'party' : 'solo',
-      role: isHost ? 'host' : 'player',
-      roomCode: roomCode || null,
-      score: me.score,
-      position,
-      playersCount: players.length,
-      won,
-    }).catch(() => { /* best-effort */ })
-
-    try { sessionStorage.setItem(key, '1') } catch { /* ignore */ }
-  }, [activeGame, isHost, localPlayerId, mode, players, roomCode, round, sorted])
 
   const handleNext = () => {
     setPhase('hub')

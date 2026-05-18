@@ -211,9 +211,9 @@ const FlappyBlobLeaderboard = ({ open, onClose }) => {
                   <Row
                     key={row.device_id}
                     rank={i + 1}
-                    name={row.display_name || row.player_name}
+                    name={row.player_name}
                     score={row.score}
-                    color={row.profile_blob_color || row.color}
+                    color={row.color}
                     isMe={row.device_id === deviceId}
                     accent={C.accent}
                     expr={expr}

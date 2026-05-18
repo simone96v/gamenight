@@ -15,10 +15,6 @@ import ConnectionModal from './components/ConnectionModal'
 const ModeScreen = lazy(() => import('./screens/ModeScreen'))
 const CreatePartyScreen = lazy(() => import('./screens/CreatePartyScreen'))
 const JoinScreen = lazy(() => import('./screens/JoinScreen'))
-const LoginScreen = lazy(() => import('./screens/LoginScreen'))
-const AuthCallbackScreen = lazy(() => import('./screens/AuthCallbackScreen'))
-const ResetPasswordScreen = lazy(() => import('./screens/ResetPasswordScreen'))
-const ProfileScreen = lazy(() => import('./screens/ProfileScreen'))
 const WaitingScreen = lazy(() => import('./screens/WaitingScreen'))
 const LobbyScreen = lazy(() => import('./screens/LobbyScreen'))
 const CategoryScreen = lazy(() => import('./screens/CategoryScreen'))
@@ -95,10 +91,6 @@ function App() {
         <Suspense>
           <Routes>
             <Route path="/" element={<HomeScreen />} />
-            <Route path="/login" element={<LoginScreen />} />
-            <Route path="/auth/callback" element={<AuthCallbackScreen />} />
-            <Route path="/auth/reset" element={<ResetPasswordScreen />} />
-            <Route path="/profile" element={<ProfileScreen />} />
             <Route path="/create" element={<CreatePartyScreen />} />
             <Route path="/mode" element={<ModeScreen />} />
             <Route path="/join" element={<JoinScreen />} />

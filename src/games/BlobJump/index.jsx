@@ -7,7 +7,6 @@ import Spinner from '../../components/ui/Spinner'
 import SoloEndScreen from '../../components/SoloEndScreen'
 import BlobJumpLeaderboard from './components/BlobJumpLeaderboard'
 import { submitBlobJumpScore } from './useBlobJumpLeaderboard'
-import { recordMatch } from '../../lib/auth'
 
 const retryImport = (fn) => fn().catch(() => new Promise((r) => setTimeout(r, 1500)).then(fn))
 
@@ -44,8 +43,6 @@ const BlobJump = () => {
       color: me.color,
       source: 'solo',
     })
-    // Storico partite (no-op se l'utente è guest).
-    recordMatch({ gameId: 'blobjump', mode: 'solo', score, won: null })
   }, [bj.currentPhase, bj.players, bj.localPlayerId])
 
   const handleChangeGame = useCallback(() => {
