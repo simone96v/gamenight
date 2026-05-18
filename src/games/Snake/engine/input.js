@@ -37,7 +37,7 @@ export class InputHandler {
   }
 
   _onKey(e) {
-    let dir = null
+    let dir
     switch (e.key) {
       case 'ArrowUp': case 'w': case 'W': dir = 'up'; break
       case 'ArrowDown': case 's': case 'S': dir = 'down'; break
@@ -62,9 +62,9 @@ export class InputHandler {
     const ay = Math.abs(dy)
     if (Math.max(ax, ay) < SWIPE_MIN) return
     e.preventDefault?.()
-    let dir
-    if (ax > ay) dir = dx > 0 ? 'right' : 'left'
-    else dir = dy > 0 ? 'down' : 'up'
+    const dir = ax > ay
+      ? (dx > 0 ? 'right' : 'left')
+      : (dy > 0 ? 'down' : 'up')
     this.engine.setDirection(dir)
     // Reset start dove siamo ora così uno swipe lungo continuo
     // permette eventualmente una seconda curva.

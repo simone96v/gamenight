@@ -1,5 +1,5 @@
-// BlobDigLeaderboard — overlay fullscreen della classifica globale.
-// Clone strutturale di BlobJumpLeaderboard ma puntato a useBlobDigLeaderboard.
+// SnakeLeaderboard — overlay fullscreen della classifica globale Blob Snake.
+// Stesso pattern di CatchBlobLeaderboard / FlappyBlobLeaderboard.
 
 import { useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -9,10 +9,12 @@ import GradientTitle from '../../../components/ui/GradientTitle'
 import MiniBlob, { useMiniExpr } from '../../../components/MiniBlob'
 import { accentBtnStyle } from '../../../theme/gameColors'
 import { usePlayerAccent } from '../../../hooks/usePlayerAccent'
-import { useBlobDigLeaderboard } from '../useBlobDigLeaderboard'
+import { useSnakeLeaderboard } from '../useSnakeLeaderboard'
 
 const accentText = (accent) => `color-mix(in srgb, ${accent} 55%, var(--text))`
+
 const SPRING = { type: 'spring', stiffness: 320, damping: 26 }
+
 const MEDAL = { 1: '#F59E0B', 2: '#71717A', 3: '#B45309' }
 
 const Row = ({ rank, name, score, color, isMe, accent, expr }) => {
@@ -42,7 +44,7 @@ const Row = ({ rank, name, score, color, isMe, accent, expr }) => {
         {rank ? `${rank}` : '—'}
       </span>
       <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <MiniBlob color={color || '#9CA3AF'} expr={isMe ? expr : 'normal'} size={28} id={`bdlb-${rank}-${name}`} />
+        <MiniBlob color={color || '#9CA3AF'} expr={isMe ? expr : 'normal'} size={28} id={`sn-lb-${rank}-${name}`} />
       </div>
       <span style={{
         fontWeight: 700,
@@ -61,16 +63,16 @@ const Row = ({ rank, name, score, color, isMe, accent, expr }) => {
         color: 'var(--text)',
         fontVariantNumeric: 'tabular-nums',
       }}>
-        {score}
+        {score}<span style={{ fontSize: '0.65em', color: 'var(--muted)', marginLeft: 3 }}>pt</span>
       </span>
     </div>
   )
 }
 
-const BlobDigLeaderboard = ({ open, onClose }) => {
+const SnakeLeaderboard = ({ open, onClose }) => {
   const C = usePlayerAccent()
   const expr = useMiniExpr()
-  const { top, me, deviceId, loading, refresh } = useBlobDigLeaderboard({ enabled: open })
+  const { top, me, deviceId, loading, refresh } = useSnakeLeaderboard({ enabled: open })
 
   const inTop = useMemo(
     () => top.some((row) => row.device_id === deviceId),
@@ -81,7 +83,7 @@ const BlobDigLeaderboard = ({ open, onClose }) => {
     <AnimatePresence>
       {open && (
         <motion.div
-          key="bdlb-overlay"
+          key="sn-lb-overlay"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -109,13 +111,23 @@ const BlobDigLeaderboard = ({ open, onClose }) => {
               minHeight: 0,
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 12,
+            }}>
               <div>
                 <GradientTitle as="h2" size="md" gradient={C.gradient}>
                   🏆 Classifica globale
                 </GradientTitle>
-                <p style={{ margin: '2px 0 0', color: 'var(--muted)', fontSize: 'clamp(11px, 1.4dvh, 13px)', fontWeight: 600 }}>
-                  Blob Dig · best score per giocatore
+                <p style={{
+                  margin: '2px 0 0',
+                  color: 'var(--muted)',
+                  fontSize: 'clamp(11px, 1.4dvh, 13px)',
+                  fontWeight: 600,
+                }}>
+                  Blob Snake · pillole mangiate
                 </p>
               </div>
               <IconButton ariaLabel="Chiudi classifica" onClick={onClose} size="md">✕</IconButton>
@@ -126,37 +138,79 @@ const BlobDigLeaderboard = ({ open, onClose }) => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 }}
               style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
                 padding: 'clamp(12px, 1.8dvh, 16px) clamp(14px, 2.5vw, 18px)',
                 background: `color-mix(in srgb, ${C.accent} 14%, var(--surface))`,
+                color: 'var(--text)',
                 border: `1.5px solid ${C.accent}`,
                 borderRadius: 'var(--radius)',
                 boxShadow: 'var(--shadow-sm)',
               }}
             >
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <span style={{ fontSize: 'clamp(11px, 1.3dvh, 13px)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: accentText(C.accent) }}>
+                <span style={{
+                  fontSize: 'clamp(11px, 1.3dvh, 13px)',
+                  fontWeight: 800,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  color: accentText(C.accent),
+                }}>
                   La tua posizione
                 </span>
-                <span style={{ fontFamily: "'Baloo 2', cursive", fontWeight: 900, fontSize: 'clamp(20px, 2.8dvh, 24px)', color: accentText(C.accent) }}>
-                  {loading ? '...' : me.rank ? `#${me.rank} su ${me.total}` : 'Nessuno score'}
+                <span style={{
+                  fontFamily: "'Baloo 2', cursive",
+                  fontWeight: 900,
+                  fontSize: 'clamp(20px, 2.8dvh, 24px)',
+                  color: accentText(C.accent),
+                }}>
+                  {loading
+                    ? '...'
+                    : me.rank
+                    ? `#${me.rank} su ${me.total}`
+                    : 'Nessuno score'}
                 </span>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <span style={{ fontSize: 'clamp(11px, 1.3dvh, 13px)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: accentText(C.accent) }}>
+                <span style={{
+                  fontSize: 'clamp(11px, 1.3dvh, 13px)',
+                  fontWeight: 800,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  color: accentText(C.accent),
+                }}>
                   Record
                 </span>
-                <div style={{ fontFamily: "'Baloo 2', cursive", fontWeight: 900, fontSize: 'clamp(22px, 3dvh, 28px)', lineHeight: 1.1, color: accentText(C.accent) }}>
+                <div style={{
+                  fontFamily: "'Baloo 2', cursive",
+                  fontWeight: 900,
+                  fontSize: 'clamp(22px, 3dvh, 28px)',
+                  lineHeight: 1.1,
+                  color: accentText(C.accent),
+                }}>
                   {me.score ?? 0}
+                  <span style={{ fontSize: '0.55em', marginLeft: 4, opacity: 0.7 }}>pt</span>
                 </div>
               </div>
             </motion.div>
 
-            <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8, padding: '4px 2px', scrollbarWidth: 'none' }}>
+            <div style={{
+              flex: 1,
+              minHeight: 0,
+              overflowY: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8,
+              padding: '4px 2px',
+              scrollbarWidth: 'none',
+            }}>
               {loading && top.length === 0 ? (
                 <div style={{ color: 'var(--muted)', textAlign: 'center', padding: 24 }}>Caricamento...</div>
               ) : top.length === 0 ? (
-                <div style={{ color: 'var(--muted)', textAlign: 'center', padding: 24 }}>Nessuno score ancora. Sii il primo!</div>
+                <div style={{ color: 'var(--muted)', textAlign: 'center', padding: 24 }}>
+                  Nessuno score ancora. Sii il primo!
+                </div>
               ) : (
                 top.map((row, i) => (
                   <Row
@@ -171,17 +225,34 @@ const BlobDigLeaderboard = ({ open, onClose }) => {
                   />
                 ))
               )}
+
               {!loading && me.rank && !inTop && (
                 <>
-                  <div style={{ textAlign: 'center', color: 'var(--muted)', fontSize: 12, padding: '6px 0', fontWeight: 600 }}>· · ·</div>
-                  <Row rank={me.rank} name="Tu" score={me.score} color={null} isMe accent={C.accent} expr={expr} />
+                  <div style={{
+                    textAlign: 'center',
+                    color: 'var(--muted)',
+                    fontSize: 12,
+                    padding: '6px 0',
+                    fontWeight: 600,
+                  }}>· · ·</div>
+                  <Row
+                    rank={me.rank}
+                    name="Tu"
+                    score={me.score}
+                    color={null}
+                    isMe={true}
+                    accent={C.accent}
+                    expr={expr}
+                  />
                 </>
               )}
             </div>
 
             <div style={{ display: 'flex', gap: 8 }}>
               <Button variant="secondary" width="full" onClick={refresh}>Aggiorna</Button>
-              <Button variant="primary" width="full" onClick={onClose} style={accentBtnStyle(C.accent)}>Chiudi</Button>
+              <Button variant="primary" width="full" onClick={onClose} style={accentBtnStyle(C.accent)}>
+                Chiudi
+              </Button>
             </div>
           </motion.div>
         </motion.div>
@@ -190,4 +261,4 @@ const BlobDigLeaderboard = ({ open, onClose }) => {
   )
 }
 
-export default BlobDigLeaderboard
+export default SnakeLeaderboard

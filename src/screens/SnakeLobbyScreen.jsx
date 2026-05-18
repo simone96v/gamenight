@@ -1,15 +1,11 @@
 // Lobby Blob Snake — solo single player (endless arcade).
-// TODO: il componente `games/Snake` non è ancora stato creato — appena esiste
-// ripristina l'import di SnakeLeaderboard e rimuovi lo stub qui sotto.
 
 import { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import GameLobbyLayout from '../components/GameLobbyLayout'
 import IconButton from '../components/ui/IconButton'
+import SnakeLeaderboard from '../games/Snake/components/SnakeLeaderboard'
 import { useSession } from '../stores/useSession'
-
-// Stub temporaneo finché Snake non è implementato.
-const SnakeLeaderboard = () => null
 
 const SnakeLobbyScreen = () => {
   const navigate = useNavigate()

@@ -218,23 +218,18 @@ export const GAMES = [
     compatibility: { multi: false, single: true, excludedCategories: [] },
     component: lazy(() => import('../games/CatchBlob')),
   },
-  {
-    id: 'blobdig',
-    gameCategory: 'arcade',
-    name: 'Blob Dig',
-    emoji: '⛏️',
-    image: { light: '/games/cards/blobdig-light.png', dark: '/games/cards/blobdig-dark.png' },
-    tagline: 'Scava sempre più giù',
-    description: 'Tap sinistra o destra per scavare. Raccogli gemme, evita la lava. Più scendi più punti.',
+  placeholder('blobtap', 'arcade', {
+    name: 'Blob Tap',
+    emoji: '👆',
+    tagline: 'Acchiappa i blob che spuntano',
+    description: 'Whack-a-mole 30s: i blob appaiono random sulla griglia e spariscono in fretta. Tappa il più possibile prima che il timer finisca.',
     difficulty: 1,
     minPlayers: 1,
     maxPlayers: 1,
-    locked: false,
-    bg: 'linear-gradient(145deg, #FDE68A 0%, #B45309 55%, #451A03 100%)',
-    shadow: 'rgba(180, 83, 9, 0.40)',
+    bg: 'linear-gradient(145deg, #FBCFE8 0%, #EC4899 55%, #831843 100%)',
+    shadow: 'rgba(236, 72, 153, 0.40)',
     compatibility: { multi: false, single: true, excludedCategories: [] },
-    component: lazy(() => import('../games/BlobDig')),
-  },
+  }),
   placeholder('blobstack', 'arcade', {
     name: 'Blob Stack',
     emoji: '🗼',
@@ -245,21 +240,23 @@ export const GAMES = [
     maxPlayers: 1,
     compatibility: { multi: false, single: true, excludedCategories: [] },
   }),
-  // Snake: scaffold non ancora completo (Snake/index.jsx referenzia file
-  // figli che non esistono). Resta placeholder finché tutti i sotto-moduli
-  // (components/SnakePlaying, components/SnakeLeaderboard, useSnakeLeaderboard)
-  // non vengono creati. Poi rimuovi questo placeholder e ripristina il blocco
-  // "real game" con `locked: false` + `component: lazy(...)`.
-  placeholder('snake', 'arcade', {
+  {
+    id: 'snake',
+    gameCategory: 'arcade',
     name: 'Blob Snake',
     emoji: '🐍',
+    image: { light: '/games/cards/snake-light.png', dark: '/games/cards/snake-dark.png' },
     tagline: 'Mangia, cresci, sopravvivi',
     description: 'Guida il serpente di blob: divora le pillole, cresci, non sbattere sulla coda.',
     difficulty: 2,
     minPlayers: 1,
     maxPlayers: 1,
+    locked: false,
+    bg: 'linear-gradient(145deg, #A7F3D0 0%, #14B8A6 55%, #0F766E 100%)',
+    shadow: 'rgba(20, 184, 166, 0.40)',
     compatibility: { multi: false, single: true, excludedCategories: [] },
-  }),
+    component: lazy(() => import('../games/Snake')),
+  },
 
   // ───── CARDS ─────
   {

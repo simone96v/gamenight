@@ -1,14 +1,15 @@
-// Hook + helper per la classifica globale Blob Dig.
-// Identico nella shape a useBlobJumpLeaderboard, ma su tabella blobdig_scores.
+// Hook + helper per la classifica globale Blob Snake.
+// Persistenza: Supabase table public.snake_scores (one row per device, best score).
+// Stesso pattern di useFlappyBlobLeaderboard / useCatchBlobLeaderboard.
 
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { getDeviceId } from '../../utils/device'
 
-const TABLE = 'blobdig_scores'
+const TABLE = 'snake_scores'
 const TOP_LIMIT = 20
 
-export async function submitBlobDigScore({ score, playerName, color, source = 'solo' }) {
+export async function submitSnakeScore({ score, playerName, color, source = 'solo' }) {
   if (!Number.isFinite(score) || score < 0) return { error: 'invalid_score' }
   const deviceId = getDeviceId()
   const cleanName = (playerName || 'Anonimo').toString().slice(0, 24).trim() || 'Anonimo'
@@ -21,7 +22,7 @@ export async function submitBlobDigScore({ score, playerName, color, source = 's
       .eq('device_id', deviceId)
       .maybeSingle()
     if (existing) previousScore = existing.score ?? -1
-  } catch {/* ignore */}
+  } catch {/* upsert below is authoritative */}
 
   const newBest = Math.max(previousScore, score)
   const promoted = score > previousScore
@@ -41,7 +42,7 @@ export async function submitBlobDigScore({ score, playerName, color, source = 's
   return { promoted, newBest, previousScore }
 }
 
-export async function fetchTopBlobDigScores(limit = TOP_LIMIT) {
+export async function fetchTopSnakeScores(limit = TOP_LIMIT) {
   const { data, error } = await supabase
     .from(TABLE)
     .select('device_id, player_name, score, color, updated_at')
@@ -78,7 +79,7 @@ export async function fetchPlayerRank() {
   }
 }
 
-export function useBlobDigLeaderboard({ enabled = true } = {}) {
+export function useSnakeLeaderboard({ enabled = true } = {}) {
   const [top, setTop] = useState([])
   const [me, setMe] = useState({ rank: null, total: 0, score: null })
   const [loading, setLoading] = useState(false)
@@ -88,7 +89,7 @@ export function useBlobDigLeaderboard({ enabled = true } = {}) {
     setLoading(true)
     setError(null)
     const [{ rows, error: topErr }, rank] = await Promise.all([
-      fetchTopBlobDigScores(),
+      fetchTopSnakeScores(),
       fetchPlayerRank(),
     ])
     if (topErr) setError(topErr)
@@ -99,6 +100,7 @@ export function useBlobDigLeaderboard({ enabled = true } = {}) {
 
   useEffect(() => {
     if (!enabled) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refresh()
   }, [enabled, refresh])
 

@@ -98,7 +98,6 @@ const SnakeGame = forwardRef(function SnakeGame(
     const ctx = canvas.getContext('2d')
 
     const accentLight = BLOB_GRADIENTS[blobColor]?.[0] || blobColor
-    const accentMid = BLOB_GRADIENTS[blobColor]?.[1] || blobColor
     const accentDark = blobColor
 
     const draw = (ts) => {
