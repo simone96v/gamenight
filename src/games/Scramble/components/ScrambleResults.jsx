@@ -1,19 +1,22 @@
 // Risultati di fine round per Scramble. Layout:
-// - Header: round badge + titolo "Round X finito"
+// - Header: round badge + titolo + rack pill + definizione (se disponibile)
 // - Stat hero del giocatore locale: punti round + parole + pangram count
 // - Classifica compatta (mostrata solo se >= 2 giocatori)
-// - Parole trovate del giocatore locale a chip
+// - Tabs per giocatore + parole trovate
 // - Footer: bottone avanza
 
+import { useMemo, useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import AppHeader from '../../../components/AppHeader'
 import IconButton from '../../../components/ui/IconButton'
 import GradientTitle from '../../../components/ui/GradientTitle'
 import Button from '../../../components/ui/Button'
 import RoundBadge from '../../../components/ui/RoundBadge'
+import MiniBlob, { useMiniExpr } from '../../../components/MiniBlob'
 import { accentBtnStyle, SPRING } from '../../../theme/gameColors'
 import { usePlayerAccent } from '../../../hooks/usePlayerAccent'
 import { scoreWord } from '../data/dictionary'
+import { getRackDefinition } from '../data/definitions'
 
 const RACK_LEN = 7
 
@@ -37,19 +40,45 @@ const ScrambleResults = ({
   onChangeGame,
 }) => {
   const C = usePlayerAccent()
+  const expr = useMiniExpr()
 
+  const safePlayers = useMemo(() => players || [], [players])
   const myWords = scrambleWords?.[localPlayerId] ?? []
   const myRoundPts = scrambleRoundResults?.[localPlayerId] ?? 0
   const myTotalPts = scrambleScores?.[localPlayerId] ?? 0
   const myPangrams = myWords.filter((w) => w.length === RACK_LEN).length
 
-  const sortedByRound = [...(players || [])].sort(
-    (a, b) => (scrambleRoundResults?.[b.id] ?? 0) - (scrambleRoundResults?.[a.id] ?? 0),
+  const sortedByRound = useMemo(
+    () => [...safePlayers].sort(
+      (a, b) => (scrambleRoundResults?.[b.id] ?? 0) - (scrambleRoundResults?.[a.id] ?? 0),
+    ),
+    [safePlayers, scrambleRoundResults],
   )
-  const showLeaderboard = (players?.length ?? 0) >= 2
+  const showLeaderboard = safePlayers.length >= 2
+  const showTabs = safePlayers.length >= 2
+
+  // Tab attiva: parte sempre dal giocatore locale, se presente.
+  const [activeTabId, setActiveTabId] = useState(() => {
+    const me = safePlayers.find((p) => p.id === localPlayerId)
+    return me?.id ?? safePlayers[0]?.id ?? null
+  })
+
+  // Se cambiano i giocatori (raro), riallinea la tab.
+  useEffect(() => {
+    if (!activeTabId) return
+    if (safePlayers.some((p) => p.id === activeTabId)) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setActiveTabId(safePlayers[0]?.id ?? null)
+  }, [safePlayers, activeTabId])
+
+  const activePlayer = safePlayers.find((p) => p.id === activeTabId)
+  const activeWords = (scrambleWords?.[activeTabId] || [])
+  const activeRoundPts = scrambleRoundResults?.[activeTabId] ?? 0
+  const isViewingMe = activeTabId === localPlayerId
 
   const isLast = roundIdx + 1 >= totalRounds
   const canAdvance = isHost || !isOnline
+  const definition = getRackDefinition(rack)
 
   return (
     <div style={S.container}>
@@ -76,6 +105,21 @@ const ScrambleResults = ({
             <span style={S.rackPillLabel}>Rack</span>
             <span style={{ ...S.rackPillValue, color: C.accent }}>{rack}</span>
           </div>
+          {definition && (
+            <motion.div
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.12, duration: 0.3 }}
+              style={{
+                ...S.defBox,
+                borderColor: `${C.accent}33`,
+                background: `${C.accent}0d`,
+              }}
+            >
+              <span style={{ ...S.defIcon, color: C.accent }} aria-hidden="true">📖</span>
+              <p style={S.defText}>{definition}</p>
+            </motion.div>
+          )}
         </motion.div>
 
         {/* Hero stats del giocatore locale */}
@@ -143,17 +187,59 @@ const ScrambleResults = ({
           </div>
         )}
 
-        {/* Parole trovate (chip) */}
+        {/* Parole trovate — con tabs per giocatore se multiplayer */}
         <div style={S.wordsCard}>
           <div style={S.wordsHeader}>
-            <span style={S.sectionLabel}>Le tue parole</span>
-            <span style={{ ...S.wordsCount, color: C.accent }}>{myWords.length}</span>
+            <span style={S.sectionLabel}>
+              {showTabs
+                ? (isViewingMe ? 'Le tue parole' : `Parole di ${activePlayer?.name ?? '...'}`)
+                : 'Le tue parole'}
+            </span>
+            <span style={{ ...S.wordsCount, color: C.accent }}>
+              {activeWords.length}{activeRoundPts > 0 ? ` · +${activeRoundPts}` : ''}
+            </span>
           </div>
+
+          {showTabs && (
+            <div className="scrollable-tabs" style={S.tabs} role="tablist" aria-label="Giocatori">
+              {safePlayers.map((p) => {
+                const isActive = p.id === activeTabId
+                const count = (scrambleWords?.[p.id] || []).length
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    onClick={() => setActiveTabId(p.id)}
+                    style={{
+                      ...S.tab,
+                      borderColor: isActive ? p.color : 'var(--border)',
+                      background: isActive ? `${p.color}1f` : 'var(--bg)',
+                      color: isActive ? 'var(--text)' : 'var(--muted)',
+                      fontWeight: isActive ? 800 : 600,
+                    }}
+                  >
+                    <MiniBlob color={p.color} expr={expr} size={20} id={`tab-${p.id}`} />
+                    <span style={S.tabName}>
+                      {p.id === localPlayerId ? 'Tu' : p.name}
+                    </span>
+                    <span style={S.tabCount}>{count}</span>
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
           <div className="scrollable-list" style={S.wordsList}>
-            {myWords.length === 0 ? (
-              <p style={S.empty}>Nessuna parola in questo round.</p>
+            {activeWords.length === 0 ? (
+              <p style={S.empty}>
+                {isViewingMe
+                  ? 'Nessuna parola in questo round.'
+                  : `${activePlayer?.name ?? 'Giocatore'} non ha trovato parole.`}
+              </p>
             ) : (
-              [...myWords]
+              [...activeWords]
                 .sort((a, b) => b.length - a.length || a.localeCompare(b))
                 .map((w) => {
                   const pts = scoreWord(w, RACK_LEN)
@@ -253,6 +339,30 @@ const S = {
     fontSize: 'clamp(14px, 1.8dvh, 17px)',
     fontWeight: 900,
     letterSpacing: '0.12em',
+  },
+  defBox: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: 'clamp(8px, 1.6vw, 10px)',
+    padding: 'clamp(8px, 1.2dvh, 10px) clamp(12px, 3vw, 16px)',
+    border: '1.5px solid',
+    borderRadius: 'var(--radius-sm)',
+    width: '100%',
+    maxWidth: 520,
+    marginTop: 6,
+  },
+  defIcon: {
+    fontSize: 'clamp(14px, 1.8dvh, 16px)',
+    lineHeight: 1.4,
+    flexShrink: 0,
+  },
+  defText: {
+    margin: 0,
+    fontSize: 'clamp(12px, 1.5dvh, 14px)',
+    fontWeight: 600,
+    color: 'var(--text)',
+    lineHeight: 1.35,
+    textAlign: 'left',
   },
   heroCard: {
     display: 'flex',
@@ -396,6 +506,43 @@ const S = {
     fontSize: 'clamp(13px, 1.6dvh, 16px)',
     fontWeight: 900,
     fontVariantNumeric: 'tabular-nums',
+  },
+  tabs: {
+    display: 'flex',
+    gap: 6,
+    overflowX: 'auto',
+    overflowY: 'hidden',
+    paddingBottom: 4,
+    scrollbarWidth: 'none',
+    flexShrink: 0,
+  },
+  tab: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+    padding: '6px 10px 6px 6px',
+    border: '1.5px solid',
+    borderRadius: 999,
+    cursor: 'pointer',
+    fontSize: 'clamp(11px, 1.35dvh, 13px)',
+    flexShrink: 0,
+    transition: 'background 0.15s, border-color 0.15s, color 0.15s',
+    WebkitTapHighlightColor: 'transparent',
+  },
+  tabName: {
+    maxWidth: 80,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
+  tabCount: {
+    fontVariantNumeric: 'tabular-nums',
+    fontSize: 'clamp(10px, 1.2dvh, 12px)',
+    background: 'rgba(0,0,0,0.08)',
+    padding: '1px 6px',
+    borderRadius: 999,
+    minWidth: 18,
+    textAlign: 'center',
   },
   wordsList: {
     flex: 1,

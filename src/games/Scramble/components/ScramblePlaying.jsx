@@ -13,10 +13,8 @@ import { scoreWord } from '../data/dictionary'
 const RACK_LEN = 7
 
 const ScramblePlaying = ({
-  rack,
   shuffledRack,
   tray,
-  currentWord,
   usedSet,
   myWords,
   scrambleWords,
@@ -203,14 +201,14 @@ const ScramblePlaying = ({
             </motion.button>
             <motion.button
               type="button"
-              onClick={tray.length > 0 ? (tray.length === 1 ? onBackspace : onClearTray) : undefined}
+              onClick={onBackspace}
               onContextMenu={(e) => { e.preventDefault(); onClearTray() }}
               disabled={isExpired || tray.length === 0}
               whileHover={isExpired || tray.length === 0 ? undefined : { scale: 1.05 }}
               whileTap={isExpired || tray.length === 0 ? undefined : { scale: 0.95 }}
               transition={SPRING}
               style={{ ...S.actionBtn, opacity: isExpired || tray.length === 0 ? 0.4 : 1 }}
-              aria-label="Cancella"
+              aria-label="Cancella ultima lettera (tieni premuto per cancellare tutto)"
             >
               ⌫
             </motion.button>
