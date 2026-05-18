@@ -117,21 +117,22 @@ const GameCategoryScreen = () => {
               const disabled = launching || !canControl || noGames
               const descText = noGames ? 'Presto disponibili' : cat.description
               return (
-                <div key={cat.id} style={{ position: 'relative' }}>
+                <div key={cat.id} style={{ position: 'relative', isolation: 'isolate' }}>
                   <div
                     aria-hidden
                     style={{
                       position: 'absolute',
-                      inset: '-6px -10px',
+                      inset: '-22px -28px',
                       background: cat.bg,
-                      borderRadius: 28,
-                      filter: 'blur(22px)',
-                      opacity: disabled ? 0.18 : 0.55,
+                      borderRadius: 40,
+                      filter: 'blur(34px) saturate(1.4)',
+                      opacity: disabled ? 0.25 : 0.95,
                       transition: 'opacity 0.25s ease',
                       pointerEvents: 'none',
+                      zIndex: 0,
                     }}
                   />
-                  <div style={{ position: 'relative' }}>
+                  <div style={{ position: 'relative', zIndex: 1 }}>
                     <OptionCard
                       option={{
                         emoji: cat.emoji,
