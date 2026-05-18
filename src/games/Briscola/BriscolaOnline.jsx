@@ -205,7 +205,7 @@ const BriscolaOnline = () => {
                 <span style={S.deckCounter}>{briState.deck.length}</span>
               </>
             ) : (
-              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>—</span>
+              <span style={{ fontSize: 11, color: 'var(--muted)' }}>—</span>
             )}
           </div>
 
@@ -225,7 +225,7 @@ const BriscolaOnline = () => {
                 ))}
               </AnimatePresence>
               {briState.trick.length === 0 && (
-                <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>vuota</span>
+                <span style={{ color: 'var(--muted)', fontSize: 12 }}>vuota</span>
               )}
             </div>
           </div>
@@ -298,7 +298,7 @@ const S = {
     flexDirection: 'column',
     flex: 1,
     overflow: 'hidden',
-    background: 'linear-gradient(180deg, #065F46 0%, #022C22 100%)',
+    background: 'var(--bg)',
   },
   center: {
     flex: 1,
@@ -307,7 +307,7 @@ const S = {
     justifyContent: 'center',
   },
   waiting: {
-    color: 'rgba(255,255,255,0.8)',
+    color: 'var(--text)',
     fontSize: 16,
     textAlign: 'center',
   },
@@ -329,7 +329,7 @@ const S = {
   },
   opName: { fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: 14 },
   opPoints: { fontSize: 12, fontWeight: 700, color: '#FBBF24', fontVariantNumeric: 'tabular-nums' },
-  opHand: { marginLeft: 'auto', fontSize: 11, color: 'rgba(255,255,255,0.6)' },
+  opHand: { marginLeft: 'auto', fontSize: 11, color: 'var(--muted)' },
   handRow: {
     display: 'flex',
     gap: 6,
@@ -377,7 +377,7 @@ const S = {
   trickLabel: {
     fontSize: 10,
     fontWeight: 700,
-    color: 'rgba(255,255,255,0.5)',
+    color: 'var(--muted)',
     letterSpacing: '0.08em',
     textTransform: 'uppercase',
   },
@@ -393,7 +393,7 @@ const S = {
     textAlign: 'center',
     fontSize: 13,
     fontWeight: 600,
-    color: 'rgba(255,255,255,0.85)',
+    color: 'var(--text)',
     minHeight: 20,
     flexShrink: 0,
   },
@@ -415,13 +415,14 @@ const S = {
     flexDirection: 'column',
     gap: 8,
     padding: 'clamp(10px, 1.8dvh, 16px) clamp(16px, 4vw, 24px) clamp(14px, 2.5dvh, 20px)',
-    background: 'rgba(0,0,0,0.3)',
+    background: 'var(--surface)',
+    borderTop: '1px solid var(--border)',
   },
   footerHint: {
     margin: 0,
     fontSize: 12,
     fontWeight: 600,
-    color: 'rgba(255,255,255,0.7)',
+    color: 'var(--muted)',
     textAlign: 'center',
   },
 }

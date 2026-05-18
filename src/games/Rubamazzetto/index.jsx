@@ -270,7 +270,7 @@ const Rubamazzetto = () => {
           <span style={S.tavoloLabel}>🟫 Tavolo</span>
           <div style={S.tavoloCards}>
             {state.tavolo.length === 0 && (
-              <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14 }}>
+              <span style={{ color: 'var(--muted)', fontSize: 14 }}>
                 Vuoto
               </span>
             )}
@@ -342,7 +342,7 @@ const Rubamazzetto = () => {
                   <span style={S.pileBadge}>{state.piles['p0'].length}</span>
                 </>
               ) : (
-                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>0 carte</span>
+                <span style={{ fontSize: 11, color: 'var(--muted)' }}>0 carte</span>
               )}
             </div>
           </div>
@@ -358,7 +358,7 @@ const Rubamazzetto = () => {
               />
             ))}
             {myHand.length === 0 && state.phase === 'playing' && (
-              <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14 }}>
+              <span style={{ color: 'var(--muted)', fontSize: 14 }}>
                 Mano vuota — distribuzione in corso...
               </span>
             )}
@@ -394,7 +394,7 @@ const S = {
     flexDirection: 'column',
     flex: 1,
     overflow: 'hidden',
-    background: 'linear-gradient(180deg, #7C2D12 0%, #4C1D0E 100%)',
+    background: 'var(--bg)',
   },
   body: {
     flex: 1,
@@ -404,7 +404,7 @@ const S = {
     padding: 'clamp(8px, 1.5dvh, 16px) clamp(10px, 3vw, 18px)',
     gap: 'clamp(8px, 1.4dvh, 14px)',
     overflow: 'hidden',
-    color: '#fff',
+    color: 'var(--text)',
   },
   opponentsRow: {
     display: 'flex',
@@ -421,7 +421,8 @@ const S = {
     gap: 6,
     padding: 8,
     borderRadius: 10,
-    background: 'rgba(0,0,0,0.3)',
+    background: 'var(--surface)',
+    border: '1px solid var(--border)',
   },
   oppHeader: {
     display: 'flex',
@@ -430,10 +431,10 @@ const S = {
     fontSize: 11,
     fontWeight: 700,
   },
-  oppName: { color: 'rgba(255,255,255,0.85)' },
+  oppName: { color: 'var(--text)' },
   oppHand: {
     fontSize: 10,
-    color: 'rgba(255,255,255,0.6)',
+    color: 'var(--muted)',
     marginLeft: 'auto',
   },
   pileWrap: {
@@ -457,12 +458,12 @@ const S = {
   },
   emptyPile: {
     width: 60, height: 86,
-    border: '2px dashed rgba(255,255,255,0.2)',
+    border: '2px dashed var(--border-strong)',
     borderRadius: 8,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    color: 'rgba(255,255,255,0.3)',
+    color: 'var(--muted)',
   },
   tavoloArea: {
     flex: 1,
@@ -472,14 +473,14 @@ const S = {
     alignItems: 'center',
     gap: 4,
     padding: 8,
-    background: 'rgba(0,0,0,0.2)',
+    background: 'var(--surface2, var(--surface))',
     borderRadius: 12,
-    border: '1px dashed rgba(255,255,255,0.15)',
+    border: '1px dashed var(--border-strong)',
   },
   tavoloLabel: {
     fontSize: 11,
     fontWeight: 700,
-    color: 'rgba(255,255,255,0.6)',
+    color: 'var(--muted)',
     letterSpacing: '0.06em',
     textTransform: 'uppercase',
   },
@@ -502,7 +503,7 @@ const S = {
   },
   logEntry: {
     fontSize: 12,
-    color: 'rgba(255,255,255,0.85)',
+    color: 'var(--muted)',
     textAlign: 'center',
   },
   resultBanner: {
@@ -513,7 +514,7 @@ const S = {
     fontWeight: 800,
     fontSize: 14,
     textAlign: 'center',
-    boxShadow: '0 6px 20px rgba(0,0,0,0.4)',
+    boxShadow: '0 6px 20px rgba(0,0,0,0.15)',
     color: '#fff',
     flexShrink: 0,
   },
@@ -567,11 +568,12 @@ const S = {
     flexDirection: 'column',
     gap: 8,
     padding: 'clamp(10px, 1.8dvh, 16px) clamp(16px, 4vw, 24px) clamp(14px, 2.5dvh, 20px)',
-    background: 'rgba(0,0,0,0.3)',
+    background: 'var(--surface)',
+    borderTop: '1px solid var(--border)',
   },
   cpuThinking: {
     margin: 0,
-    color: 'rgba(255,255,255,0.75)',
+    color: 'var(--muted)',
     fontSize: 12,
     fontWeight: 600,
     textAlign: 'center',

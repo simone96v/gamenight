@@ -390,7 +390,7 @@ const Scopa = () => {
               ))}
             </AnimatePresence>
             {state.table.length === 0 && state.phase !== 'game_over' && (
-              <span style={{ color: 'rgba(255,255,255,0.4)' }}>Tavolo vuoto</span>
+              <span style={{ color: 'var(--muted)' }}>Tavolo vuoto</span>
             )}
           </div>
         </div>
@@ -438,7 +438,7 @@ const Scopa = () => {
                   <div key={i} style={S.breakdownRow}>
                     <span>{row[0]}</span>
                     <span style={{
-                      color: row[1] === 'p0' ? '#10B981' : row[1] === 'cpu' ? '#FCA5A5' : 'rgba(255,255,255,0.7)',
+                      color: row[1] === 'p0' ? '#10B981' : row[1] === 'cpu' ? '#EF4444' : 'rgba(255,255,255,0.7)',
                       fontWeight: 700,
                     }}>
                       {row[1] === 'pari' ? `${row[2]} = ${row[3]}` : `${row[2]} vs ${row[3]}`}
@@ -500,7 +500,7 @@ const S = {
     flexDirection: 'column',
     flex: 1,
     overflow: 'hidden',
-    background: 'linear-gradient(180deg, #14532D 0%, #052E16 100%)',
+    background: 'var(--bg)',
   },
   body: {
     flex: 1,
@@ -540,10 +540,10 @@ const S = {
     fontWeight: 700,
     padding: '2px 7px',
     borderRadius: 999,
-    background: 'rgba(0,0,0,0.4)',
+    background: 'var(--surface)',
   },
-  opHand: { fontSize: 11, color: 'rgba(255,255,255,0.6)' },
-  opPile: { fontSize: 11, color: 'rgba(255,255,255,0.6)' },
+  opHand: { fontSize: 11, color: 'var(--muted)' },
+  opPile: { fontSize: 11, color: 'var(--muted)' },
   yourTurnBadge: {
     marginLeft: 'auto',
     fontSize: 10,
@@ -566,9 +566,9 @@ const S = {
     flexDirection: 'column',
     gap: 6,
     padding: 8,
-    background: 'rgba(0,0,0,0.25)',
+    background: 'var(--surface2, var(--surface))',
     borderRadius: 12,
-    border: '1px dashed rgba(255,255,255,0.15)',
+    border: '1px dashed var(--border-strong)',
   },
   tableInfoRow: {
     display: 'flex',
@@ -578,14 +578,14 @@ const S = {
   tableLabel: {
     fontSize: 11,
     fontWeight: 700,
-    color: 'rgba(255,255,255,0.6)',
+    color: 'var(--muted)',
     letterSpacing: '0.06em',
     textTransform: 'uppercase',
   },
   deckCounter: {
     fontSize: 11,
     fontWeight: 700,
-    color: 'rgba(255,255,255,0.5)',
+    color: 'var(--muted)',
   },
   tableCards: {
     flex: 1,
@@ -625,7 +625,7 @@ const S = {
     fontWeight: 600,
     fontSize: 12,
     padding: '8px 12px',
-    background: 'rgba(0,0,0,0.4)',
+    background: 'var(--surface)',
     borderRadius: 8,
   },
   breakdownRow: {
@@ -644,13 +644,14 @@ const S = {
     flexDirection: 'column',
     gap: 8,
     padding: 'clamp(10px, 1.8dvh, 16px) clamp(16px, 4vw, 24px) clamp(14px, 2.5dvh, 20px)',
-    background: 'rgba(0,0,0,0.3)',
+    background: 'var(--surface)',
+    borderTop: '1px solid var(--border)',
   },
   footerHint: {
     margin: 0,
     fontSize: 12,
     fontWeight: 600,
-    color: 'rgba(255,255,255,0.7)',
+    color: 'var(--muted)',
     textAlign: 'center',
   },
 }
