@@ -855,23 +855,14 @@ export class GameEngine {
 
   _drawDangerVignette(ctx) {
     const a = this.dangerAlpha
-    // Bottom edge red glow — stronger opacity on light paper background
+    // Solo gradient dal basso: sale dal bordo inferiore con un alone rosso che
+    // segnala l'area di morte. Niente glow laterali (sono fuorvianti perché i
+    // bordi laterali non uccidono: il blob wrappa).
     const grad = ctx.createLinearGradient(0, GAME_HEIGHT * 0.65, 0, GAME_HEIGHT)
     grad.addColorStop(0, 'rgba(220,38,38,0)')
     grad.addColorStop(1, `rgba(220,38,38,${a * 1.4})`)
     ctx.fillStyle = grad
     ctx.fillRect(0, GAME_HEIGHT * 0.65, GAME_WIDTH, GAME_HEIGHT * 0.35)
-    // Side glows
-    const sideGrad = ctx.createLinearGradient(0, 0, 28, 0)
-    sideGrad.addColorStop(0, `rgba(220,38,38,${a * 0.6})`)
-    sideGrad.addColorStop(1, 'rgba(220,38,38,0)')
-    ctx.fillStyle = sideGrad
-    ctx.fillRect(0, GAME_HEIGHT * 0.5, 28, GAME_HEIGHT * 0.5)
-    const sideGrad2 = ctx.createLinearGradient(GAME_WIDTH, 0, GAME_WIDTH - 28, 0)
-    sideGrad2.addColorStop(0, `rgba(220,38,38,${a * 0.6})`)
-    sideGrad2.addColorStop(1, 'rgba(220,38,38,0)')
-    ctx.fillStyle = sideGrad2
-    ctx.fillRect(GAME_WIDTH - 28, GAME_HEIGHT * 0.5, 28, GAME_HEIGHT * 0.5)
   }
 
   _drawParticles(ctx, cam) {

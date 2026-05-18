@@ -1,13 +1,15 @@
 // HomeScreen — hero + CTA "Crea party" / "Ho già un codice" + un blob piccolo sopra il logo e uno grande che sbuca dal basso al centro.
 
 import { useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import GradientTitle from '../components/ui/GradientTitle'
 import OptionCard from '../components/ui/OptionCard'
 import ErrorBanner from '../components/ErrorBanner'
 import Blob from '../components/Blob'
+import TapShockwaves from '../components/TapShockwaves'
 import { useBlobGaze } from '../hooks/useBlob'
+import { useTapShockwave } from '../hooks/useTapShockwave'
 import { useSettings } from '../stores/useSettings'
 
 const useOptions = () => {
@@ -51,9 +53,9 @@ const useOptions = () => {
 }
 
 const STATS = [
-  { emoji: '🎮', label: 'Mini-giochi' },
-  { emoji: '👥', label: '1-8 giocatori' },
-  { emoji: '⚡', label: 'Senza account' },
+  { emoji: '🧠', label: '4 categorie' },
+  { emoji: '👥', label: 'Fino a 8' },
+  { emoji: '⚡', label: 'Niente account' },
 ]
 
 const StatPill = ({ emoji, label, delay }) => (
@@ -111,6 +113,21 @@ const useExprCycle = (startIdx = 0) => {
   return expr
 }
 
+const circleBtn = {
+  width: 42,
+  height: 42,
+  borderRadius: '50%',
+  background: 'var(--surface)',
+  border: '1.5px solid var(--border-strong)',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  cursor: 'pointer',
+  fontSize: 20,
+  lineHeight: 1,
+}
+
 const ThemeToggle = () => {
   const theme = useSettings((s) => s.theme)
   const toggleTheme = useSettings((s) => s.toggleTheme)
@@ -124,20 +141,7 @@ const ThemeToggle = () => {
       whileTap={{ scale: 0.92 }}
       transition={{ type: 'spring', stiffness: 400, damping: 22 }}
       aria-label={isDark ? 'Passa a modalita chiara' : 'Passa a modalita scura'}
-      style={{
-        width: 42,
-        height: 42,
-        borderRadius: '50%',
-        background: 'var(--surface)',
-        border: '1.5px solid var(--border-strong)',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        cursor: 'pointer',
-        fontSize: 20,
-        lineHeight: 1,
-      }}
+      style={circleBtn}
     >
       <motion.span
         key={isDark ? 'sun' : 'moon'}
@@ -152,14 +156,63 @@ const ThemeToggle = () => {
   )
 }
 
+const SfxToggle = () => {
+  const sfxEnabled = useSettings((s) => s.sfxEnabled)
+  const toggleSfx = useSettings((s) => s.toggleSfx)
+
+  return (
+    <motion.button
+      type="button"
+      onClick={toggleSfx}
+      whileHover={{ scale: 1.08, boxShadow: '0 6px 18px rgba(0,0,0,0.12)' }}
+      whileTap={{ scale: 0.92 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 22 }}
+      aria-label={sfxEnabled ? 'Disattiva suoni' : 'Attiva suoni'}
+      style={circleBtn}
+    >
+      <motion.span
+        key={sfxEnabled ? 'on' : 'off'}
+        initial={{ scale: 0.3 }}
+        animate={{ scale: 1 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 18 }}
+      >
+        {sfxEnabled ? '🔊' : '🔇'}
+      </motion.span>
+    </motion.button>
+  )
+}
+
+const MusicToggle = () => {
+  const musicEnabled = useSettings((s) => s.musicEnabled)
+  const toggleMusic = useSettings((s) => s.toggleMusic)
+
+  return (
+    <motion.button
+      type="button"
+      onClick={toggleMusic}
+      whileHover={{ scale: 1.08, boxShadow: '0 6px 18px rgba(0,0,0,0.12)' }}
+      whileTap={{ scale: 0.92 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 22 }}
+      aria-label={musicEnabled ? 'Disattiva musica' : 'Attiva musica'}
+      style={circleBtn}
+    >
+      <motion.span
+        key={musicEnabled ? 'on' : 'off'}
+        initial={{ scale: 0.3 }}
+        animate={{ scale: 1 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 18 }}
+      >
+        {musicEnabled ? '🎵' : '🎶'}
+      </motion.span>
+    </motion.button>
+  )
+}
+
 // Blob inferiore: 35% del corpo esce dal viewport bottom (65% visibile).
 // Con il viso canonico (smile bottom y=174) la faccia resta sopra il bordo.
 const BOTTOM_BLOB_SIZE   = 'clamp(166px, 48vw, 307px)'
 const BOTTOM_BLOB_OFFSET = 'clamp(-108px, -17vw, -58px)'
 const BOTTOM_BLOB_COLOR  = '#F59E0B'
-
-const TAP_REACTIONS = ['happy', 'blink', 'look-left', 'look-right']
-const pickReaction = () => TAP_REACTIONS[Math.floor(Math.random() * TAP_REACTIONS.length)]
 
 const HomeScreen = () => {
   const navigate = useNavigate()
@@ -169,20 +222,7 @@ const HomeScreen = () => {
   const OPTIONS = useOptions()
 
   // Interattività blob bottom-hero: tap → shockwave + cambio expr temporaneo.
-  const [manualExpr, setManualExpr] = useState(null)
-  const [waves, setWaves] = useState([])
-  const exprResetRef = useRef(null)
-
-  const removeWave = (id) => setWaves((w) => w.filter((wv) => wv.id !== id))
-
-  const handleBlobTap = () => {
-    setManualExpr(pickReaction())
-    clearTimeout(exprResetRef.current)
-    exprResetRef.current = setTimeout(() => setManualExpr(null), 700)
-    setWaves((w) => [...w, { id: `w-${Date.now()}-${Math.random().toString(36).slice(2, 6)}` }])
-  }
-
-  useEffect(() => () => clearTimeout(exprResetRef.current), [])
+  const { tapExpr, waves, onTap, removeWave } = useTapShockwave()
 
   const handlePick = (id) => {
     if (id === 'join') navigate('/join')
@@ -234,13 +274,15 @@ const HomeScreen = () => {
           </GradientTitle>
           <p
             style={{
-              margin: '6px 0 0',
+              margin: '6px auto 0',
               color: 'var(--muted)',
               fontSize: 'clamp(13px, 1.7dvh, 15px)',
               fontWeight: 500,
+              lineHeight: 1.4,
+              maxWidth: 320,
             }}
           >
-            Mini-giochi per le serate con i tuoi
+            Quiz, arcade, carte e party in una sola app. Crea il tuo party in 10 secondi e gioca col gruppo da qualunque telefono.
           </p>
 
           {/* Stats pills */}
@@ -277,21 +319,23 @@ const HomeScreen = () => {
           ))}
         </div>
 
-        {/* Theme toggle */}
+        {/* Toggles: tema + suono */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          style={{ display: 'flex', justifyContent: 'center' }}
+          style={{ display: 'flex', justifyContent: 'center', gap: 12 }}
         >
           <ThemeToggle />
+          <SfxToggle />
+          <MusicToggle />
         </motion.div>
       </div>
 
       {/* Blob inferiore — 35% esce dal viewport bottom, 65% visibile.
           Wrapper cliccabile (tap → shockwave + expr) con speech bubble di benvenuto. */}
       <div
-        onClick={handleBlobTap}
+        onClick={onTap}
         role="button"
         aria-label="Tocca il blob"
         style={{
@@ -317,33 +361,11 @@ const HomeScreen = () => {
           <span style={S.bubbleTail} />
         </motion.div>
 
-        {/* Onde d'urto generate al tap — DIETRO al blob (zIndex 1 < blob 2). */}
-        <AnimatePresence>
-          {waves.map((wv) => (
-            <motion.span
-              key={wv.id}
-              initial={{ scale: 0.25, opacity: 0.7 }}
-              animate={{ scale: 1.25, opacity: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.65, ease: 'easeOut' }}
-              onAnimationComplete={() => removeWave(wv.id)}
-              style={{
-                position: 'absolute',
-                inset: 0,
-                borderRadius: '50%',
-                border: `4px solid ${BOTTOM_BLOB_COLOR}`,
-                boxShadow: `0 0 24px ${BOTTOM_BLOB_COLOR}66`,
-                pointerEvents: 'none',
-                willChange: 'transform, opacity',
-                zIndex: 1,
-              }}
-            />
-          ))}
-        </AnimatePresence>
+        <TapShockwaves waves={waves} removeWave={removeWave} color={BOTTOM_BLOB_COLOR} strokeWidth={4} />
 
         <Blob
           color={BOTTOM_BLOB_COLOR}
-          expr={manualExpr || bottomExpr}
+          expr={tapExpr || bottomExpr}
           id="bottom-hero"
           size="100%"
           animate={false}

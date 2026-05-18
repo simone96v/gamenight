@@ -11,61 +11,73 @@ import { lazy } from 'react'
 // Stesso stile per tutti i box (bg/shadow/border/textColor uniformi); cambiano
 // solo emoji, label e description. Border 1px integer (no sub-pixel artefatti
 // sui bordi arrotondati con anti-aliasing).
-const CATEGORY_STYLE = {
-  bg: 'var(--surface)',
-  shadow: 'rgba(0, 0, 0, 0.04)',
-  border: '1px solid var(--border)',
-  textColor: 'var(--text)',
-}
-
+// Box neutro (surface) con SOLO l'outline colorato per identificare la categoria.
+// Palette analoga indigo → emerald → rose → amber con stessa saturazione così
+// le card affiancate stanno in armonia. textColor lasciato a var(--text) così
+// si adatta al tema.
 export const GAME_CATEGORIES = [
   {
     id: 'quiz',
     label: 'Quiz',
     emoji: '🧠',
-    description: 'Cultura, parole, intuito. Chi sa di più vince.',
-    ...CATEGORY_STYLE,
+    description: 'Cultura generale, parole e intuito. Sfida i tuoi amici a colpi di domande veloci.',
+    bg: 'var(--surface)',
+    shadow: 'rgba(99, 102, 241, 0.16)',
+    border: '2px solid #6366F1',
+    textColor: 'var(--text)',
   },
   {
     id: 'arcade',
     label: 'Arcade',
     emoji: '🕹️',
-    description: 'Endless single player con classifica globale.',
-    ...CATEGORY_STYLE,
+    description: 'Mini-giochi endless da fare da solo. Punta in alto e scala la classifica globale.',
+    bg: 'var(--surface)',
+    shadow: 'rgba(16, 185, 129, 0.16)',
+    border: '2px solid #10B981',
+    textColor: 'var(--text)',
   },
   {
     id: 'cards',
     label: 'Carte',
     emoji: '🃏',
-    description: 'Pesca, leggi e... gioca.',
-    ...CATEGORY_STYLE,
+    description: 'Pesca, leggi, gioca: ogni carta è una sfida da affrontare insieme al gruppo.',
+    bg: 'var(--surface)',
+    shadow: 'rgba(244, 63, 94, 0.16)',
+    border: '2px solid #F43F5E',
+    textColor: 'var(--text)',
   },
   {
     id: 'party',
     label: 'Party',
     emoji: '🎉',
-    description: 'Tutti insieme. Risate garantite.',
-    ...CATEGORY_STYLE,
+    description: 'Giochi pensati per la serata in compagnia. Risate e silenzi imbarazzanti garantiti.',
+    bg: 'var(--surface)',
+    shadow: 'rgba(245, 158, 11, 0.16)',
+    border: '2px solid #F59E0B',
+    textColor: 'var(--text)',
   },
 ]
 
 export const getGameCategory = (id) => GAME_CATEGORIES.find((c) => c.id === id)
 
-// Helper per definire un placeholder "Prossimamente". L'id deve essere univoco.
-const placeholder = (id, gameCategory) => ({
+// Helper per definire un placeholder di gioco non ancora implementato.
+// L'id deve essere univoco. `meta` permette di dargli nome/emoji/descrizione
+// reali così le 4 categorie sono pre-popolate con idee credibili — sarà
+// l'utente a vederlo come "Prossimamente" tramite il flag locked + badge UI.
+const placeholder = (id, gameCategory, meta = {}) => ({
   id,
-  name: 'Prossimamente',
-  emoji: '✨',
-  tagline: 'In arrivo',
-  description: 'Un nuovo gioco sta per arrivare. Stay tuned!',
-  difficulty: 1,
-  minPlayers: 2,
-  maxPlayers: 8,
+  name: meta.name || 'Prossimamente',
+  emoji: meta.emoji || '✨',
+  tagline: meta.tagline || 'In arrivo',
+  description: meta.description || 'Un nuovo gioco sta per arrivare. Stay tuned!',
+  difficulty: meta.difficulty ?? 1,
+  minPlayers: meta.minPlayers ?? 2,
+  maxPlayers: meta.maxPlayers ?? 8,
   locked: true,
-  bg: 'linear-gradient(145deg, #E5E7EB 0%, #9CA3AF 55%, #4B5563 100%)',
-  shadow: 'rgba(107, 114, 128, 0.30)',
+  bg: meta.bg || 'linear-gradient(145deg, #E5E7EB 0%, #9CA3AF 55%, #4B5563 100%)',
+  shadow: meta.shadow || 'rgba(107, 114, 128, 0.30)',
   gameCategory,
-  compatibility: { multi: true, single: true, excludedCategories: [] },
+  compatibility: meta.compatibility || { multi: true, single: true, excludedCategories: [] },
   component: null,
 })
 
@@ -139,6 +151,20 @@ export const GAMES = [
     compatibility: { multi: true, single: true, excludedCategories: [] },
     component: lazy(() => import('../games/Scramble')),
   },
+  placeholder('quiz_year', 'quiz', {
+    name: 'Anno Misterioso',
+    emoji: '📅',
+    tagline: 'Quando è successo?',
+    description: 'Un fatto storico, pop o assurdo. Indovina l\'anno: più sei vicino, più punti.',
+    difficulty: 2,
+  }),
+  placeholder('quiz_price', 'quiz', {
+    name: 'Indovina il Prezzo',
+    emoji: '💰',
+    tagline: 'Più ti avvicini, più punti',
+    description: 'Un oggetto, un prezzo nascosto. Spara la tua cifra: chi si avvicina di più si prende il round.',
+    difficulty: 2,
+  }),
 
   // ───── ARCADE (endless, solo single player) ─────
   {
@@ -192,7 +218,36 @@ export const GAMES = [
     compatibility: { multi: false, single: true, excludedCategories: [] },
     component: lazy(() => import('../games/CatchBlob')),
   },
-  placeholder('arcade_soon_1', 'arcade'),
+  placeholder('blobdig', 'arcade', {
+    name: 'Blob Dig',
+    emoji: '⛏️',
+    tagline: 'Scava sempre più giù',
+    description: 'Scendi nelle profondità, schiva trappole e nemici. Quanti metri sopporti prima di cedere?',
+    difficulty: 2,
+    minPlayers: 1,
+    maxPlayers: 1,
+    compatibility: { multi: false, single: true, excludedCategories: [] },
+  }),
+  placeholder('blobstack', 'arcade', {
+    name: 'Blob Stack',
+    emoji: '🗼',
+    tagline: 'Una torre, al millimetro',
+    description: 'Impila i blob al volo. Sbaglia il tempo e la fetta si assottiglia. Una vibrazione di troppo e crolla tutto.',
+    difficulty: 2,
+    minPlayers: 1,
+    maxPlayers: 1,
+    compatibility: { multi: false, single: true, excludedCategories: [] },
+  }),
+  placeholder('blobsurf', 'arcade', {
+    name: 'Blob Surf',
+    emoji: '🏄',
+    tagline: 'Cavalca l\'onda',
+    description: 'Surfa l\'onda infinita: schiva squali, raccogli ciambelle e fai trick per moltiplicatori.',
+    difficulty: 2,
+    minPlayers: 1,
+    maxPlayers: 1,
+    compatibility: { multi: false, single: true, excludedCategories: [] },
+  }),
 
   // ───── CARDS ─────
   {
@@ -212,15 +267,100 @@ export const GAMES = [
     compatibility: { multi: true, single: true, excludedCategories: ['couple', 'gamenight'] },
     component: lazy(() => import('../games/NeverHaveI')),
   },
-  placeholder('cards_soon_1', 'cards'),
-  placeholder('cards_soon_2', 'cards'),
-  placeholder('cards_soon_3', 'cards'),
+  placeholder('dilemma', 'cards', {
+    name: 'Dilemma',
+    emoji: '🤔',
+    tagline: 'Cosa faresti?',
+    description: 'Pesca una situazione impossibile: ognuno spiega la sua scelta, il gruppo vota la più convincente.',
+    difficulty: 2,
+    compatibility: { multi: true, single: false, excludedCategories: [] },
+  }),
+  placeholder('top5', 'cards', {
+    name: 'Top 5',
+    emoji: '🏆',
+    tagline: 'La tua classifica al volo',
+    description: 'Tema random, dai la tua top 5 in 30 secondi. Il gruppo vota la più creativa o assurda.',
+    difficulty: 2,
+    compatibility: { multi: true, single: false, excludedCategories: [] },
+  }),
+  placeholder('wouldyourather', 'cards', {
+    name: 'Cosa Preferisci?',
+    emoji: '⚖️',
+    tagline: 'Due opzioni, una scelta',
+    description: 'Due alternative, entrambe orribili (o entrambe bellissime). Scegli, giustifica, ridi.',
+    difficulty: 1,
+    compatibility: { multi: true, single: false, excludedCategories: [] },
+  }),
+  placeholder('bluff', 'cards', {
+    name: 'Bluff',
+    emoji: '🎲',
+    tagline: 'Verità o menzogna?',
+    description: 'Pesca una carta, dichiara cosa c\'è scritto. Gli altri possono accusarti di mentire — chi sgama, vince.',
+    difficulty: 3,
+    compatibility: { multi: true, single: false, excludedCategories: [] },
+  }),
+  placeholder('tell3', 'cards', {
+    name: 'Dimmi 3',
+    emoji: '⚡',
+    tagline: 'Sparale veloci',
+    description: 'Tre cose su un tema random in 10 secondi. Se inciampi paghi pegno, se rispondi prendi punti.',
+    difficulty: 2,
+    compatibility: { multi: true, single: false, excludedCategories: [] },
+  }),
 
   // ───── PARTY ─────
-  placeholder('party_soon_1', 'party'),
-  placeholder('party_soon_2', 'party'),
-  placeholder('party_soon_3', 'party'),
-  placeholder('party_soon_4', 'party'),
+  placeholder('twotruths', 'party', {
+    name: '2 Verità 1 Bugia',
+    emoji: '🤥',
+    tagline: 'Scopri chi mente',
+    description: 'Racconta tre cose su di te: due vere, una falsa. Gli altri devono beccare la bugia.',
+    difficulty: 2,
+    compatibility: { multi: true, single: false, excludedCategories: [] },
+  }),
+  placeholder('headsup', 'party', {
+    name: 'Fronte Magico',
+    emoji: '📲',
+    tagline: 'Telefono in fronte',
+    description: 'Tieni il telefono sulla fronte, gli altri danno indizi senza dire la parola. Indovina prima che scada il tempo.',
+    difficulty: 2,
+    compatibility: { multi: true, single: false, excludedCategories: [] },
+  }),
+  placeholder('dubthis', 'party', {
+    name: 'Doppiaggio Folle',
+    emoji: '🎬',
+    tagline: 'Dai la voce al video',
+    description: 'Un video muto, microfono aperto. Inventa il doppiaggio: il gruppo vota la performance più assurda.',
+    difficulty: 2,
+    compatibility: { multi: true, single: false, excludedCategories: [] },
+  }),
+  placeholder('findobject', 'party', {
+    name: 'Trovaroba',
+    emoji: '🔍',
+    tagline: 'Corri e torna col bottino',
+    description: 'Un oggetto da trovare in casa. Il primo che torna davanti al telefono col bottino si prende il round.',
+    difficulty: 1,
+    compatibility: { multi: true, single: false, excludedCategories: [] },
+  }),
+  placeholder('voiceguess', 'party', {
+    name: 'Indovina la Voce',
+    emoji: '🎙️',
+    tagline: 'Chi parla così?',
+    description: 'Un giocatore registra una frase con voce alterata dall\'app. Gli altri devono indovinare chi è.',
+    difficulty: 2,
+    minPlayers: 3,
+    maxPlayers: 8,
+    compatibility: { multi: true, single: false, excludedCategories: [] },
+  }),
+  placeholder('howwellyouknow', 'party', {
+    name: 'Quanto Mi Conosci?',
+    emoji: '🧠',
+    tagline: 'Domande sul gruppo',
+    description: 'Domande personali su un giocatore: gli altri devono indovinare la sua risposta. Chi conosce meglio gli amici vince.',
+    difficulty: 2,
+    minPlayers: 3,
+    maxPlayers: 8,
+    compatibility: { multi: true, single: false, excludedCategories: [] },
+  }),
 ]
 
 export const getGame = (id) => GAMES.find((g) => g.id === id)

@@ -15,6 +15,10 @@ const OptionCard = ({
   disabled = false,
   badge = null,
   selected = false,
+  // Layout "tall": padding più generoso + descrizione su 2 righe (no ellipsis).
+  // Usato dalle categorie strutturali (GameCategoryScreen). Default false: card
+  // compatte single-line come ModeScreen / HomeScreen.
+  tall = false,
 }) => (
   <motion.button
     type="button"
@@ -43,7 +47,9 @@ const OptionCard = ({
         ? '2.5px solid var(--accent)'
         : (option.border || (option.textColor ? '1.5px solid var(--border-strong)' : '2px solid rgba(0, 0, 0, 0.28)')),
       boxShadow: `0 14px 36px ${option.shadow}, 0 6px 14px rgba(0, 0, 0, 0.22)`,
-      padding: 'clamp(18px, 2.5dvh, 24px) clamp(18px, 4vw, 24px)',
+      padding: tall
+        ? 'clamp(22px, 3.2dvh, 30px) clamp(18px, 4vw, 24px)'
+        : 'clamp(18px, 2.5dvh, 24px) clamp(18px, 4vw, 24px)',
       display: 'flex',
       alignItems: 'center',
       gap: 'clamp(14px, 2.5vw, 18px)',
@@ -85,9 +91,20 @@ const OptionCard = ({
         fontSize: 'clamp(12px, 1.6dvh, 14px)',
         color: option.textColor ? 'var(--muted)' : 'rgba(255,255,255,0.85)',
         lineHeight: 1.35,
-        whiteSpace: 'nowrap',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
+        ...(tall
+          ? {
+              display: '-webkit-box',
+              WebkitBoxOrient: 'vertical',
+              WebkitLineClamp: 2,
+              overflow: 'hidden',
+              minHeight: 'calc(1.35em * 2)',
+            }
+          : {
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }
+        ),
       }}>{option.description}</div>
     </div>
 

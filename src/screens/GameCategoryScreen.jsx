@@ -117,39 +117,23 @@ const GameCategoryScreen = () => {
               const disabled = launching || !canControl || noGames
               const descText = noGames ? 'Presto disponibili' : cat.description
               return (
-                <div key={cat.id} style={{ position: 'relative', isolation: 'isolate' }}>
-                  <div
-                    aria-hidden
-                    style={{
-                      position: 'absolute',
-                      inset: '-14px -18px',
-                      background: cat.bg,
-                      borderRadius: 32,
-                      filter: 'blur(28px) saturate(1.3)',
-                      opacity: disabled ? 0.15 : 0.55,
-                      transition: 'opacity 0.25s ease',
-                      pointerEvents: 'none',
-                      zIndex: 0,
-                    }}
-                  />
-                  <div style={{ position: 'relative', zIndex: 1 }}>
-                    <OptionCard
-                      option={{
-                        emoji: cat.emoji,
-                        title: cat.label,
-                        description: descText,
-                        bg: cat.bg,
-                        shadow: cat.shadow,
-                        border: cat.border,
-                        textColor: cat.textColor,
-                        subtleTitle: true,
-                      }}
-                      index={i}
-                      onClick={() => handlePick(cat)}
-                      disabled={disabled}
-                    />
-                  </div>
-                </div>
+                <OptionCard
+                  key={cat.id}
+                  option={{
+                    emoji: cat.emoji,
+                    title: cat.label,
+                    description: descText,
+                    bg: cat.bg,
+                    shadow: 'rgba(15, 23, 42, 0.10)',
+                    border: cat.border,
+                    textColor: cat.textColor,
+                    subtleTitle: true,
+                  }}
+                  index={i}
+                  onClick={() => handlePick(cat)}
+                  disabled={disabled}
+                  tall
+                />
               )
             })}
           </div>
