@@ -17,7 +17,7 @@
 //   - Punti carte: Asso=11, Tre=10, Re=4, Cavallo=3, Fante=2, altre=0 (tot. 120).
 //   - Vince chi supera 60. 60-60 pareggio.
 
-import { useReducer, useCallback, useEffect, useMemo } from 'react'
+import { lazy, Suspense, useReducer, useCallback, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import AppHeader from '../../components/AppHeader'
@@ -30,16 +30,11 @@ import { useSession } from '../../stores/useSession'
 import { accentBtnStyle } from '../../theme/gameColors'
 import { usePlayerAccent } from '../../hooks/usePlayerAccent'
 import { pickColor } from '../../utils/colors'
+import { cardPoints, cardStrength } from './logic'
 
-// ── Game logic ──────────────────────────────────────────
-
-// Strength all'interno di un seme. Più alto = più forte.
-const STRENGTH = { 1: 10, 3: 9, 10: 8, 9: 7, 8: 6, 7: 5, 6: 4, 5: 3, 4: 2, 2: 1 }
-// Valore punti.
-const POINTS = { 1: 11, 3: 10, 10: 4, 9: 3, 8: 2 }
-
-const cardPoints = (c) => POINTS[c.value] || 0
-const cardStrength = (c) => STRENGTH[c.value]
+// Branch online/solo top-level. Il componente online è lazy così il chunk del
+// solo non eredita pesi della rete (è completamente isolato).
+const BriscolaOnline = lazy(() => import('./BriscolaOnline'))
 
 const initialState = () => {
   let deck = shuffle(createDeck())
@@ -234,6 +229,19 @@ const reducer = (state, action) => {
 // ── Componente ──────────────────────────────────────────
 
 const Briscola = () => {
+  // Online → delega al componente multi.
+  const mode = useSession((s) => s.mode)
+  if (mode === 'online') {
+    return (
+      <Suspense fallback={null}>
+        <BriscolaOnline />
+      </Suspense>
+    )
+  }
+  return <BriscolaSolo />
+}
+
+const BriscolaSolo = () => {
   const navigate = useNavigate()
   const C = usePlayerAccent()
   const [state, dispatch] = useReducer(reducer, undefined, initialState)

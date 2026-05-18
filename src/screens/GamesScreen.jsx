@@ -8,7 +8,6 @@ import AppHeader from '../components/AppHeader'
 import ErrorBanner from '../components/ErrorBanner'
 import GradientTitle from '../components/ui/GradientTitle'
 import GameCard from '../components/GameCard'
-import MiniBlob, { useMiniExpr } from '../components/MiniBlob'
 import { useSession } from '../stores/useSession'
 import { useSettings } from '../stores/useSettings'
 import { availableGamesFor, getGameCategory } from '../data/games'
@@ -19,17 +18,16 @@ const LOBBY_PHASE = {
   mappa:     'mappa_lobby',
   scramble:  'scramble_lobby',
   emojiquiz: 'emojiquiz_lobby',
+  logoquiz:  'logoquiz_lobby',
 }
 
 const GamesScreen = () => {
   const isHost = useSession((s) => s.isHost)
   const roomCode = useSession((s) => s.roomCode)
-  const players = useSession((s) => s.players)
   const gameState = useSession((s) => s.gameState)
   const currentPhase = useSession((s) => s.currentPhase)
   const showError = useSession((s) => s.showError)
   const theme = useSettings((s) => s.theme)
-  const expr = useMiniExpr()
 
   const [launching, setLaunching] = useState(false)
 
@@ -92,7 +90,11 @@ const GamesScreen = () => {
       return
     }
 
-    const phaseMap = { neverhave: 'play_neverhave' }
+    const phaseMap = {
+      neverhave: 'play_neverhave',
+      briscola: 'briscola_playing',
+      scopa: 'scopa_playing',
+    }
     const newPhase = phaseMap[game.id]
     if (!newPhase) {
       showError('generic')
@@ -140,7 +142,7 @@ const GamesScreen = () => {
             transition={{ duration: 0.2 }}
             style={{ textAlign: 'center', flexShrink: 0 }}
           >
-            <GradientTitle as="h1" size="xl">
+            <GradientTitle as="h1" size="md">
               {category ? `${category.emoji} ${category.label}` : 'Scegli il gioco'}
             </GradientTitle>
             <p style={subtitle}>
@@ -149,10 +151,6 @@ const GamesScreen = () => {
                 : 'Aspetta che il boss scelga... 👑'}
             </p>
           </motion.div>
-
-          {!isHost && (
-            <WaitingStrip players={players} expr={expr} />
-          )}
 
           <div style={grid}>
             {games.map((g, i) => (
@@ -184,27 +182,6 @@ const GamesScreen = () => {
   )
 }
 
-const WaitingStrip = ({ players, expr }) => {
-  if (!players?.length) return null
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.15 }}
-      style={progressStrip}
-    >
-      {players.map((p) => (
-        <div key={p.id} style={voterCell}>
-          <div style={voterBlob}>
-            <MiniBlob color={p.color} expr={expr} size={28} id={`gs-${p.id}`} />
-          </div>
-          <span style={voterName}>{p.name}</span>
-        </div>
-      ))}
-    </motion.div>
-  )
-}
-
 const subtitle = {
   margin: '6px 0 0',
   color: 'var(--muted)',
@@ -230,44 +207,6 @@ const launchBanner = {
   fontWeight: 800,
   fontSize: 'clamp(14px, 1.8dvh, 16px)',
   flexShrink: 0,
-}
-
-const progressStrip = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: 'clamp(10px, 1.5vw, 16px)',
-  flexWrap: 'wrap',
-  background: 'var(--surface)',
-  borderRadius: 'var(--radius-sm)',
-  border: '1px solid var(--border)',
-  padding: 'clamp(8px, 1.2dvh, 12px) clamp(12px, 2vw, 18px)',
-}
-
-const voterCell = {
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  gap: 4,
-  minWidth: 48,
-}
-
-const voterBlob = {
-  position: 'relative',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-}
-
-const voterName = {
-  fontSize: 11,
-  maxWidth: 56,
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap',
-  textAlign: 'center',
-  color: 'var(--text)',
-  fontWeight: 700,
 }
 
 export default GamesScreen
