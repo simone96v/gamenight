@@ -16,12 +16,11 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import AppHeader from '../../components/AppHeader'
 import IconButton from '../../components/ui/IconButton'
-import Button from '../../components/ui/Button'
 import MiniBlob from '../../components/MiniBlob'
+import GameButton from '../_shared/GameButton'
 import CardView from '../../lib/cards/CardView'
 import { createDeck, shuffle, draw } from '../../lib/cards/italianDeck'
 import { useSession } from '../../stores/useSession'
-import { accentBtnStyle } from '../../theme/gameColors'
 import { usePlayerAccent } from '../../hooks/usePlayerAccent'
 
 // ── Logica di gioco ─────────────────────────────────────
@@ -279,33 +278,19 @@ const SetteEMezzo = () => {
       {/* CTA */}
       <div style={S.footer}>
         {state.phase === 'player_turn' && (
-          <>
-            <Button
-              variant="secondary"
-              width="full"
-              onClick={handleStand}
-            >
-              Sto {hint('S')}
-            </Button>
-            <Button
-              variant="primary"
-              width="full"
-              onClick={handleHit}
-              style={accentBtnStyle(C.accent)}
-            >
-              Carta {hint('Space')}
-            </Button>
-          </>
+          <div style={S.ctaRow}>
+            <GameButton variant="secondary" icon="✋" hotkey="S" onClick={handleStand}>
+              Sto
+            </GameButton>
+            <GameButton variant="primary" accent={C.accent} icon="🃏" hotkey="Space" onClick={handleHit}>
+              Carta
+            </GameButton>
+          </div>
         )}
         {state.phase === 'result' && (
-          <Button
-            variant="primary"
-            width="full"
-            onClick={handleNewHand}
-            style={accentBtnStyle(C.accent)}
-          >
-            Nuova mano {hint('Space')}
-          </Button>
+          <GameButton variant="primary" accent={C.accent} icon="🔁" hotkey="Space" onClick={handleNewHand}>
+            Nuova mano
+          </GameButton>
         )}
       </div>
     </div>
@@ -336,12 +321,6 @@ const resultText = (r, p, d) => {
   return 'Pareggio'
 }
 
-// Inline hint "Space" / "S" — visibile solo su desktop dove la tastiera ha senso.
-const hint = (key) => (
-  <span style={S.kbdHint} aria-hidden="true">
-    {key}
-  </span>
-)
 
 const S = {
   container: {
@@ -449,18 +428,14 @@ const S = {
     flexDirection: 'column',
     gap: 8,
     padding: 'clamp(12px, 2dvh, 18px) clamp(16px, 4vw, 24px) clamp(16px, 3dvh, 22px)',
-    background: 'var(--surface)',
-    borderTop: '1px solid var(--border)',
+    background: 'rgba(0,0,0,0.30)',
+    borderTop: '1px solid rgba(255,255,255,0.10)',
+    backdropFilter: 'blur(8px)',
+    WebkitBackdropFilter: 'blur(8px)',
   },
-  kbdHint: {
-    marginLeft: 8,
-    padding: '2px 6px',
-    borderRadius: 4,
-    background: 'rgba(0,0,0,0.08)',
-    fontSize: 10,
-    fontWeight: 700,
-    fontFamily: 'monospace',
-    letterSpacing: '0.04em',
+  ctaRow: {
+    display: 'flex',
+    gap: 10,
   },
 }
 

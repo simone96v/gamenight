@@ -17,12 +17,11 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import AppHeader from '../../components/AppHeader'
 import IconButton from '../../components/ui/IconButton'
-import Button from '../../components/ui/Button'
 import MiniBlob from '../../components/MiniBlob'
+import GameButton from '../_shared/GameButton'
 import CardView from '../../lib/cards/CardView'
 import { createDeck, shuffle, draw } from '../../lib/cards/italianDeck'
 import { useSession } from '../../stores/useSession'
-import { accentBtnStyle } from '../../theme/gameColors'
 import { usePlayerAccent } from '../../hooks/usePlayerAccent'
 import { pickColor } from '../../utils/colors'
 
@@ -416,19 +415,19 @@ const Cucu = () => {
       {/* CTA */}
       <div style={S.footer}>
         {state.phase === 'player_action' && (
-          <>
-            <Button variant="secondary" width="full" onClick={handleKeep}>
+          <div style={S.ctaRow}>
+            <GameButton variant="secondary" icon="🤚" onClick={handleKeep}>
               Tieni
-            </Button>
-            <Button
+            </GameButton>
+            <GameButton
               variant="primary"
-              width="full"
+              accent={C.accent}
+              icon={isLastInRotation ? '🎴' : '🔀'}
               onClick={handleSwap}
-              style={accentBtnStyle(C.accent)}
             >
-              {isLastInRotation ? 'Pesca dal mazzo' : 'Scambia →'}
-            </Button>
-          </>
+              {isLastInRotation ? 'Pesca' : 'Scambia'}
+            </GameButton>
+          </div>
         )}
         {state.phase === 'cpu_action' && (
           <p style={S.cpuThinking}>{currentPlayer?.name} sta pensando...</p>
@@ -437,24 +436,14 @@ const Cucu = () => {
           <p style={S.cpuThinking}>Reveal in corso...</p>
         )}
         {state.phase === 'round_end' && (
-          <Button
-            variant="primary"
-            width="full"
-            onClick={handleNext}
-            style={accentBtnStyle(C.accent)}
-          >
+          <GameButton variant="primary" accent={C.accent} icon="▶️" onClick={handleNext}>
             Prossimo round
-          </Button>
+          </GameButton>
         )}
         {state.phase === 'game_over' && (
-          <Button
-            variant="primary"
-            width="full"
-            onClick={handleRestart}
-            style={accentBtnStyle(C.accent)}
-          >
+          <GameButton variant="primary" accent={C.accent} icon="🔁" onClick={handleRestart}>
             Nuova partita
-          </Button>
+          </GameButton>
         )}
       </div>
     </div>
@@ -572,8 +561,14 @@ const S = {
     flexDirection: 'column',
     gap: 8,
     padding: 'clamp(12px, 2dvh, 18px) clamp(16px, 4vw, 24px) clamp(16px, 3dvh, 22px)',
-    background: 'var(--surface)',
-    borderTop: '1px solid var(--border)',
+    background: 'rgba(0,0,0,0.30)',
+    borderTop: '1px solid rgba(255,255,255,0.10)',
+    backdropFilter: 'blur(8px)',
+    WebkitBackdropFilter: 'blur(8px)',
+  },
+  ctaRow: {
+    display: 'flex',
+    gap: 10,
   },
   cpuThinking: {
     margin: 0,

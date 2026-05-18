@@ -23,12 +23,11 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import AppHeader from '../../components/AppHeader'
 import IconButton from '../../components/ui/IconButton'
-import Button from '../../components/ui/Button'
+import GameButton from '../_shared/GameButton'
 import MiniBlob from '../../components/MiniBlob'
 import CardView from '../../lib/cards/CardView'
 import { createDeck, shuffle, draw } from '../../lib/cards/italianDeck'
 import { useSession } from '../../stores/useSession'
-import { accentBtnStyle } from '../../theme/gameColors'
 import { usePlayerAccent } from '../../hooks/usePlayerAccent'
 import { pickColor } from '../../utils/colors'
 import { cardPoints, cardStrength } from './logic'
@@ -392,14 +391,9 @@ const BriscolaSolo = () => {
 
       <div style={S.footer}>
         {state.phase === 'game_over' ? (
-          <Button
-            variant="primary"
-            width="full"
-            onClick={handleRestart}
-            style={accentBtnStyle(C.accent)}
-          >
+          <GameButton variant="primary" accent={C.accent} icon="🔁" onClick={handleRestart}>
             Nuova partita
-          </Button>
+          </GameButton>
         ) : (
           <p style={S.footerHint}>
             Briscola: <strong>{state.briscola.suit}</strong>. Le tue carte di briscola sono evidenziate.
@@ -535,8 +529,10 @@ const S = {
     flexDirection: 'column',
     gap: 8,
     padding: 'clamp(10px, 1.8dvh, 16px) clamp(16px, 4vw, 24px) clamp(14px, 2.5dvh, 20px)',
-    background: 'var(--surface)',
-    borderTop: '1px solid var(--border)',
+    background: 'rgba(0,0,0,0.30)',
+    borderTop: '1px solid rgba(255,255,255,0.10)',
+    backdropFilter: 'blur(8px)',
+    WebkitBackdropFilter: 'blur(8px)',
   },
   footerHint: {
     margin: 0,
