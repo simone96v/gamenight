@@ -26,6 +26,7 @@ const LOBBY_ROUTES = {
   cucu: '/cucu-lobby',
   rubamazzetto: '/rubamazzetto-lobby',
   briscola: '/briscola-lobby',
+  scopa: '/scopa-lobby',
 }
 
 const SoloGamesScreen = () => {

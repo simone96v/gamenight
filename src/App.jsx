@@ -35,6 +35,7 @@ const SetteEMezzoLobbyScreen = lazy(() => import('./screens/SetteEMezzoLobbyScre
 const CucuLobbyScreen = lazy(() => import('./screens/CucuLobbyScreen'))
 const RubamazzettoLobbyScreen = lazy(() => import('./screens/RubamazzettoLobbyScreen'))
 const BriscolaLobbyScreen = lazy(() => import('./screens/BriscolaLobbyScreen'))
+const ScopaLobbyScreen = lazy(() => import('./screens/ScopaLobbyScreen'))
 const RoundEndScreen = lazy(() => import('./screens/RoundEndScreen'))
 const ScoreboardScreen = lazy(() => import('./screens/ScoreboardScreen'))
 const SoloSetupScreen = lazy(() => import('./screens/SoloSetupScreen'))
@@ -122,6 +123,7 @@ function App() {
             <Route path="/cucu-lobby" element={<CucuLobbyScreen />} />
             <Route path="/rubamazzetto-lobby" element={<RubamazzettoLobbyScreen />} />
             <Route path="/briscola-lobby" element={<BriscolaLobbyScreen />} />
+            <Route path="/scopa-lobby" element={<ScopaLobbyScreen />} />
             <Route path="/game/:gameId" element={<GameScreen />} />
             <Route path="/round-end" element={<RoundEndScreen />} />
             <Route path="/scoreboard" element={<ScoreboardScreen />} />
