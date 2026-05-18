@@ -13,7 +13,6 @@ import { addPlayerToRoom, pushRoom, closeRoom } from '../lib/room'
 import { AVATAR_COLORS } from '../utils/colors'
 import { validatePlayerName } from '../utils/nameValidation'
 import MiniBlob, { useMiniExpr } from '../components/MiniBlob'
-import TappableMiniBlob from '../components/TappableMiniBlob'
 
 const containerVariants = {
   hidden: {},
@@ -299,7 +298,7 @@ const LobbyScreen = () => {
                   onClick={() => (isHost && !p.is_host ? handleRemove(p.id) : undefined)}
                   style={{ ...playerRowStyle, cursor: isHost && !p.is_host ? 'pointer' : 'default' }}
                 >
-                  <TappableMiniBlob color={p.color} expr={blobExpr} id={`mb-${p.id}`} />
+                  <MiniBlob color={p.color} expr={blobExpr} id={`mb-${p.id}`} />
                   <span style={playerNameStyle}>
                     {p.name?.slice(0, 12)}
                   </span>

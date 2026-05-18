@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect } from 'react'
+import { lazy, Suspense, useCallback } from 'react'
 import { Routes, Route, useNavigate } from 'react-router-dom'
 import { useRoomSync } from './hooks/useRoomSync'
 import { useHostHeartbeat } from './hooks/useHostHeartbeat'
@@ -6,8 +6,6 @@ import { useThemeSync } from './hooks/useThemeSync'
 import { ConnectionContext } from './contexts/connection'
 import { useSession } from './stores/useSession'
 import { closeRoom } from './lib/room'
-import { armAudioUnlock, preloadSfx } from './utils/audio'
-import { useBgm } from './hooks/useBgm'
 
 import ErrorBoundary from './components/ErrorBoundary'
 import HomeScreen from './screens/HomeScreen'
@@ -84,14 +82,7 @@ const ConnectionLayer = () => {
 function App() {
   useHostHeartbeat()
   useThemeSync()
-  useBgm()
   const { status } = useRoomSync()
-
-  // Audio: arm unlock al primo gesto + preload SFX in background.
-  useEffect(() => {
-    armAudioUnlock()
-    preloadSfx()
-  }, [])
 
   return (
     <ErrorBoundary>

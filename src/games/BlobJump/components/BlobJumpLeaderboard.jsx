@@ -2,9 +2,8 @@
 // Mostra top 20 + posizione del device locale (anche se fuori dalla top).
 // Highlight della riga del giocatore corrente. Refresh manuale + automatico on mount.
 
-import { useMemo, useEffect, useRef } from 'react'
+import { useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useSfx } from '../../../hooks/useSfx'
 import Button from '../../../components/ui/Button'
 import IconButton from '../../../components/ui/IconButton'
 import GradientTitle from '../../../components/ui/GradientTitle'
@@ -79,19 +78,7 @@ const Row = ({ rank, name, score, color, isMe, accent, expr }) => {
 const BlobJumpLeaderboard = ({ open, onClose }) => {
   const C = usePlayerAccent()
   const expr = useMiniExpr()
-  const playSfx = useSfx()
   const { top, me, deviceId, loading, refresh } = useBlobJumpLeaderboard({ enabled: open })
-
-  // SFX all'apertura: fanfare se il device è #1, whoosh altrimenti.
-  // Aspetta che il rank arrivi (loading=false) per non sprecare un whoosh
-  // prima di scoprire che eri primo.
-  const sfxFiredRef = useRef(false)
-  useEffect(() => {
-    if (!open) { sfxFiredRef.current = false; return }
-    if (loading || sfxFiredRef.current) return
-    sfxFiredRef.current = true
-    playSfx(me.rank === 1 ? 'fanfare' : 'whoosh')
-  }, [open, loading, me.rank, playSfx])
 
   const inTop = useMemo(
     () => top.some((row) => row.device_id === deviceId),

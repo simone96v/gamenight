@@ -1,10 +1,8 @@
 // Fase reveal: category chip + header + HUD + question card compatta + grid risposte
 // con esito + score popup + voters distribution + footer host-only (Avanti / Chi ha vinto).
 
-import { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import AppHeader from '../../../components/AppHeader'
-import { useSfx } from '../../../hooks/useSfx'
 import GameHUD from '../../../components/GameHUD'
 import IconButton from '../../../components/ui/IconButton'
 import Button from '../../../components/ui/Button'
@@ -34,21 +32,11 @@ const RevealPhase = ({
   onExit,
 }) => {
   const C = usePlayerAccent()
-  const playSfx = useSfx()
   const myChosen = myRoundResult?.chosen ?? localAnswer
   const myPoints = myRoundResult?.points ?? 0
   const isCorrect = myRoundResult?.correct ?? false
   const correctIdx = currentQuestion?.correct
   const didAnswer = myChosen != null
-
-  // SFX reveal: chime per correct, buzz per wrong. Si triggera solo quando
-  // l'utente entra nella reveal phase per la prima volta sulla questa domanda.
-  useEffect(() => {
-    if (!didAnswer) return
-    playSfx(isCorrect ? 'correct' : 'wrong')
-    // intentionally NOT depending on playSfx (stable ref); fire-once per reveal
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentQuestion])
   const myPlayer = players.find((p) => p.id === localPlayerId)
   const myStreak = myPlayer?.current_streak ?? 0
 

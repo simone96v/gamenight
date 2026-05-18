@@ -101,14 +101,7 @@ const Blob = ({
     >
       <svg
         viewBox="0 0 300 300"
-        style={{
-          width: size,
-          height: 'auto',
-          overflow: 'visible',
-          // Bagliore esterno luminoso: drop-shadow col colore più chiaro
-          // dello stesso gradient (segue il contorno del blob, non il box).
-          filter: `drop-shadow(0 0 16px ${c1}80) drop-shadow(0 4px 12px ${c3}55)`,
-        }}
+        style={{ width: size, height: 'auto', overflow: 'visible' }}
         aria-hidden="true"
       >
         <defs>

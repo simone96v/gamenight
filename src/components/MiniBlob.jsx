@@ -173,13 +173,7 @@ const MiniBlob = ({
       viewBox="0 0 300 300"
       width={size}
       height={size}
-      style={{
-        flexShrink: 0,
-        overflow: 'visible',
-        // Bagliore esterno luminoso (segue la forma del blob). Più contenuto
-        // del Blob grande perché qui spesso ne mostriamo molti in lista.
-        filter: `drop-shadow(0 0 6px ${c1}80) drop-shadow(0 2px 4px ${c3}55)`,
-      }}
+      style={{ flexShrink: 0, overflow: 'visible' }}
     >
       <defs>
         <radialGradient id={`${id}-g`} cx="40%" cy="36%" r="72%">

@@ -17,7 +17,6 @@ import { useSession } from '../../stores/useSession'
 import { useServerTimer } from '../../hooks/useServerTimer'
 import { rpcCastVote } from '../../lib/room'
 import { haptic } from '../../utils/haptic'
-import { useSfx } from '../../hooks/useSfx'
 import { pickRoundRacks, shuffleRack } from './data/racks'
 import { isFormable, isInDictionary, loadDictionary, scoreWord } from './data/dictionary'
 
@@ -89,11 +88,6 @@ export const useScramble = () => {
   const [shuffledRack, setShuffledRack] = useState('')
   const [errorFlash, setErrorFlash] = useState(null) // 'duplicate' | 'invalid' | 'too_short'
 
-  // SFX: ref aggiornato così il callback submitWord resta stabile.
-  const playSfx = useSfx()
-  const playSfxRef = useRef(playSfx)
-  useEffect(() => { playSfxRef.current = playSfx }, [playSfx])
-
   // Quando cambia il rack del round, resetta tray + shuffle iniziale.
   useEffect(() => {
     if (!rack) return
@@ -158,7 +152,6 @@ export const useScramble = () => {
       setTimeout(() => setErrorFlash(null), 380)
       setTray([])
       setShuffledRack((r) => shuffleRack(r || rack))
-      playSfxRef.current?.('wrong')
     }
     if (word.length < MIN_WORD_LEN) {
       rejectWith('too_short')
@@ -187,7 +180,6 @@ export const useScramble = () => {
     const isPangram = word.length === RACK_LEN
     if (isPangram) haptic.heavy()
     else haptic.medium()
-    playSfxRef.current?.(isPangram ? 'correct' : 'confirm')
 
     const nextWords = [...myWords, word]
     if (isOnline) {

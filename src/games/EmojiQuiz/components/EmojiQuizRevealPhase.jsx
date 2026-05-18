@@ -2,11 +2,9 @@
 // la risposta giusta + chi ha indovinato (avatar list) + punti del local
 // player + footer host con "Avanti" / "Classifica".
 
-import { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import AppHeader from '../../../components/AppHeader'
 import GameHUD from '../../../components/GameHUD'
-import { useSfx } from '../../../hooks/useSfx'
 import IconButton from '../../../components/ui/IconButton'
 import Button from '../../../components/ui/Button'
 import RoundBadge from '../../../components/ui/RoundBadge'
@@ -45,14 +43,6 @@ const EmojiQuizRevealPhase = ({
   const winnerId = eqRoundResult?.winnerId
   const localPoints = eqRoundResult?.points?.[localPlayerId] ?? 0
   const localGotIt = localPoints > 0
-  const playSfx = useSfx()
-
-  // SFX reveal: chime se ha indovinato, buzz altrimenti. One-shot per puzzle.
-  useEffect(() => {
-    if (!puzzle) return
-    playSfx(localGotIt ? 'correct' : 'wrong')
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [puzzle?.id])
 
   const playersForHud = (players ?? []).map((p) => ({ ...p, score: eqScores?.[p.id] ?? 0 }))
 
