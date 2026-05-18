@@ -12,6 +12,7 @@
 import { motion } from 'framer-motion'
 
 const SPRITE_URL = '/cards/italian-deck.png'
+const BACK_URL = '/cards/card-back.png'
 const COLS = 10
 const ROWS = 4
 const SUIT_ROW = { coppe: 0, denari: 1, bastoni: 2, spade: 3 }
@@ -55,7 +56,7 @@ const CardView = ({
     ...style,
   }
 
-  // Carta coperta: back design "blob giallo su nero".
+  // Carta coperta: card-back.png con blob giallo centrale e cornice argentata.
   if (faceDown) {
     return (
       <motion.div
@@ -65,24 +66,12 @@ const CardView = ({
         onClick={isInteractive ? onClick : undefined}
         style={{
           ...base,
-          background: 'linear-gradient(135deg, #1F2937 0%, #374151 60%, #1F2937 100%)',
-          border: '2px solid #4B5563',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          position: 'relative',
+          backgroundImage: `url(${BACK_URL})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
         }}
-      >
-        <div
-          style={{
-            width: dims.w * 0.5,
-            height: dims.w * 0.5,
-            borderRadius: '50%',
-            background: 'radial-gradient(circle at 35% 30%, #FDE68A 0%, #F59E0B 55%, #B45309 100%)',
-            boxShadow: '0 0 12px rgba(245,158,11,0.4)',
-          }}
-        />
-      </motion.div>
+      />
     )
   }
 
