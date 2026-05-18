@@ -7,10 +7,11 @@ import { useEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useSession } from '../stores/useSession'
 
+// Banner inline — solo per errori transitori o input-driven.
+// Gli stati terminali / bloccanti (host se n'è andato, connessione persa per
+// piu' tentativi consecutivi, ecc) usano ConnectionModal invece di questo banner.
 const ERROR_MESSAGES = {
-  connection:     'Connessione persa — riprovo...',
-  host_left:      'L\'host ha chiuso il party.',
-  connection_lost:'Connessione persa. Ritorno alla home...',
+  connection:     'Connessione instabile — riprovo...',
   room_not_found: 'Party non trovato. Controlla il codice.',
   room_full:      'Party pieno (massimo 8 giocatori).',
   generic:        'Qualcosa è andato storto. Riprova.',

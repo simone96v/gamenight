@@ -31,6 +31,18 @@ const DEFAULTS = {
   // non viene riportato a /game/trivia. Si resetta quando avvia il nuovo gioco.
   awaitingGameChange: false,
 
+  // Flag connessione/host (online only):
+  //   hostOffline   → l'host non scrive heartbeat da >HOST_OFFLINE_THRESHOLD_MS.
+  //                   Client: modale "Host disconnesso, attendendo...". Si chiude
+  //                   automaticamente quando hostOffline torna false.
+  //   hostClosed    → l'host ha chiuso esplicitamente (phase==='closed').
+  //                   Modale terminale "Party chiuso → Torna alla home".
+  //   connectionAttempts → contatore retry del PROPRIO client (non host).
+  //                   Modale "Connessione persa" dopo OWN_CONNECTION_MODAL_AFTER.
+  hostOffline: false,
+  hostClosed: false,
+  connectionAttempts: 0,
+
   error: null,
 }
 
@@ -272,6 +284,11 @@ export const useSession = create(
       // ---- errori ----
       showError: (type) => set({ error: type }),
       clearError: () => set({ error: null }),
+
+      // ---- connessione (vedi useRoomSync / useHostHeartbeat) ----
+      setHostOffline: (v) => set({ hostOffline: !!v }),
+      setHostClosed: (v) => set({ hostClosed: !!v }),
+      setConnectionAttempts: (n) => set({ connectionAttempts: n }),
 
       // ---- reset completo ----
       resetSession: () => set({ ...DEFAULTS }),

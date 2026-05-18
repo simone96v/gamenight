@@ -1,13 +1,16 @@
-import { lazy, Suspense } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { lazy, Suspense, useCallback } from 'react'
+import { Routes, Route, useNavigate } from 'react-router-dom'
 import { useRoomSync } from './hooks/useRoomSync'
-import { useHostCleanup } from './hooks/useHostCleanup'
+import { useHostHeartbeat } from './hooks/useHostHeartbeat'
 import { useThemeSync } from './hooks/useThemeSync'
 import { ConnectionContext } from './contexts/connection'
+import { useSession } from './stores/useSession'
+import { closeRoom } from './lib/room'
 
 import ErrorBoundary from './components/ErrorBoundary'
 import HomeScreen from './screens/HomeScreen'
 import InstallPrompt from './components/InstallPrompt'
+import ConnectionModal from './components/ConnectionModal'
 
 const ModeScreen = lazy(() => import('./screens/ModeScreen'))
 const CreatePartyScreen = lazy(() => import('./screens/CreatePartyScreen'))
@@ -34,8 +37,50 @@ const MappaTest = lazy(() => import('./games/Mappa/MappaTest'))
 const BlobJumpTest = lazy(() => import('./games/BlobJump/BlobJumpTest'))
 const CatchBlobTest = lazy(() => import('./games/CatchBlob/CatchBlobTest'))
 
+// Soglia oltre la quale la connessione persa del proprio client diventa modale
+// bloccante (sotto, basta il banner inline).
+const OWN_CONNECTION_MODAL_AFTER = 3
+
+const ConnectionLayer = () => {
+  const navigate = useNavigate()
+  const mode = useSession((s) => s.mode)
+  const isHost = useSession((s) => s.isHost)
+  const roomCode = useSession((s) => s.roomCode)
+  const hostOffline = useSession((s) => s.hostOffline)
+  const hostClosed = useSession((s) => s.hostClosed)
+  const connectionAttempts = useSession((s) => s.connectionAttempts)
+  const resetSession = useSession((s) => s.resetSession)
+
+  const goHome = useCallback(async () => {
+    if (isHost && roomCode) {
+      try { await closeRoom(roomCode) } catch { /* best-effort */ }
+    }
+    resetSession()
+    navigate('/', { replace: true })
+  }, [isHost, roomCode, resetSession, navigate])
+
+  if (mode !== 'online') return null
+
+  // Priorità: party-closed (terminale) > host-offline > own-connection.
+  let variant = null
+  if (hostClosed) variant = 'party-closed'
+  else if (hostOffline && !isHost) variant = 'host-offline'
+  else if (connectionAttempts >= OWN_CONNECTION_MODAL_AFTER) variant = 'own-connection'
+
+  if (!variant) return null
+
+  return (
+    <ConnectionModal
+      variant={variant}
+      attempts={connectionAttempts}
+      onPrimary={goHome}
+      onSecondary={goHome}
+    />
+  )
+}
+
 function App() {
-  useHostCleanup()
+  useHostHeartbeat()
   useThemeSync()
   const { status } = useRoomSync()
 
@@ -73,6 +118,7 @@ function App() {
             <Route path="/test/catchblob" element={<CatchBlobTest />} />
           </Routes>
         </Suspense>
+        <ConnectionLayer />
       </ConnectionContext.Provider>
     </ErrorBoundary>
   )

@@ -1,17 +1,23 @@
+import { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSession } from '../stores/useSession'
 import { closeRoom } from '../lib/room'
 import MiniBlob, { useMiniExpr } from './MiniBlob'
+import ConnectionBadge from './ConnectionBadge'
+import { ConnectionContext } from '../contexts/connection'
 
 const AppHeader = ({ actions = null, leading = null }) => {
   const navigate = useNavigate()
+  const mode = useSession((s) => s.mode)
   const isHost = useSession((s) => s.isHost)
   const roomCode = useSession((s) => s.roomCode)
   const resetSession = useSession((s) => s.resetSession)
+  const connStatus = useContext(ConnectionContext)
   // Mascotte ufficiale Blob Party — sempre giallo, indipendente dal colore del giocatore.
   const MASCOT_COLOR = '#F59E0B'
   const expr = useMiniExpr()
   const accent = 'var(--text)'
+  const showBadge = mode === 'online' && connStatus !== 'idle'
 
   const handleLogoClick = async () => {
     if (isHost && roomCode) {
@@ -61,7 +67,8 @@ const AppHeader = ({ actions = null, leading = null }) => {
       </button>
 
       <div style={{ ...slotStyle, marginLeft: 'auto' }}>
-        {actions || <div style={{ width: 36 }} />}
+        {showBadge && <ConnectionBadge status={connStatus} />}
+        {actions || <div style={{ width: showBadge ? 'auto' : 36 }} />}
       </div>
     </header>
   )

@@ -5,8 +5,11 @@
 //   1. al mount, se mode==='online' fa lo snapshot iniziale (getRoom) e si iscrive (subscribeToRoom)
 //   2. su ogni update, sincronizza lo store e — se non è host — naviga alla phase corrente
 //   3. gestisce reconnect con backoff fino a MAX_RECONNECT_ATTEMPTS
-//   4. se la phase diventa 'closed' (host ha chiuso), mostra errore e riporta alla home
-//   5. se il reconnect fallisce dopo tutti i tentativi, riporta alla home
+//   4. se la phase diventa 'closed' (host ha chiuso esplicitamente), setta hostClosed
+//      → PartyClosedModal blocca la UI con CTA "Torna alla home"
+//   5. se hostLastSeen è stale (>HOST_OFFLINE_THRESHOLD_MS) e siamo client, setta hostOffline
+//      → HostOfflineModal mostra "Host disconnesso, attendiamo..."
+//   6. tiene aggiornato connectionAttempts per la OwnConnectionModal lato client.
 
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -15,7 +18,8 @@ import { useSession } from '../stores/useSession'
 
 const MAX_RECONNECT_ATTEMPTS = 5
 const RECONNECT_DELAY_MS = 3000
-const REDIRECT_DELAY_MS = 2500
+const HOST_OFFLINE_THRESHOLD_MS = 10000
+const HOST_OFFLINE_POLL_MS = 2000
 
 const phaseToPath = (phase) => {
   switch (phase) {
@@ -64,11 +68,12 @@ export const useRoomSync = () => {
   const awaitingGameChange = useSession((s) => s.awaitingGameChange)
   const syncFromRemote = useSession((s) => s.syncFromRemote)
   const showError     = useSession((s) => s.showError)
-  const resetSession  = useSession((s) => s.resetSession)
+  const setHostOffline = useSession((s) => s.setHostOffline)
+  const setHostClosed = useSession((s) => s.setHostClosed)
+  const setConnectionAttempts = useSession((s) => s.setConnectionAttempts)
 
   const subRef = useRef(null)
   const reconnectTimerRef = useRef(null)
-  const redirectTimerRef = useRef(null)
   const attemptsRef = useRef(0)
   const isHostRef = useRef(isHost)
   useEffect(() => {
@@ -82,7 +87,11 @@ export const useRoomSync = () => {
 
   useEffect(() => {
     if (mode !== 'online' || !roomCode) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setStatus('idle')
+      setHostOffline(false)
+      setHostClosed(false)
+      setConnectionAttempts(0)
       return
     }
 
@@ -94,19 +103,6 @@ export const useRoomSync = () => {
       if (target && window.location.pathname !== target) navigate(target)
     }
 
-    const kickToHome = (errorType) => {
-      if (cancelled) return
-      showError(errorType)
-      subRef.current?.unsubscribe()
-      subRef.current = null
-      clearTimeout(redirectTimerRef.current)
-      redirectTimerRef.current = setTimeout(() => {
-        if (cancelled) return
-        resetSession()
-        navigate('/', { replace: true })
-      }, REDIRECT_DELAY_MS)
-    }
-
     const handler = ({ phase, state, questionStartedAt, error }) => {
       if (cancelled) return
       if (error) {
@@ -115,30 +111,31 @@ export const useRoomSync = () => {
         return
       }
 
-      // Host ha chiuso il party
+      // Host ha chiuso esplicitamente il party.
       if (phase === 'closed') {
         if (!isHostRef.current) {
-          kickToHome('host_left')
+          setHostClosed(true)
         }
         return
       }
 
+      // Nuovo update → resettiamo flag di host-offline se l'host ha appena
+      // ripreso a battere (il check periodico lo confermerà).
       syncFromRemote(state, phase, questionStartedAt)
       navigateToPhase(phase)
     }
 
     const scheduleReconnect = () => {
       if (attemptsRef.current >= MAX_RECONNECT_ATTEMPTS) {
-        if (!isHostRef.current) {
-          kickToHome('connection_lost')
-        } else {
-          showError('connection')
-        }
+        // Non kicchiamo più a casa automaticamente: la OwnConnectionModal
+        // mostra "Connessione persa" con CTA esplicito "Torna alla home".
         setStatus('disconnected')
         return
       }
       attemptsRef.current += 1
-      showError('connection')
+      setConnectionAttempts(attemptsRef.current)
+      // Banner inline per i primi 2 tentativi; modale prende il sopravvento dopo.
+      if (attemptsRef.current <= 2) showError('connection')
       clearTimeout(reconnectTimerRef.current)
       reconnectTimerRef.current = setTimeout(() => {
         if (!cancelled) connect()
@@ -150,19 +147,18 @@ export const useRoomSync = () => {
       const { room, error } = await getRoom(roomCode)
       if (cancelled) return
       if (error || !room) {
+        // Stanza inesistente → errore terminale, banner classico.
         if (!isHostRef.current) {
-          kickToHome('room_not_found')
-        } else {
           showError('room_not_found')
         }
         setStatus('disconnected')
         return
       }
 
-      // Room was closed while we were reconnecting
+      // Stanza chiusa esplicitamente dall'host.
       if (room.phase === 'closed') {
         if (!isHostRef.current) {
-          kickToHome('host_left')
+          setHostClosed(true)
         }
         return
       }
@@ -173,6 +169,7 @@ export const useRoomSync = () => {
       subRef.current?.unsubscribe()
       subRef.current = subscribeToRoom(roomCode, handler)
       attemptsRef.current = 0
+      setConnectionAttempts(0)
       setStatus('connected')
     }
 
@@ -181,12 +178,38 @@ export const useRoomSync = () => {
     return () => {
       cancelled = true
       clearTimeout(reconnectTimerRef.current)
-      clearTimeout(redirectTimerRef.current)
       subRef.current?.unsubscribe()
       subRef.current = null
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, roomCode])
+
+  // ── Detection host-offline via heartbeat staleness ──
+  // Polling perché Realtime non rinvia eventi se il valore non cambia.
+  useEffect(() => {
+    if (mode !== 'online' || isHost || !roomCode) {
+      setHostOffline(false)
+      return
+    }
+    const check = () => {
+      const s = useSession.getState()
+      if (s.hostClosed) {
+        setHostOffline(false)
+        return
+      }
+      const ts = s.gameState?.hostLastSeen
+      if (!ts) {
+        // Stanze pre-heartbeat (legacy) o appena create: non triggeriamo.
+        return
+      }
+      const age = Date.now() - new Date(ts).getTime()
+      const offline = age > HOST_OFFLINE_THRESHOLD_MS
+      if (offline !== s.hostOffline) setHostOffline(offline)
+    }
+    check()
+    const interval = setInterval(check, HOST_OFFLINE_POLL_MS)
+    return () => clearInterval(interval)
+  }, [mode, isHost, roomCode, setHostOffline])
 
   return { status }
 }
