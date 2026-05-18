@@ -240,23 +240,18 @@ export const GAMES = [
     maxPlayers: 1,
     compatibility: { multi: false, single: true, excludedCategories: [] },
   }),
-  {
-    id: 'snake',
-    gameCategory: 'arcade',
+  placeholder('snake', 'arcade', {
     name: 'Blob Snake',
     emoji: '🐍',
-    image: { light: '/games/cards/snake-light.png', dark: '/games/cards/snake-dark.png' },
     tagline: 'Mangia, cresci, sopravvivi',
     description: 'Guida il serpente di blob: divora le pillole, cresci, non sbattere sulla coda.',
     difficulty: 2,
     minPlayers: 1,
     maxPlayers: 1,
-    locked: false,
     bg: 'linear-gradient(145deg, #A7F3D0 0%, #14B8A6 55%, #0F766E 100%)',
     shadow: 'rgba(20, 184, 166, 0.40)',
     compatibility: { multi: false, single: true, excludedCategories: [] },
-    component: lazy(() => import('../games/Snake')),
-  },
+  }),
 
   // ───── CARDS ─────
   {
