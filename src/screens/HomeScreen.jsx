@@ -156,58 +156,6 @@ const ThemeToggle = () => {
   )
 }
 
-const SfxToggle = () => {
-  const sfxEnabled = useSettings((s) => s.sfxEnabled)
-  const toggleSfx = useSettings((s) => s.toggleSfx)
-
-  return (
-    <motion.button
-      type="button"
-      onClick={toggleSfx}
-      whileHover={{ scale: 1.08, boxShadow: '0 6px 18px rgba(0,0,0,0.12)' }}
-      whileTap={{ scale: 0.92 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 22 }}
-      aria-label={sfxEnabled ? 'Disattiva suoni' : 'Attiva suoni'}
-      style={circleBtn}
-    >
-      <motion.span
-        key={sfxEnabled ? 'on' : 'off'}
-        initial={{ scale: 0.3 }}
-        animate={{ scale: 1 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 18 }}
-      >
-        {sfxEnabled ? '🔊' : '🔇'}
-      </motion.span>
-    </motion.button>
-  )
-}
-
-const MusicToggle = () => {
-  const musicEnabled = useSettings((s) => s.musicEnabled)
-  const toggleMusic = useSettings((s) => s.toggleMusic)
-
-  return (
-    <motion.button
-      type="button"
-      onClick={toggleMusic}
-      whileHover={{ scale: 1.08, boxShadow: '0 6px 18px rgba(0,0,0,0.12)' }}
-      whileTap={{ scale: 0.92 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 22 }}
-      aria-label={musicEnabled ? 'Disattiva musica' : 'Attiva musica'}
-      style={circleBtn}
-    >
-      <motion.span
-        key={musicEnabled ? 'on' : 'off'}
-        initial={{ scale: 0.3 }}
-        animate={{ scale: 1 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 18 }}
-      >
-        {musicEnabled ? '🎵' : '🎶'}
-      </motion.span>
-    </motion.button>
-  )
-}
-
 // Blob inferiore: 35% del corpo esce dal viewport bottom (65% visibile).
 // Con il viso canonico (smile bottom y=174) la faccia resta sopra il bordo.
 const BOTTOM_BLOB_SIZE   = 'clamp(166px, 48vw, 307px)'
@@ -319,7 +267,7 @@ const HomeScreen = () => {
           ))}
         </div>
 
-        {/* Toggles: tema + suono */}
+        {/* Toggle tema */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -327,8 +275,6 @@ const HomeScreen = () => {
           style={{ display: 'flex', justifyContent: 'center', gap: 12 }}
         >
           <ThemeToggle />
-          <SfxToggle />
-          <MusicToggle />
         </motion.div>
       </div>
 
