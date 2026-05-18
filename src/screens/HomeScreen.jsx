@@ -1,7 +1,7 @@
 // HomeScreen — hero + CTA "Crea party" / "Ho già un codice" + un blob piccolo sopra il logo e uno grande che sbuca dal basso al centro.
 
 import { useState, useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import GradientTitle from '../components/ui/GradientTitle'
 import OptionCard from '../components/ui/OptionCard'
@@ -156,6 +156,10 @@ const ThemeToggle = () => {
 // Con il viso canonico (smile bottom y=174) la faccia resta sopra il bordo.
 const BOTTOM_BLOB_SIZE   = 'clamp(166px, 48vw, 307px)'
 const BOTTOM_BLOB_OFFSET = 'clamp(-108px, -17vw, -58px)'
+const BOTTOM_BLOB_COLOR  = '#F59E0B'
+
+const TAP_REACTIONS = ['happy', 'blink', 'look-left', 'look-right']
+const pickReaction = () => TAP_REACTIONS[Math.floor(Math.random() * TAP_REACTIONS.length)]
 
 const HomeScreen = () => {
   const navigate = useNavigate()
@@ -163,6 +167,22 @@ const HomeScreen = () => {
   const bottomExpr = useExprCycle(4) // sfasato dal top per non blinkare insieme
   const gaze = useBlobGaze({ strength: 1 })
   const OPTIONS = useOptions()
+
+  // Interattività blob bottom-hero: tap → shockwave + cambio expr temporaneo.
+  const [manualExpr, setManualExpr] = useState(null)
+  const [waves, setWaves] = useState([])
+  const exprResetRef = useRef(null)
+
+  const removeWave = (id) => setWaves((w) => w.filter((wv) => wv.id !== id))
+
+  const handleBlobTap = () => {
+    setManualExpr(pickReaction())
+    clearTimeout(exprResetRef.current)
+    exprResetRef.current = setTimeout(() => setManualExpr(null), 700)
+    setWaves((w) => [...w, { id: `w-${Date.now()}-${Math.random().toString(36).slice(2, 6)}` }])
+  }
+
+  useEffect(() => () => clearTimeout(exprResetRef.current), [])
 
   const handlePick = (id) => {
     if (id === 'join') navigate('/join')
@@ -268,22 +288,105 @@ const HomeScreen = () => {
         </motion.div>
       </div>
 
-      {/* Blob inferiore — 35% esce dal viewport bottom, 65% visibile */}
-      <Blob
-        color="#F59E0B"
-        expr={bottomExpr}
-        id="bottom-hero"
-        size={BOTTOM_BLOB_SIZE}
-        animate={false}
-        gaze={gaze}
+      {/* Blob inferiore — 35% esce dal viewport bottom, 65% visibile.
+          Wrapper cliccabile (tap → shockwave + expr) con speech bubble di benvenuto. */}
+      <div
+        onClick={handleBlobTap}
+        role="button"
+        aria-label="Tocca il blob"
         style={{
+          position: 'fixed',
           bottom: BOTTOM_BLOB_OFFSET,
           left: '50%',
           transform: 'translateX(-50%)',
+          width: BOTTOM_BLOB_SIZE,
+          aspectRatio: '1 / 1',
+          zIndex: 3,
+          cursor: 'pointer',
+          WebkitTapHighlightColor: 'transparent',
         }}
-      />
+      >
+        {/* Speech bubble di benvenuto */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.6, y: 6 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ delay: 0.4, type: 'spring', stiffness: 320, damping: 18 }}
+          style={S.bubble}
+        >
+          Ciao! 👋
+          <span style={S.bubbleTail} />
+        </motion.div>
+
+        {/* Onde d'urto generate al tap — DIETRO al blob (zIndex 1 < blob 2). */}
+        <AnimatePresence>
+          {waves.map((wv) => (
+            <motion.span
+              key={wv.id}
+              initial={{ scale: 0.25, opacity: 0.7 }}
+              animate={{ scale: 1.25, opacity: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.65, ease: 'easeOut' }}
+              onAnimationComplete={() => removeWave(wv.id)}
+              style={{
+                position: 'absolute',
+                inset: 0,
+                borderRadius: '50%',
+                border: `4px solid ${BOTTOM_BLOB_COLOR}`,
+                boxShadow: `0 0 24px ${BOTTOM_BLOB_COLOR}66`,
+                pointerEvents: 'none',
+                willChange: 'transform, opacity',
+                zIndex: 1,
+              }}
+            />
+          ))}
+        </AnimatePresence>
+
+        <Blob
+          color={BOTTOM_BLOB_COLOR}
+          expr={manualExpr || bottomExpr}
+          id="bottom-hero"
+          size="100%"
+          animate={false}
+          gaze={gaze}
+          style={{ position: 'relative', zIndex: 2 }}
+        />
+      </div>
     </motion.div>
   )
+}
+
+const S = {
+  bubble: {
+    position: 'absolute',
+    bottom: '88%',
+    left: '74%',
+    transform: 'translateX(-10%)',
+    background: 'var(--surface)',
+    color: 'var(--text)',
+    border: `1.5px solid ${BOTTOM_BLOB_COLOR}`,
+    borderRadius: 18,
+    padding: 'clamp(7px, 1dvh, 10px) clamp(12px, 2.5vw, 16px)',
+    fontFamily: "'Baloo 2', cursive",
+    fontWeight: 700,
+    fontSize: 'clamp(13px, 1.7dvh, 16px)',
+    letterSpacing: '-0.01em',
+    boxShadow: `0 8px 20px ${BOTTOM_BLOB_COLOR}33`,
+    whiteSpace: 'nowrap',
+    pointerEvents: 'none',
+    zIndex: 1,
+  },
+  bubbleTail: {
+    position: 'absolute',
+    left: 18,
+    bottom: -8,
+    width: 14,
+    height: 14,
+    background: 'var(--surface)',
+    borderRight: `1.5px solid ${BOTTOM_BLOB_COLOR}`,
+    borderBottom: `1.5px solid ${BOTTOM_BLOB_COLOR}`,
+    transform: 'rotate(45deg)',
+    borderBottomRightRadius: 3,
+  },
 }
 
 export default HomeScreen
