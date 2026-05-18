@@ -141,8 +141,18 @@ export class GameEngine {
       // sideways into an item that's already below basketTop would catch it.
       // After this single-frame window, the item is past the mouth — it can't
       // be caught anymore, only missed when it exits at the bottom.
+      //
+      // Hitbox è ASIMMETRICO per fairness:
+      //   - right / star (oggetti buoni): AABB lenient — basta brushare il
+      //     bordo del cesto per prendere. L'utente sente "ok, la presa è larga".
+      //   - bomb / skull (malus): il CENTRO dell'item deve essere sopra il
+      //     cesto. Bombe che cadono "vicino" al cesto ma con centro oltre il
+      //     bordo NON uccidono. Evita morti percepite come ingiuste.
       if (!it.pastBasket && it.vy > 0 && prevItemBottom < basketTop && itemBottom >= basketTop) {
-        const hOverlap = itemRight >= basketLeft && itemLeft <= basketRight
+        const isMalus = it.kind === 'bomb' || it.kind === 'skull'
+        const hOverlap = isMalus
+          ? (it.x >= basketLeft && it.x <= basketRight)
+          : (itemRight >= basketLeft && itemLeft <= basketRight)
         if (hOverlap) {
           this._handleCatch(it)
           this.items.splice(i, 1)
