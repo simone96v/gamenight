@@ -5,6 +5,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { haptic } from '../utils/haptic'
+import { useSfx } from '../hooks/useSfx'
 import { usePlayerAccent } from '../hooks/usePlayerAccent'
 
 const STEPS = [
@@ -24,6 +25,7 @@ const CountdownOverlay = ({
   gameEmoji,       // es. "🧠", "📍" — shown if no category
 }) => {
   const C = usePlayerAccent()
+  const playSfx = useSfx()
   const [stepIndex, setStepIndex] = useState(-1)
   const completedRef = useRef(false)
   const lastHapticStep = useRef(-1)
@@ -49,8 +51,8 @@ const CountdownOverlay = ({
 
       if (idx !== lastHapticStep.current) {
         lastHapticStep.current = idx
-        if (idx === 3) haptic.heavy()
-        else haptic.tick()
+        if (idx === 3) { haptic.heavy(); playSfx('confirm') }
+        else { haptic.tick(); playSfx('tap', { volume: 0.5 }) }
       }
 
       setStepIndex(idx)

@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { haptic } from '../../utils/haptic'
+import { useSfx } from '../../hooks/useSfx'
 
 const SHADOWS = {
   primary: {
@@ -36,12 +37,13 @@ const Button = ({
   const isSecondary = variant === 'secondary'
   const s = SHADOWS[variant] || SHADOWS.primary
   const hasCustomShadow = !!styleProp?.boxShadow
+  const playSfx = useSfx()
 
   return (
     <motion.button
       type={type}
       disabled={disabled}
-      onClick={disabled ? undefined : (e) => { haptic.tick(); onClick?.(e) }}
+      onClick={disabled ? undefined : (e) => { haptic.tick(); playSfx('tap'); onClick?.(e) }}
       whileHover={disabled ? undefined : {
         y: -2,
         ...(!hasCustomShadow && { boxShadow: s.hover }),

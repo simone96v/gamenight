@@ -26,6 +26,19 @@ export const useSettings = create(
       triviaSessionRounds: 3,
       triviaQuestionsPerRound: 5,
 
+      // Audio
+      sfxEnabled: true,
+      sfxVolume: 0.6,           // 0..1
+      musicEnabled: true,
+      musicVolume: 0.25,         // BGM leggero di sottofondo (volume basso)
+
+      setSfxEnabled: (enabled) => set({ sfxEnabled: !!enabled }),
+      toggleSfx: () => set({ sfxEnabled: !get().sfxEnabled }),
+      setSfxVolume: (v) => set({ sfxVolume: Math.max(0, Math.min(1, v)) }),
+      setMusicEnabled: (enabled) => set({ musicEnabled: !!enabled }),
+      toggleMusic: () => set({ musicEnabled: !get().musicEnabled }),
+      setMusicVolume: (v) => set({ musicVolume: Math.max(0, Math.min(1, v)) }),
+
       setCategory: (category) => set({ category }),
       setIntensity: (intensity) => set({ intensity }),
       setNumQuestions: (n) => set({ numQuestions: n }),

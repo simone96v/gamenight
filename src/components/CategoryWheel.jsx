@@ -19,6 +19,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { haptic } from '../utils/haptic'
+import { useSfx } from '../hooks/useSfx'
 
 const WHEEL_SIZE = 280
 const CX = WHEEL_SIZE / 2
@@ -47,6 +48,11 @@ const CategoryWheel = ({
   const onSpinEndRef = useRef(onSpinEnd)
   useEffect(() => { categoriesRef.current = categories }, [categories])
   useEffect(() => { onSpinEndRef.current = onSpinEnd }, [onSpinEnd])
+
+  // SFX (tick durante spin + fanfare alla land). Ref stabile.
+  const playSfx = useSfx()
+  const playSfxRef = useRef(playSfx)
+  useEffect(() => { playSfxRef.current = playSfx }, [playSfx])
 
   const segCount = categories.length
   const segAngle = segCount > 0 ? 360 / segCount : 0
@@ -77,6 +83,21 @@ const CategoryWheel = ({
 
     setRotation((prev) => prev + total)
 
+    // SFX ticking durante lo spin: rallenta l'intervallo nel finale
+    // (4.2s totale) per dare la sensazione che la ruota stia frenando.
+    const playSfx = playSfxRef.current
+    const tickTimeouts = []
+    const SPIN_MS = 4200
+    let t = 0
+    let interval = 60         // intervallo iniziale: tick fitti
+    while (t < SPIN_MS - 80) {
+      const at = t
+      tickTimeouts.push(setTimeout(() => playSfx?.('tick', { volume: 0.45 }), at))
+      // Easing semplice: intervallo cresce verso la fine (decelerazione percepita)
+      interval = 60 + 200 * Math.pow(t / SPIN_MS, 2)
+      t += interval
+    }
+
     // Wheel stops ~4.2s → celebration ~2.2s → onSpinEnd
     let celebTimer
     const spinTimer = setTimeout(() => {
@@ -84,16 +105,18 @@ const CategoryWheel = ({
       setLanded(cats[winIdx])
       setCelebrating(true)
       haptic.land()
+      playSfx?.('fanfare', { volume: 0.7 })
 
       celebTimer = setTimeout(() => {
         setCelebrating(false)
         onSpinEndRef.current?.(cats[winIdx])
       }, 1500)
-    }, 4200)
+    }, SPIN_MS)
 
     return () => {
       clearTimeout(spinTimer)
       clearTimeout(celebTimer)
+      tickTimeouts.forEach(clearTimeout)
     }
     // Solo spinTarget triggera l'animazione. categories e onSpinEnd via ref.
     // eslint-disable-next-line react-hooks/exhaustive-deps

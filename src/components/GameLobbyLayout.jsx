@@ -20,6 +20,9 @@ import Button from './ui/Button'
 import GradientTitle from './ui/GradientTitle'
 import Blob from './Blob'
 import MiniBlob, { useMiniExpr } from './MiniBlob'
+import TapShockwaves from './TapShockwaves'
+import TappableMiniBlob from './TappableMiniBlob'
+import { useTapShockwave } from '../hooks/useTapShockwave'
 import { accentBtnStyle } from '../theme/gameColors'
 import { usePlayerAccent } from '../hooks/usePlayerAccent'
 import { useSession } from '../stores/useSession'
@@ -46,6 +49,9 @@ const GameLobbyLayout = ({
   const others = players.filter((p) => p.id !== localPlayer?.id)
   const blobColor = localPlayer?.color
   const playerName = localPlayer?.name || 'Tu'
+
+  // Blob locale tappabile: onda + cambio espressione momentaneo.
+  const { tapExpr: localTapExpr, waves: localWaves, onTap: localTap, removeWave: removeLocalWave } = useTapShockwave()
 
   return (
     <div className="screen screen-narrow" style={S.container}>
@@ -79,14 +85,32 @@ const GameLobbyLayout = ({
           transition={{ delay: 0.05 }}
           style={S.identityWrap}
         >
-          <Blob
-            color={blobColor}
-            expr={expr}
-            id="lobby-local-blob"
-            size="clamp(110px, 20dvh, 168px)"
-            animate={false}
-            style={blobInlineStyle}
-          />
+          <div
+            onClick={localTap}
+            role="button"
+            aria-label="Tocca il tuo blob"
+            style={{
+              position: 'relative',
+              width: 'clamp(110px, 20dvh, 168px)',
+              aspectRatio: '1 / 1',
+              cursor: 'pointer',
+              WebkitTapHighlightColor: 'transparent',
+            }}
+          >
+            <TapShockwaves
+              waves={localWaves}
+              removeWave={removeLocalWave}
+              color={blobColor || '#9CA3AF'}
+            />
+            <Blob
+              color={blobColor}
+              expr={localTapExpr || expr}
+              id="lobby-local-blob"
+              size="100%"
+              animate={false}
+              style={{ ...blobInlineStyle, position: 'relative', zIndex: 2 }}
+            />
+          </div>
           <span
             style={{
               ...S.playerNameBadge,
@@ -113,7 +137,7 @@ const GameLobbyLayout = ({
                     style={S.othersCell}
                     title={p.name}
                   >
-                    <MiniBlob color={p.color} expr={expr} size={28} id={`lobby-other-${i}`} />
+                    <TappableMiniBlob color={p.color} expr={expr} size={28} id={`lobby-other-${i}`} />
                   </motion.div>
                 ))}
               </div>

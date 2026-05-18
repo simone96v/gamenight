@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSession } from '../../stores/useSession'
+import { useSfx } from '../../hooks/useSfx'
 import { haptic } from '../../utils/haptic'
 
 // Catch The Blob è single-player endless (1 errore = morto). Niente classifica
@@ -16,6 +17,10 @@ export const useCatchBlob = () => {
   const currentSeed = gameState?.currentSeed ?? 0
 
   const [scoreSubmitted, setScoreSubmitted] = useState(false)
+
+  const playSfx = useSfx()
+  const playSfxRef = useRef(playSfx)
+  useEffect(() => { playSfxRef.current = playSfx }, [playSfx])
 
   useEffect(() => {
     if (currentPhase === 'catchblob_countdown' || currentPhase === 'catchblob_playing') {
@@ -38,6 +43,7 @@ export const useCatchBlob = () => {
     if (scoreSubmitted) return
     setScoreSubmitted(true)
     haptic.medium()
+    playSfxRef.current?.('fail')
     const s = useSession.getState()
     const pid = s.localPlayerId ?? 'local'
     const updatedPlayers = (s.players || []).map((p) =>

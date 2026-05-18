@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSession } from '../../stores/useSession'
+import { useSfx } from '../../hooks/useSfx'
 import { haptic } from '../../utils/haptic'
 
 // Blob Jump è single-player endless. Niente timer, niente multi-round,
@@ -17,6 +18,11 @@ export const useBlobJump = () => {
   const currentSeed = gameState?.currentSeed ?? 0
 
   const [scoreSubmitted, setScoreSubmitted] = useState(false)
+
+  // SFX: ref stabile così submitScore non si re-crea sul render.
+  const playSfx = useSfx()
+  const playSfxRef = useRef(playSfx)
+  useEffect(() => { playSfxRef.current = playSfx }, [playSfx])
 
   // Reset score-submitted quando torniamo a countdown/playing (Rigioca).
   useEffect(() => {
@@ -41,6 +47,7 @@ export const useBlobJump = () => {
     if (scoreSubmitted) return
     setScoreSubmitted(true)
     haptic.medium()
+    playSfxRef.current?.('fail')
     const s = useSession.getState()
     const pid = s.localPlayerId ?? 'local'
     const updatedPlayers = (s.players || []).map((p) =>
