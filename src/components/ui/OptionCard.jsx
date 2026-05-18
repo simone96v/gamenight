@@ -24,12 +24,12 @@ const OptionCard = ({
     whileHover={!disabled ? {
       scale: 1.02,
       y: -4,
-      boxShadow: `0 20px 48px ${option.shadow}`,
+      boxShadow: `0 24px 56px ${option.shadow}, 0 8px 18px rgba(0, 0, 0, 0.22)`,
     } : {}}
     whileTap={!disabled ? {
       scale: 0.97,
       y: 0,
-      boxShadow: `0 4px 12px ${option.shadow}`,
+      boxShadow: `0 4px 12px ${option.shadow}, 0 2px 6px rgba(0, 0, 0, 0.22)`,
     } : {}}
     onClick={disabled ? undefined : () => { haptic.light(); onClick?.() }}
     disabled={disabled}
@@ -37,13 +37,12 @@ const OptionCard = ({
       width: '100%',
       background: option.bg,
       borderRadius: 22,
-      // Default border integer-px per evitare sub-pixel artefatti su bordi
-      // arrotondati. Quando il bg è chiaro (option.textColor presente) usiamo
-      // il border-token coerente col tema invece del bianco semitrasparente.
+      // Border + dark drop shadow combinati per dare un bordo netto al box
+      // sopra l'eventuale alone colorato dietro.
       border: selected
-        ? '2px solid var(--accent)'
-        : (option.border || (option.textColor ? '1px solid var(--border)' : '1px solid rgba(255,255,255,0.15)')),
-      boxShadow: `0 10px 28px ${option.shadow}`,
+        ? '2.5px solid var(--accent)'
+        : (option.border || (option.textColor ? '1.5px solid var(--border-strong)' : '2px solid rgba(0, 0, 0, 0.28)')),
+      boxShadow: `0 14px 36px ${option.shadow}, 0 6px 14px rgba(0, 0, 0, 0.22)`,
       padding: 'clamp(18px, 2.5dvh, 24px) clamp(18px, 4vw, 24px)',
       display: 'flex',
       alignItems: 'center',

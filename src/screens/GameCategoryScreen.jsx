@@ -122,11 +122,11 @@ const GameCategoryScreen = () => {
                     aria-hidden
                     style={{
                       position: 'absolute',
-                      inset: '-22px -28px',
+                      inset: '-14px -18px',
                       background: cat.bg,
-                      borderRadius: 40,
-                      filter: 'blur(34px) saturate(1.4)',
-                      opacity: disabled ? 0.25 : 0.95,
+                      borderRadius: 32,
+                      filter: 'blur(28px) saturate(1.3)',
+                      opacity: disabled ? 0.15 : 0.55,
                       transition: 'opacity 0.25s ease',
                       pointerEvents: 'none',
                       zIndex: 0,
