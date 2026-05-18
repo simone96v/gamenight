@@ -110,29 +110,45 @@ const GameCategoryScreen = () => {
             <WaitingStrip players={players} expr={expr} />
           )}
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(10px, 1.5dvh, 14px)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(14px, 2dvh, 20px)' }}>
             {GAME_CATEGORIES.map((cat, i) => {
               const count = playableCountFor({ mode, gameCategory: cat.id })
               const noGames = count === 0
               const disabled = launching || !canControl || noGames
               const descText = noGames ? 'Presto disponibili' : cat.description
               return (
-                <OptionCard
-                  key={cat.id}
-                  option={{
-                    emoji: cat.emoji,
-                    title: cat.label,
-                    description: descText,
-                    bg: cat.bg,
-                    shadow: cat.shadow,
-                    border: cat.border,
-                    textColor: cat.textColor,
-                    subtleTitle: true,
-                  }}
-                  index={i}
-                  onClick={() => handlePick(cat)}
-                  disabled={disabled}
-                />
+                <div key={cat.id} style={{ position: 'relative' }}>
+                  <div
+                    aria-hidden
+                    style={{
+                      position: 'absolute',
+                      inset: '-6px -10px',
+                      background: cat.bg,
+                      borderRadius: 28,
+                      filter: 'blur(22px)',
+                      opacity: disabled ? 0.18 : 0.55,
+                      transition: 'opacity 0.25s ease',
+                      pointerEvents: 'none',
+                    }}
+                  />
+                  <div style={{ position: 'relative' }}>
+                    <OptionCard
+                      option={{
+                        emoji: cat.emoji,
+                        title: cat.label,
+                        description: descText,
+                        bg: cat.bg,
+                        shadow: cat.shadow,
+                        border: cat.border,
+                        textColor: cat.textColor,
+                        subtleTitle: true,
+                      }}
+                      index={i}
+                      onClick={() => handlePick(cat)}
+                      disabled={disabled}
+                    />
+                  </div>
+                </div>
               )
             })}
           </div>
