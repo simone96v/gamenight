@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSession } from '../../stores/useSession'
 import { haptic } from '../../utils/haptic'
 
@@ -17,10 +17,15 @@ export const useBlobJump = () => {
   const currentSeed = gameState?.currentSeed ?? 0
 
   const [scoreSubmitted, setScoreSubmitted] = useState(false)
+  // Guard sincrona: lo state React può non essere ancora flushato fra due
+  // chiamate ravvicinate di submitScore (es. l'engine fira onDeath, poi un
+  // re-render arriva prima). Il ref blocca i duplicati a livello di chiamata.
+  const submittedRef = useRef(false)
 
   // Reset score-submitted quando torniamo a countdown/playing (Rigioca).
   useEffect(() => {
     if (currentPhase === 'blobjump_countdown' || currentPhase === 'blobjump_playing') {
+      submittedRef.current = false
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setScoreSubmitted(false)
     }
@@ -38,7 +43,8 @@ export const useBlobJump = () => {
 
   // Submit del punteggio al death: aggiorna lo score del player e passa a final.
   const submitScore = useCallback((score) => {
-    if (scoreSubmitted) return
+    if (submittedRef.current) return
+    submittedRef.current = true
     setScoreSubmitted(true)
     haptic.medium()
     const s = useSession.getState()
@@ -48,7 +54,23 @@ export const useBlobJump = () => {
     )
     useSession.setState({ players: updatedPlayers })
     setPhase('blobjump_final')
-  }, [scoreSubmitted, setPhase])
+  }, [setPhase])
+
+  // Safety net: se per qualche ragione abbiamo già "submittato" lo score ma
+  // la fase è ancora playing dopo 500ms, forziamo la transizione a final
+  // (così la modale finale appare sempre anche se il setPhase precedente è
+  // andato perso a causa di un re-render concorrente).
+  useEffect(() => {
+    if (!scoreSubmitted) return
+    if (currentPhase !== 'blobjump_playing') return
+    const t = setTimeout(() => {
+      const s = useSession.getState()
+      if (s.currentPhase === 'blobjump_playing') {
+        setPhase('blobjump_final')
+      }
+    }, 500)
+    return () => clearTimeout(t)
+  }, [scoreSubmitted, currentPhase, setPhase])
 
   const localPlayer = players.find((p) => p.id === localPlayerId)
   const blobColor = localPlayer?.color ?? '#8B5CF6'

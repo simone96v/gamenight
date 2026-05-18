@@ -16,7 +16,9 @@ import { availableGamesFor, getGameCategory } from '../data/games'
 const LOBBY_ROUTES = {
   blobjump: '/blobjump-lobby',
   catchblob: '/catchblob-lobby',
+  blobdig:   '/blobdig-lobby',
   flappyblob: '/flappyblob-lobby',
+  snake: '/snake-lobby',
   mappa: '/mappa-lobby',
   trivia: '/trivia-lobby',
   emojiquiz: '/emojiquiz-lobby',

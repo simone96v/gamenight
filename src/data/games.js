@@ -218,16 +218,23 @@ export const GAMES = [
     compatibility: { multi: false, single: true, excludedCategories: [] },
     component: lazy(() => import('../games/CatchBlob')),
   },
-  placeholder('blobdig', 'arcade', {
+  {
+    id: 'blobdig',
+    gameCategory: 'arcade',
     name: 'Blob Dig',
     emoji: '⛏️',
+    image: { light: '/games/cards/blobdig-light.png', dark: '/games/cards/blobdig-dark.png' },
     tagline: 'Scava sempre più giù',
-    description: 'Scendi nelle profondità, schiva trappole e nemici. Quanti metri sopporti prima di cedere?',
-    difficulty: 2,
+    description: 'Tap sinistra o destra per scavare. Raccogli gemme, evita la lava. Più scendi più punti.',
+    difficulty: 1,
     minPlayers: 1,
     maxPlayers: 1,
+    locked: false,
+    bg: 'linear-gradient(145deg, #FDE68A 0%, #B45309 55%, #451A03 100%)',
+    shadow: 'rgba(180, 83, 9, 0.40)',
     compatibility: { multi: false, single: true, excludedCategories: [] },
-  }),
+    component: lazy(() => import('../games/BlobDig')),
+  },
   placeholder('blobstack', 'arcade', {
     name: 'Blob Stack',
     emoji: '🗼',
@@ -238,11 +245,16 @@ export const GAMES = [
     maxPlayers: 1,
     compatibility: { multi: false, single: true, excludedCategories: [] },
   }),
-  placeholder('blobsurf', 'arcade', {
-    name: 'Blob Surf',
-    emoji: '🏄',
-    tagline: 'Cavalca l\'onda',
-    description: 'Surfa l\'onda infinita: schiva squali, raccogli ciambelle e fai trick per moltiplicatori.',
+  // Snake: scaffold non ancora completo (Snake/index.jsx referenzia file
+  // figli che non esistono). Resta placeholder finché tutti i sotto-moduli
+  // (components/SnakePlaying, components/SnakeLeaderboard, useSnakeLeaderboard)
+  // non vengono creati. Poi rimuovi questo placeholder e ripristina il blocco
+  // "real game" con `locked: false` + `component: lazy(...)`.
+  placeholder('snake', 'arcade', {
+    name: 'Blob Snake',
+    emoji: '🐍',
+    tagline: 'Mangia, cresci, sopravvivi',
+    description: 'Guida il serpente di blob: divora le pillole, cresci, non sbattere sulla coda.',
     difficulty: 2,
     minPlayers: 1,
     maxPlayers: 1,

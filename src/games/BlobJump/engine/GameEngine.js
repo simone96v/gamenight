@@ -243,6 +243,13 @@ export class GameEngine {
   async start() {
     this.input = new InputManager(this.canvas)
     await this.input.init()
+    // Guard contro race: se nel frattempo qualcuno ha già chiamato stop()
+    // (es. componente unmountato prima che input.init resolvi) NON avviare
+    // il loop, altrimenti restiamo con un engine zombie che gira a vuoto.
+    if (this._stopped || this.isDead) {
+      this.input?.destroy()
+      return
+    }
     this.lastTime = performance.now()
     this.loop()
   }
@@ -552,9 +559,17 @@ export class GameEngine {
   }
 
   die() {
+    if (this.isDead) return  // idempotente: evita doppi onDeath()
     this.isDead = true
     this.deathScore = this.score
     this._renderDeathFrame()
+    // Cancella il prossimo RAF e disabilita input subito: il blob non si
+    // muove più anche se la fase React non è ancora cambiata.
+    if (this.rafId) {
+      cancelAnimationFrame(this.rafId)
+      this.rafId = null
+    }
+    this.input?.destroy()
     this.onDeath?.(this.score)
   }
 
@@ -1164,6 +1179,7 @@ export class GameEngine {
   }
 
   stop() {
+    this._stopped = true
     if (this.rafId) cancelAnimationFrame(this.rafId)
     this.input?.destroy()
   }
