@@ -20,7 +20,7 @@
 
 import { useReducer, useCallback, useEffect, useMemo, useState } from 'react'
 import { cardTableTheme } from '../_shared/cardTableTheme'
-import { HelpModal } from '../_shared/CardGameUI'
+import { HelpModal, TableBox } from '../_shared/CardGameUI'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import AppHeader from '../../components/AppHeader'
@@ -414,30 +414,24 @@ const Scopa = () => {
           </div>
         </div>
 
-        {/* Table */}
-        <div style={S.tableArea}>
-          <div style={S.tableInfoRow}>
-            <span style={S.tableLabel}>🟫 Tavolo</span>
-            <span style={S.deckCounter}>Mazzo: {state.deck.length}</span>
-          </div>
-          <div style={S.tableCards}>
-            <AnimatePresence>
-              {state.table.map((c) => (
-                <motion.div
-                  key={c.id}
-                  initial={{ scale: 0.6, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.5, opacity: 0 }}
-                >
-                  <CardView card={c} size="sm" />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-            {state.table.length === 0 && state.phase !== 'game_over' && (
-              <span style={{ color: 'var(--muted)' }}>Tavolo vuoto</span>
-            )}
-          </div>
-        </div>
+        {/* Table — box dimensioni fisse (170) */}
+        <TableBox label="🟫 Tavolo" info={`Mazzo: ${state.deck.length}`}>
+          <AnimatePresence>
+            {state.table.map((c) => (
+              <motion.div
+                key={c.id}
+                initial={{ scale: 0.6, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.5, opacity: 0 }}
+              >
+                <CardView card={c} size="sm" />
+              </motion.div>
+            ))}
+          </AnimatePresence>
+          {state.table.length === 0 && state.phase !== 'game_over' && (
+            <span style={{ color: 'var(--muted)', fontSize: 12 }}>Tavolo vuoto</span>
+          )}
+        </TableBox>
 
         {/* Last move feedback */}
         <AnimatePresence>
@@ -735,42 +729,7 @@ const S = {
     gap: 3,
     justifyContent: 'center',
   },
-  tableArea: {
-    flex: 1,
-    minHeight: 110,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 6,
-    padding: 8,
-    background: 'var(--surface2, var(--surface))',
-    borderRadius: 12,
-    border: '1px dashed var(--border-strong)',
-  },
-  tableInfoRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  tableLabel: {
-    fontSize: 11,
-    fontWeight: 700,
-    color: 'var(--muted)',
-    letterSpacing: '0.06em',
-    textTransform: 'uppercase',
-  },
-  deckCounter: {
-    fontSize: 11,
-    fontWeight: 700,
-    color: 'var(--muted)',
-  },
-  tableCards: {
-    flex: 1,
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: 4,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+  // tableArea / tableLabel / tableCards / deckCounter spostati in TableBox condiviso
   moveFeedback: {
     alignSelf: 'center',
     background: 'rgba(0,0,0,0.6)',

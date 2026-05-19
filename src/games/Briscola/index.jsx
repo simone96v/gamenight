@@ -32,6 +32,7 @@ import { useSession } from '../../stores/useSession'
 import { usePlayerAccent } from '../../hooks/usePlayerAccent'
 import { pickColor } from '../../utils/colors'
 import { cardPoints, cardStrength } from './logic'
+import { TableBox } from '../_shared/CardGameUI'
 
 // Branch online/solo top-level. Il componente online è lazy così il chunk del
 // solo non eredita pesi della rete (è completamente isolato).
@@ -358,8 +359,8 @@ const BriscolaSolo = () => {
           ))}
         </div>
 
-        {/* ── TRICK AREA (centro, focus) ──────────────────────── */}
-        <div style={S.trickStage}>
+        {/* ── TRICK AREA — TableBox (stessa box di Scopa, dim. fisse) ── */}
+        <TableBox label="🟫 Presa" info={`Mazzo: ${state.deck.length}`}>
           <AnimatePresence>
             {state.trick.length === 0 && (
               <motion.span
@@ -367,9 +368,9 @@ const BriscolaSolo = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 0.5 }}
                 exit={{ opacity: 0 }}
-                style={S.trickEmpty}
+                style={{ fontSize: 12, color: 'var(--muted)' }}
               >
-                Tavolo
+                Vuoto
               </motion.span>
             )}
             {state.trick.map((t, i) => (
@@ -396,7 +397,7 @@ const BriscolaSolo = () => {
               </motion.div>
             ))}
           </AnimatePresence>
-        </div>
+        </TableBox>
 
         {/* Status message */}
         <div style={S.statusRow}>

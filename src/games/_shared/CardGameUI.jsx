@@ -208,6 +208,65 @@ export const BriscolaPanel = ({ card, deckCount }) => {
   )
 }
 
+// ── TableBox: box "tavolo" con bordo tratteggiato e dimensioni FISSE ──
+// Non cambia altezza al variare del numero di carte sul tavolo: i contenuti
+// wrappano o si sovrappongono dentro al box.
+// Usato in Scopa (tavolo carte scoperte) e Briscola (area presa).
+
+export const TableBox = ({ label, info, height = 170, children }) => (
+  <div style={{
+    height,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 6,
+    padding: 8,
+    background: 'color-mix(in srgb, var(--text) 3%, var(--surface))',
+    borderRadius: 12,
+    border: '1.5px dashed var(--border-strong)',
+    flexShrink: 0,
+  }}>
+    {(label || info) && (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexShrink: 0,
+      }}>
+        {label && (
+          <span style={{
+            fontSize: 11,
+            fontWeight: 700,
+            color: 'var(--muted)',
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+          }}>{label}</span>
+        )}
+        {info && (
+          <span style={{
+            fontSize: 11,
+            fontWeight: 700,
+            color: 'var(--muted)',
+            fontVariantNumeric: 'tabular-nums',
+          }}>{info}</span>
+        )}
+      </div>
+    )}
+    <div style={{
+      flex: 1,
+      position: 'relative',
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: 4,
+      justifyContent: 'center',
+      alignItems: 'center',
+      overflow: 'hidden',
+      minHeight: 0,
+    }}>
+      {children}
+    </div>
+  </div>
+)
+
 // ── StatusBar: messaggio di stato con accent dinamico ──
 
 export const StatusBar = ({ text, accent, dim = false }) => (

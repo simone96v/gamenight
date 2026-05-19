@@ -26,7 +26,7 @@ import {
   reducer,
   trickWinner,
 } from './logic'
-import { PlayerCard, BriscolaPanel, StatusBar, HelpModal } from '../_shared/CardGameUI'
+import { PlayerCard, BriscolaPanel, StatusBar, HelpModal, TableBox } from '../_shared/CardGameUI'
 
 const STATE_KEY = 'bri'        // chiave per lo state del gioco dentro gameState
 const PENDING_KEY = 'briPending'  // chiave separata per la mossa pending del client
@@ -245,8 +245,8 @@ const BriscolaOnline = () => {
           ))}
         </div>
 
-        {/* ── TRICK STAGE ─────────────────────────────────────── */}
-        <div style={S.trickStage}>
+        {/* ── TRICK STAGE — TableBox condiviso, dim. fisse ────── */}
+        <TableBox label="🟫 Presa" info={`Mazzo: ${briState.deck.length}`}>
           <AnimatePresence>
             {briState.trick.length === 0 && (
               <motion.span
@@ -254,9 +254,9 @@ const BriscolaOnline = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 0.5 }}
                 exit={{ opacity: 0 }}
-                style={S.trickEmpty}
+                style={{ fontSize: 12, color: 'var(--muted)' }}
               >
-                Tavolo
+                Vuoto
               </motion.span>
             )}
             {briState.trick.map((t, i) => (
@@ -283,7 +283,7 @@ const BriscolaOnline = () => {
               </motion.div>
             ))}
           </AnimatePresence>
-        </div>
+        </TableBox>
 
         {/* Status */}
         <StatusBar text={statusText} accent={isMyTurn ? C.accent : undefined} dim={!isMyTurn} />
