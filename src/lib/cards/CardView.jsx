@@ -1,13 +1,13 @@
 // CardView — render visuale di una carta italiana (face-up o face-down).
 // Usa uno sprite sheet `/cards/italian-deck.png` (4 righe × 10 colonne) per
-// disegnare le 40 carte Piacentine. CSS background-position seleziona la cella.
+// disegnare le 40 carte Bergamasche. CSS background-position seleziona la cella.
 //
 // Mappatura nello sprite:
-//   - righe: coppe(0), denari(1), bastoni(2), spade(3)
+//   - righe: bastoni(0), spade(1), coppe(2), denari(3)
 //   - colonne: valore 1-10 → col 0-9 (asso, 2..7, fante, cavallo, re)
 //
-// Aspect ratio source: ~0.72 (275×384 per cella su 2752×1536).
-// SIZE_PRESETS allineati a 0.72 per evitare distorsioni dello sprite.
+// Aspect ratio source: 0.6 (240×400 per cella su 2400×1600).
+// SIZE_PRESETS allineati a 0.6 per evitare distorsioni dello sprite.
 
 import { motion } from 'framer-motion'
 
@@ -15,14 +15,14 @@ const SPRITE_URL = '/cards/italian-deck.png'
 const BACK_URL = '/cards/card-back.png'
 const COLS = 10
 const ROWS = 4
-const SUIT_ROW = { coppe: 0, denari: 1, bastoni: 2, spade: 3 }
+const SUIT_ROW = { bastoni: 0, spade: 1, coppe: 2, denari: 3 }
 
 const SIZE_PRESETS = {
-  xs: { w: 46, h: 64 },
-  sm: { w: 62, h: 86 },
-  md: { w: 78, h: 108 },
-  lg: { w: 100, h: 138 },
-  xl: { w: 124, h: 172 },
+  xs: { w: 42, h: 70 },
+  sm: { w: 54, h: 90 },
+  md: { w: 68, h: 114 },
+  lg: { w: 86, h: 144 },
+  xl: { w: 108, h: 180 },
 }
 
 const CardView = ({
@@ -79,10 +79,17 @@ const CardView = ({
 
   const row = SUIT_ROW[card.suit] ?? 0
   const col = Math.max(0, Math.min(COLS - 1, (card.value || 1) - 1))
-  // CSS sprite percentage formula: con background-size {COLS*100}% {ROWS*100}%,
-  // la position si calcola come col/(COLS-1)*100% e row/(ROWS-1)*100%.
-  const bgPosX = `${(col / (COLS - 1)) * 100}%`
-  const bgPosY = `${(row / (ROWS - 1)) * 100}%`
+
+  // Sprite positioning pixel-perfect + bleed crop:
+  // - le percentuali soffrivano di subpixel rounding → bordo nero del cell
+  //   confinante visibile come "riga nera" sul bordo della carta.
+  // - usiamo size in pixel (esatto) + overshoot di BLEED px su tutti i lati,
+  //   poi croppiamo via overflow: hidden. Questo rimuove anche il bordo nero
+  //   della carta nello sprite (~4 source-px), che era doppiato dal nostro
+  //   border CSS.
+  const BLEED = 1.5
+  const cellW = dims.w + BLEED * 2
+  const cellH = dims.h + BLEED * 2
 
   return (
     <motion.div
@@ -93,10 +100,10 @@ const CardView = ({
       style={{
         ...base,
         background: '#FEFCE8',
-        border: '1.5px solid #1F2937',
+        overflow: 'hidden',
         backgroundImage: `url(${SPRITE_URL})`,
-        backgroundSize: `${COLS * 100}% ${ROWS * 100}%`,
-        backgroundPosition: `${bgPosX} ${bgPosY}`,
+        backgroundSize: `${cellW * COLS}px ${cellH * ROWS}px`,
+        backgroundPosition: `${-col * cellW - BLEED}px ${-row * cellH - BLEED}px`,
         backgroundRepeat: 'no-repeat',
       }}
       aria-label={`${card.value} di ${card.suit}`}
