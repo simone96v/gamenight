@@ -208,14 +208,15 @@ export const BriscolaPanel = ({ card, deckCount }) => {
   )
 }
 
-// ── TableBox: box "tavolo" con bordo tratteggiato e dimensioni FISSE ──
-// Non cambia altezza al variare del numero di carte sul tavolo: i contenuti
-// wrappano o si sovrappongono dentro al box.
-// Usato in Scopa (tavolo carte scoperte) e Briscola (area presa).
+// ── TableBox: box "tavolo" con bordo tratteggiato e dimensioni stabili ──
+// Pattern: occupa lo spazio verticale disponibile (flex: 1) ma non si dilata
+// per il contenuto — le carte wrappano internamente senza ingrandire il box.
+// Stesso look-and-size in Scopa, Briscola (solo + online), Rubamazzetto.
 
-export const TableBox = ({ label, info, height = 170, children }) => (
+export const TableBox = ({ label = '🟫 Tavolo', info, children }) => (
   <div style={{
-    height,
+    flex: 1,
+    minHeight: 110,
     display: 'flex',
     flexDirection: 'column',
     gap: 6,
@@ -223,7 +224,6 @@ export const TableBox = ({ label, info, height = 170, children }) => (
     background: 'color-mix(in srgb, var(--text) 3%, var(--surface))',
     borderRadius: 12,
     border: '1.5px dashed var(--border-strong)',
-    flexShrink: 0,
   }}>
     {(label || info) && (
       <div style={{

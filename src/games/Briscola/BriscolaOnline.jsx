@@ -246,7 +246,7 @@ const BriscolaOnline = () => {
         </div>
 
         {/* ── TRICK STAGE — TableBox condiviso, dim. fisse ────── */}
-        <TableBox label="🟫 Presa" info={`Mazzo: ${briState.deck.length}`}>
+        <TableBox label="🟫 Tavolo" info={`Mazzo: ${briState.deck.length}`}>
           <AnimatePresence>
             {briState.trick.length === 0 && (
               <motion.span

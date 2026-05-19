@@ -360,7 +360,7 @@ const BriscolaSolo = () => {
         </div>
 
         {/* ── TRICK AREA — TableBox (stessa box di Scopa, dim. fisse) ── */}
-        <TableBox label="🟫 Presa" info={`Mazzo: ${state.deck.length}`}>
+        <TableBox label="🟫 Tavolo" info={`Mazzo: ${state.deck.length}`}>
           <AnimatePresence>
             {state.trick.length === 0 && (
               <motion.span

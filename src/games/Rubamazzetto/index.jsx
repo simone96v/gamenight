@@ -14,7 +14,7 @@
 
 import { useReducer, useCallback, useEffect, useMemo, useState } from 'react'
 import { cardTableTheme } from '../_shared/cardTableTheme'
-import { HelpModal } from '../_shared/CardGameUI'
+import { HelpModal, TableBox } from '../_shared/CardGameUI'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import AppHeader from '../../components/AppHeader'
@@ -291,30 +291,25 @@ const Rubamazzetto = () => {
           })}
         </div>
 
-        {/* Tavolo */}
-        <div style={S.tavoloArea}>
-          <span style={S.tavoloLabel}>🟫 Tavolo</span>
-          <div style={S.tavoloCards}>
-            {state.tavolo.length === 0 && (
-              <span style={{ color: 'var(--muted)', fontSize: 14 }}>
-                Vuoto
-              </span>
-            )}
-            <AnimatePresence>
-              {state.tavolo.map((card) => (
-                <motion.div
-                  key={card.id}
-                  initial={{ scale: 0.6, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.4, opacity: 0 }}
-                  layoutId={`tav-${card.id}`}
-                >
-                  <CardView card={card} size="sm" />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-        </div>
+        {/* Tavolo — TableBox condiviso, stessa size in tutti i giochi carte */}
+        <TableBox label="🟫 Tavolo" info={`Mazzo: ${state.deck.length}`}>
+          {state.tavolo.length === 0 && (
+            <span style={{ color: 'var(--muted)', fontSize: 12 }}>Vuoto</span>
+          )}
+          <AnimatePresence>
+            {state.tavolo.map((card) => (
+              <motion.div
+                key={card.id}
+                initial={{ scale: 0.6, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.4, opacity: 0 }}
+                layoutId={`tav-${card.id}`}
+              >
+                <CardView card={card} size="sm" />
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </TableBox>
 
         {/* Log */}
         <div style={S.logBox}>
@@ -512,34 +507,7 @@ const S = {
     justifyContent: 'center',
     color: 'var(--muted)',
   },
-  tavoloArea: {
-    flex: 1,
-    minHeight: 100,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: 4,
-    padding: 8,
-    background: 'var(--surface2, var(--surface))',
-    borderRadius: 12,
-    border: '1px dashed var(--border-strong)',
-  },
-  tavoloLabel: {
-    fontSize: 11,
-    fontWeight: 700,
-    color: 'var(--muted)',
-    letterSpacing: '0.06em',
-    textTransform: 'uppercase',
-  },
-  tavoloCards: {
-    flex: 1,
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: 4,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 4,
-  },
+  // tavoloArea / tavoloLabel / tavoloCards spostati in TableBox condiviso
   logBox: {
     minHeight: 40,
     display: 'flex',
