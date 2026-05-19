@@ -17,7 +17,7 @@
 //   - Punti carte: Asso=11, Tre=10, Re=4, Cavallo=3, Fante=2, altre=0 (tot. 120).
 //   - Vince chi supera 60. 60-60 pareggio.
 
-import { lazy, Suspense, useReducer, useCallback, useEffect, useMemo } from 'react'
+import { lazy, Suspense, useReducer, useCallback, useEffect, useMemo, useState } from 'react'
 import { cardTableTheme } from '../_shared/cardTableTheme'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
@@ -246,6 +246,8 @@ const BriscolaSolo = () => {
   const navigate = useNavigate()
   const C = usePlayerAccent()
   const [state, dispatch] = useReducer(reducer, undefined, initialState)
+  const [hoveredCardId, setHoveredCardId] = useState(null)
+  const [helpOpen, setHelpOpen] = useState(false)
   const playersSession = useSession((s) => s.players)
   const localPlayerId = useSession((s) => s.localPlayerId)
   const me = useMemo(
@@ -253,17 +255,17 @@ const BriscolaSolo = () => {
     [playersSession, localPlayerId]
   )
 
-  // CPU auto-play
+  // CPU auto-play (snappier: 600ms invece di 900)
   useEffect(() => {
     if (state.phase !== 'cpu_turn') return
-    const t = setTimeout(() => dispatch({ type: 'CPU_PLAY' }), 900)
+    const t = setTimeout(() => dispatch({ type: 'CPU_PLAY' }), 600)
     return () => clearTimeout(t)
   }, [state.phase, state.trick.length])
 
-  // Resolving → resolve dopo breve pausa per vedere le carte.
+  // Resolving → resolve dopo breve pausa (1000ms invece di 1500).
   useEffect(() => {
     if (state.phase !== 'resolving') return
-    const t = setTimeout(() => dispatch({ type: 'RESOLVE_TRICK' }), 1500)
+    const t = setTimeout(() => dispatch({ type: 'RESOLVE_TRICK' }), 1000)
     return () => clearTimeout(t)
   }, [state.phase])
 
@@ -274,6 +276,18 @@ const BriscolaSolo = () => {
   const myPoints = state.captures.p0.reduce((s, c) => s + cardPoints(c), 0)
   const cpuPoints = state.captures.cpu.reduce((s, c) => s + cardPoints(c), 0)
   const cpuColor = pickColor(2)
+
+  // Preview live: per ogni carta in mano, predici se vince la presa se giocata.
+  // Solo se CPU ha già aperto (trick.length === 1) e siamo nel turno player.
+  const previewWin = useMemo(() => {
+    if (state.phase !== 'player_turn' || state.trick.length !== 1) return null
+    const result = {}
+    for (const card of state.hands.p0) {
+      const fakeTrick = [...state.trick, { player: 'p0', card }]
+      result[card.id] = trickWinner(fakeTrick, state.briscola.suit) === 'p0'
+    }
+    return result
+  }, [state.phase, state.trick, state.hands.p0, state.briscola.suit])
 
   // Fine partita → SoloEndScreen
   if (state.phase === 'game_over') {
@@ -296,118 +310,156 @@ const BriscolaSolo = () => {
     )
   }
 
+  const isMyTurn = state.phase === 'player_turn'
+  const isCpuTurn = state.phase === 'cpu_turn'
+  const isResolving = state.phase === 'resolving'
+
+  const statusText = isMyTurn
+    ? state.trick.length === 0 ? 'Apri tu la presa' : 'Tocca a te — rispondi'
+    : isCpuTurn ? 'CPU sta giocando...'
+    : isResolving ? 'Presa in corso...'
+    : ''
+
   return (
     <div style={S.container}>
       <AppHeader
         accentColor={C.accent}
         leading={<IconButton ariaLabel="Esci" onClick={handleExit}>←</IconButton>}
+        actions={<IconButton ariaLabel="Regole" onClick={() => setHelpOpen(true)}>?</IconButton>}
       />
 
       <div style={S.body}>
-        {/* CPU header */}
-        <div style={S.opHeader}>
-          <MiniBlob color={cpuColor} size={32} id="bri-cpu" />
-          <span style={S.opName}>CPU</span>
-          <span style={S.opPoints}>{state.phase === 'game_over' ? `${cpuPoints} pt` : ''}</span>
-          <span style={S.opHand}>🃏 {state.hands.cpu.length}</span>
-        </div>
-
-        {/* CPU hand (face down) */}
-        <div style={S.handRow}>
-          {state.hands.cpu.map((c) => (
-            <CardView key={c.id} faceDown size="sm" />
-          ))}
-        </div>
-
-        {/* Deck + briscola indicator (left side) */}
-        <div style={S.middleRow}>
-          <div style={S.deckArea}>
-            {state.deck.length > 0 ? (
-              <>
-                {/* Briscola sotto il mazzo: visibile sdraiata orizzontalmente */}
-                <div style={{ position: 'absolute', transform: 'rotate(90deg)', left: 16, top: 30 }}>
-                  <CardView card={state.briscola} size="sm" />
-                </div>
-                <div style={{ position: 'relative', zIndex: 2 }}>
-                  <CardView faceDown size="sm" />
-                </div>
-                <span style={S.deckCounter}>{state.deck.length}</span>
-              </>
-            ) : (
-              <span style={{ fontSize: 11, color: 'var(--muted)' }}>—</span>
-            )}
+        {/* ── TOP STRIP: CPU score + Briscola + Deck ─────────────── */}
+        <div style={S.topStrip}>
+          <div style={S.playerCard}>
+            <MiniBlob color={cpuColor} size={28} id="bri-cpu" />
+            <div style={S.playerCardInfo}>
+              <span style={S.playerCardName}>CPU</span>
+              <span style={S.playerCardSub}>{state.hands.cpu.length} carte</span>
+            </div>
+            <ScoreNumber value={cpuPoints} />
           </div>
 
-          {/* Trick area (center) */}
-          <div style={S.trickArea}>
-            <span style={S.trickLabel}>Presa</span>
-            <div style={S.trickCards}>
-              <AnimatePresence>
-                {state.trick.map((t) => (
-                  <motion.div
-                    key={t.card.id}
-                    initial={{ scale: 0.5, opacity: 0, y: t.player === 'cpu' ? -20 : 20 }}
-                    animate={{ scale: 1, opacity: 1, y: 0 }}
-                    exit={{ scale: 0.6, opacity: 0 }}
-                  >
-                    <CardView card={t.card} size="md" />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-              {state.trick.length === 0 && (
-                <span style={{ color: 'var(--muted)', fontSize: 12 }}>vuota</span>
+          {state.briscola && (
+            <div style={S.briscolaPanel}>
+              <span style={S.briscolaLabel}>Briscola</span>
+              <CardView card={state.briscola} size="xs" />
+              {state.deck.length > 0 && (
+                <span style={S.deckPill}>🂠 {state.deck.length}</span>
               )}
             </div>
-          </div>
-        </div>
-
-        {/* Message */}
-        <div style={S.messageBox}>{state.message}</div>
-
-        {/* Game over banner */}
-        <AnimatePresence>
-          {state.phase === 'game_over' && (
-            <motion.div
-              initial={{ scale: 0.7, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              style={{
-                ...S.resultBanner,
-                background: state.winner === 'p0'
-                  ? 'linear-gradient(90deg, #10B981, #34D399)'
-                  : state.winner === 'tie'
-                  ? 'linear-gradient(90deg, #6B7280, #9CA3AF)'
-                  : 'linear-gradient(90deg, #EF4444, #F87171)',
-              }}
-            >
-              {state.winner === 'p0'
-                ? `🏆 Hai vinto! ${state.finalScore.p0} a ${state.finalScore.cpu}`
-                : state.winner === 'tie'
-                ? `🤝 Pareggio 60-60`
-                : `😬 CPU vince ${state.finalScore.cpu} a ${state.finalScore.p0}`}
-            </motion.div>
           )}
-        </AnimatePresence>
-
-        {/* My header */}
-        <div style={S.opHeader}>
-          <MiniBlob color={me?.color || '#F59E0B'} size={32} id="bri-me" />
-          <span style={S.opName}>{me?.name || 'Tu'}</span>
-          <span style={S.opPoints}>{state.phase === 'game_over' ? `${myPoints} pt` : ''}</span>
-          <span style={S.opHand}>🃏 {state.hands.p0.length}</span>
         </div>
 
-        {/* My hand */}
-        <div style={S.handRow}>
-          {state.hands.p0.map((c) => (
-            <CardView
-              key={c.id}
-              card={c}
-              size="lg"
-              onClick={state.phase === 'player_turn' ? () => handlePlay(c.id) : undefined}
-              disabled={state.phase !== 'player_turn'}
-              highlight={c.suit === state.briscola.suit}
-            />
+        {/* CPU coperte (decorazione, mostra solo quanti) */}
+        <div style={S.cpuHandRow}>
+          {state.hands.cpu.map((c) => (
+            <CardView key={c.id} faceDown size="xs" />
           ))}
+        </div>
+
+        {/* ── TRICK AREA (centro, focus) ──────────────────────── */}
+        <div style={S.trickStage}>
+          <AnimatePresence>
+            {state.trick.length === 0 && (
+              <motion.span
+                key="empty"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.5 }}
+                exit={{ opacity: 0 }}
+                style={S.trickEmpty}
+              >
+                Tavolo
+              </motion.span>
+            )}
+            {state.trick.map((t, i) => (
+              <motion.div
+                key={t.card.id}
+                initial={{
+                  scale: 0.5,
+                  opacity: 0,
+                  y: t.player === 'cpu' ? -40 : 40,
+                  rotate: t.player === 'cpu' ? -6 : 6,
+                }}
+                animate={{
+                  scale: 1,
+                  opacity: 1,
+                  y: 0,
+                  rotate: i === 0 ? -3 : 4,
+                  x: i === 0 ? -12 : 12,
+                }}
+                exit={{ scale: 0.6, opacity: 0, y: -20 }}
+                transition={{ type: 'spring', stiffness: 320, damping: 24 }}
+                style={{ position: 'absolute' }}
+              >
+                <CardView card={t.card} size="md" />
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+
+        {/* Status message */}
+        <div style={S.statusRow}>
+          <span style={{
+            ...S.statusText,
+            color: isMyTurn ? C.accent : 'var(--muted)',
+          }}>
+            {statusText}
+          </span>
+        </div>
+
+        {/* ── PLAYER STRIP: mano + score ─────────────────────── */}
+        <div style={S.playerStrip}>
+          <div style={S.handFan}>
+            {state.hands.p0.map((c, i) => {
+              const isHovered = hoveredCardId === c.id
+              const wouldWin = previewWin?.[c.id]
+              return (
+                <motion.div
+                  key={c.id}
+                  onHoverStart={() => setHoveredCardId(c.id)}
+                  onHoverEnd={() => setHoveredCardId(null)}
+                  style={{
+                    position: 'relative',
+                    marginLeft: i === 0 ? 0 : -18,
+                    zIndex: isHovered ? 10 : i,
+                  }}
+                >
+                  <CardView
+                    card={c}
+                    size="lg"
+                    onClick={isMyTurn ? () => handlePlay(c.id) : undefined}
+                    disabled={!isMyTurn}
+                    highlight={c.suit === state.briscola.suit}
+                  />
+                  {/* Preview "vincerai/perderai" sopra la carta */}
+                  {isHovered && wouldWin !== undefined && isMyTurn && (
+                    <motion.span
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      style={{
+                        ...S.previewBadge,
+                        background: wouldWin
+                          ? 'linear-gradient(90deg, #10B981, #34D399)'
+                          : 'linear-gradient(90deg, #EF4444, #F87171)',
+                      }}
+                    >
+                      {wouldWin ? '✓ vinci' : '✗ perdi'}
+                    </motion.span>
+                  )}
+                </motion.div>
+              )
+            })}
+          </div>
+
+          <div style={S.playerCardSelf}>
+            <MiniBlob color={me?.color || '#F59E0B'} size={28} id="bri-me" />
+            <div style={S.playerCardInfo}>
+              <span style={S.playerCardName}>{me?.name || 'Tu'}</span>
+              <span style={S.playerCardSub}>{state.hands.p0.length} carte</span>
+            </div>
+            <ScoreNumber value={myPoints} accent={C.accent} />
+          </div>
         </div>
       </div>
 
@@ -418,11 +470,113 @@ const BriscolaSolo = () => {
           </GameButton>
         ) : (
           <p style={S.footerHint}>
-            Briscola: <strong>{state.briscola.suit}</strong>. Le tue carte di briscola sono evidenziate.
+            Le tue carte di <strong>{state.briscola.suit}</strong> battono qualsiasi altro seme.
           </p>
         )}
       </div>
+
+      <HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} briscolaSuit={state.briscola.suit} />
     </div>
+  )
+}
+
+// ── Componenti UI helper ────────────────────────────────────
+
+const ScoreNumber = ({ value, accent }) => (
+  <motion.span
+    key={value}
+    initial={{ scale: 1.4, opacity: 0.6 }}
+    animate={{ scale: 1, opacity: 1 }}
+    transition={{ type: 'spring', stiffness: 340, damping: 20 }}
+    style={{
+      fontFamily: "'Baloo 2', cursive",
+      fontWeight: 900,
+      fontSize: 22,
+      color: accent || 'var(--text)',
+      fontVariantNumeric: 'tabular-nums',
+      letterSpacing: '-0.02em',
+      marginLeft: 'auto',
+    }}
+  >
+    {value}
+  </motion.span>
+)
+
+const HelpModal = ({ open, onClose, briscolaSuit }) => {
+  if (!open) return null
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0,0,0,0.55)',
+        backdropFilter: 'blur(4px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 100,
+        padding: 20,
+      }}
+    >
+      <motion.div
+        initial={{ scale: 0.85, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: 'var(--surface)',
+          color: 'var(--text)',
+          padding: 24,
+          borderRadius: 18,
+          maxWidth: 380,
+          width: '100%',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+          border: '1px solid var(--border)',
+        }}
+      >
+        <h2 style={{ fontFamily: "'Baloo 2', cursive", fontSize: 22, margin: '0 0 12px' }}>
+          🃏 Regole Briscola
+        </h2>
+        <div style={{ fontSize: 13, lineHeight: 1.6 }}>
+          <p style={{ margin: '0 0 12px' }}>
+            <strong>Briscola: {briscolaSuit}</strong> — comanda su tutti gli altri semi.
+          </p>
+          <p style={{ margin: '0 0 4px', fontWeight: 700 }}>Forza (dal più forte):</p>
+          <p style={{ margin: '0 0 12px', color: 'var(--muted)' }}>
+            Asso · 3 · Re · Cavallo · Fante · 7 · 6 · 5 · 4 · 2
+          </p>
+          <p style={{ margin: '0 0 4px', fontWeight: 700 }}>Punti carte:</p>
+          <p style={{ margin: '0 0 12px', color: 'var(--muted)' }}>
+            Asso = 11 · 3 = 10 · Re = 4 · Cavallo = 3 · Fante = 2 · altre = 0
+          </p>
+          <p style={{ margin: 0, color: 'var(--muted)', fontSize: 12 }}>
+            Vince chi supera 60 punti su 120 totali. 60-60 = pareggio.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          style={{
+            marginTop: 18,
+            width: '100%',
+            height: 44,
+            background: 'var(--text)',
+            color: 'var(--bg)',
+            border: 'none',
+            borderRadius: 10,
+            fontFamily: "'Baloo 2', cursive",
+            fontWeight: 800,
+            fontSize: 15,
+            cursor: 'pointer',
+          }}
+        >
+          Ho capito
+        </button>
+      </motion.div>
+    </motion.div>
   )
 }
 
@@ -442,108 +596,145 @@ const S = {
     padding: 'clamp(8px, 1.4dvh, 14px) clamp(10px, 3vw, 18px)',
     gap: 'clamp(6px, 1.2dvh, 10px)',
     overflow: 'hidden',
-    color: '#fff',
+    color: 'var(--text)',
   },
-  opHeader: {
+  // Top strip: CPU score card sx, Briscola panel dx
+  topStrip: {
+    display: 'flex',
+    gap: 8,
+    flexShrink: 0,
+    alignItems: 'stretch',
+  },
+  playerCard: {
+    flex: 1,
     display: 'flex',
     alignItems: 'center',
     gap: 8,
-    flexShrink: 0,
+    padding: '8px 12px',
+    background: 'var(--surface)',
+    border: '1px solid var(--border)',
+    borderRadius: 12,
+    boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
   },
-  opName: {
-    fontFamily: "'Baloo 2', cursive",
-    fontWeight: 800,
-    fontSize: 14,
-  },
-  opPoints: {
-    fontSize: 12,
-    fontWeight: 700,
-    color: '#FBBF24',
-    fontVariantNumeric: 'tabular-nums',
-  },
-  opHand: {
-    marginLeft: 'auto',
-    fontSize: 11,
-    color: 'var(--muted)',
-  },
-  handRow: {
-    display: 'flex',
-    gap: 6,
-    justifyContent: 'center',
-    flexShrink: 0,
-    minHeight: 90,
-  },
-  middleRow: {
-    flex: 1,
-    minHeight: 0,
+  playerCardSelf: {
     display: 'flex',
     alignItems: 'center',
-    gap: 16,
-    padding: '8px 0',
+    gap: 8,
+    padding: '8px 12px',
+    background: 'var(--surface)',
+    border: '1px solid var(--border)',
+    borderRadius: 12,
+    boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
+    flexShrink: 0,
   },
-  deckArea: {
-    width: 90,
-    height: 110,
+  playerCardInfo: {
+    display: 'flex',
+    flexDirection: 'column',
+    lineHeight: 1.1,
+  },
+  playerCardName: {
+    fontFamily: "'Baloo 2', cursive",
+    fontWeight: 800,
+    fontSize: 13,
+    color: 'var(--text)',
+  },
+  playerCardSub: {
+    fontSize: 10,
+    fontWeight: 600,
+    color: 'var(--muted)',
+    letterSpacing: '0.02em',
+  },
+  briscolaPanel: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    padding: '6px 10px',
+    background: 'var(--surface)',
+    border: '1.5px solid var(--text)',
+    borderRadius: 12,
+    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+    flexShrink: 0,
+  },
+  briscolaLabel: {
+    fontSize: 10,
+    fontWeight: 800,
+    color: 'var(--text)',
+    letterSpacing: '0.08em',
+    textTransform: 'uppercase',
+  },
+  deckPill: {
+    fontSize: 11,
+    fontWeight: 800,
+    color: 'var(--muted)',
+    fontVariantNumeric: 'tabular-nums',
+  },
+  cpuHandRow: {
+    display: 'flex',
+    gap: 4,
+    justifyContent: 'center',
+    flexShrink: 0,
+    minHeight: 70,
+  },
+  // Trick stage: area centrale FOCUS con outline tavolo
+  trickStage: {
+    flex: 1,
+    minHeight: 130,
     position: 'relative',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    flexShrink: 0,
+    padding: 12,
+    background: 'radial-gradient(circle at center, color-mix(in srgb, var(--text) 4%, transparent) 0%, transparent 70%)',
+    borderRadius: 16,
   },
-  deckCounter: {
-    position: 'absolute',
-    top: -6,
-    right: -6,
-    background: '#F59E0B',
-    color: '#fff',
+  trickEmpty: {
     fontSize: 11,
-    fontWeight: 900,
-    padding: '2px 7px',
-    borderRadius: 999,
-    zIndex: 5,
-  },
-  trickArea: {
-    flex: 1,
-    minHeight: 0,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: 4,
-  },
-  trickLabel: {
-    fontSize: 10,
     fontWeight: 700,
     color: 'var(--muted)',
-    letterSpacing: '0.08em',
+    letterSpacing: '0.12em',
     textTransform: 'uppercase',
   },
-  trickCards: {
+  statusRow: {
+    flexShrink: 0,
+    display: 'flex',
+    justifyContent: 'center',
+    minHeight: 24,
+  },
+  statusText: {
+    fontFamily: "'Baloo 2', cursive",
+    fontSize: 14,
+    fontWeight: 700,
+    letterSpacing: '0.01em',
+  },
+  // Player strip in basso: hand a sinistra, score card a destra
+  playerStrip: {
+    display: 'flex',
+    alignItems: 'flex-end',
+    gap: 10,
+    flexShrink: 0,
+  },
+  handFan: {
     flex: 1,
     display: 'flex',
-    gap: 6,
-    alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 110,
+    minHeight: 140,
+    paddingTop: 6,
   },
-  messageBox: {
-    textAlign: 'center',
-    fontSize: 13,
-    fontWeight: 600,
-    color: 'var(--text)',
-    minHeight: 20,
-    flexShrink: 0,
-  },
-  resultBanner: {
-    alignSelf: 'center',
-    padding: '10px 18px',
-    borderRadius: 14,
-    fontFamily: "'Baloo 2', cursive",
-    fontWeight: 800,
-    fontSize: 14,
-    textAlign: 'center',
-    boxShadow: '0 6px 20px rgba(0,0,0,0.4)',
+  previewBadge: {
+    position: 'absolute',
+    top: -22,
+    left: '50%',
+    transform: 'translateX(-50%)',
     color: '#fff',
-    flexShrink: 0,
+    fontSize: 10,
+    fontWeight: 800,
+    padding: '3px 8px',
+    borderRadius: 6,
+    boxShadow: '0 4px 12px rgba(0,0,0,0.18)',
+    letterSpacing: '0.04em',
+    textTransform: 'uppercase',
+    whiteSpace: 'nowrap',
+    pointerEvents: 'none',
   },
   footer: {
     flexShrink: 0,
