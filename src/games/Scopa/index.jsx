@@ -53,20 +53,6 @@ const findCombinations = (cards, target) => {
   return results
 }
 
-// Auto-pick best combination quando ci sono multiple opzioni:
-// preferisci 7 di denari (settebello), poi più denari, poi più carte.
-const pickBestCombo = (combos) => {
-  return combos.sort((a, b) => {
-    const aSette = a.some((c) => c.value === 7 && c.suit === 'denari') ? 1 : 0
-    const bSette = b.some((c) => c.value === 7 && c.suit === 'denari') ? 1 : 0
-    if (aSette !== bSette) return bSette - aSette
-    const aDen = a.filter((c) => c.suit === 'denari').length
-    const bDen = b.filter((c) => c.suit === 'denari').length
-    if (aDen !== bDen) return bDen - aDen
-    return b.length - a.length  // più carte meglio (per "carte")
-  })[0]
-}
-
 // ── State init ──────────────────────────────────────────
 
 const initialState = () => {
@@ -83,36 +69,36 @@ const initialState = () => {
     scope: { p0: 0, cpu: 0 },
     turn: 'p0',
     lastTaker: null,
-    phase: 'playing',  // playing | resolving | game_over
+    phase: 'playing',  // playing | choose_take | resolving | game_over
     lastMove: null,    // { player, card, captured, scopa } for feedback
+    pendingChoice: null, // { card, options } quando il player deve scegliere
   }
 }
 
 // ── Game actions ───────────────────────────────────────
 
-// Esegue la giocata di `card` da parte di `playerId`.
-const playCard = (state, playerId, card) => {
-  const newHand = state.hands[playerId].filter((c) => c.id !== card.id)
-  // Single match?
-  const singles = state.table.filter((c) => c.value === card.value)
-  let captured = null
-
-  if (singles.length === 1) {
-    captured = [singles[0]]
-  } else if (singles.length > 1) {
-    // Regola classica: con due single la presa va sulla prima (il giocatore può
-    // sceglierla in vita reale; per MVP prendiamo la prima trovata, preservando
-    // gli altri sul tavolo).
-    captured = [singles[0]]
-  } else {
-    // Cerca combinazioni che sommano al valore della carta.
-    const combos = findCombinations(state.table, card.value)
-    if (combos.length > 0) {
-      captured = pickBestCombo(combos)
-    }
+// Calcola tutte le opzioni di presa disponibili giocando `card` sul `table`.
+// Regola classica: se ci sono single match per valore, si DEVE prendere un
+// single (no combo). Le combo si attivano solo se non ci sono single.
+// Ritorna array di "option", ognuna è un array di carte da prendere.
+//   - [] vuoto: nessuna presa, la carta va sul tavolo
+//   - 1 elemento: presa unica, no scelta richiesta
+//   - 2+ elementi: il giocatore deve scegliere quale opzione prendere
+const computeTakeOptions = (table, card) => {
+  const singles = table.filter((c) => c.value === card.value)
+  if (singles.length > 0) {
+    // Single hanno priorità: ogni single è un'opzione.
+    return singles.map((c) => [c])
   }
+  // Solo se non ci sono single, considera le combinazioni di somma.
+  return findCombinations(table, card.value)
+}
 
-  if (!captured) {
+// Esegue la presa scelta sullo state e ritorna il nuovo state.
+const applyTake = (state, playerId, card, captured) => {
+  const newHand = state.hands[playerId].filter((c) => c.id !== card.id)
+
+  if (!captured || captured.length === 0) {
     return {
       ...state,
       hands: { ...state.hands, [playerId]: newHand },
@@ -121,7 +107,6 @@ const playCard = (state, playerId, card) => {
     }
   }
 
-  // Removed captured from table, add to player's pile (+ played card).
   const capIds = new Set(captured.map((c) => c.id))
   const newTable = state.table.filter((c) => !capIds.has(c.id))
   const newCaptures = {
@@ -129,11 +114,7 @@ const playCard = (state, playerId, card) => {
     [playerId]: [...state.captures[playerId], ...captured, card],
   }
 
-  // Scopa? Tavolo vuoto + non è la ULTIMA giocata dell'intera partita.
-  // (Non possiamo sapere se è l'ultima qui; serve un check post-deal.)
-  // Per MVP semplice: niente scopa se entrambi avranno hand=0 e mazzo=0 dopo.
-  // Approssimazione: niente scopa se mazzo vuoto E (la mia mano dopo) = 0 E
-  // (la mano dell'avversario) = 0.
+  // Scopa: tavolo vuoto post-presa, ma non se è l'ultima giocata della partita.
   const wouldEndGame = newTable.length === 0
     && state.deck.length === 0
     && newHand.length === 0
@@ -252,6 +233,11 @@ const computeScore = (captures, scope) => {
 //   - Se posso prendere il settebello (7 di denari) → priorità massima.
 //   - Altrimenti scegli la mossa che prende più carte di denari.
 //   - In assenza di prese → scarta carta che è più sicura (valore basso, no denari).
+// CPU sceglie carta + opzione di presa migliori.
+// Heuristica score:
+//   - +10 per ogni presa, +5/carta denari, +50 settebello, +20 scopa potenziale
+//   - -8 per scartare denari, -30 per scartare il 7 denari, -0.5*value
+// Ritorna { card, captured } pronti per applyTake.
 const cpuPickMove = (state) => {
   const hand = state.hands.cpu
   if (hand.length === 0) return null
@@ -259,34 +245,29 @@ const cpuPickMove = (state) => {
   let best = null
   let bestScore = -Infinity
   for (const card of hand) {
-    // Simula la presa
-    const singles = state.table.filter((c) => c.value === card.value)
-    let captured
-    if (singles.length >= 1) {
-      captured = [singles[0]]
+    const options = computeTakeOptions(state.table, card)
+    // CPU considera ogni opzione separatamente e prende la migliore
+    if (options.length > 0) {
+      for (const captured of options) {
+        let score = 10
+        score += captured.filter((c) => c.suit === 'denari').length * 5
+        if (captured.some((c) => c.suit === 'denari' && c.value === 7)) score += 50
+        if (state.table.length === captured.length) score += 20
+        if (score > bestScore) {
+          bestScore = score
+          best = { card, captured }
+        }
+      }
     } else {
-      const combos = findCombinations(state.table, card.value)
-      captured = combos.length > 0 ? pickBestCombo(combos) : null
-    }
-    let score = 0
-    if (captured) {
-      // Bonus per ogni cattura
-      score += 10
-      // Bonus per denari
-      score += captured.filter((c) => c.suit === 'denari').length * 5
-      // Bonus per settebello catturato
-      if (captured.some((c) => c.suit === 'denari' && c.value === 7)) score += 50
-      // Bonus per scopa potenziale
-      if (state.table.length === captured.length) score += 20
-    } else {
-      // Penalità per carta lasciata sul tavolo: peggio se è denari o alto valore
+      // Carta sul tavolo: penalità
+      let score = 0
       score -= card.suit === 'denari' ? 8 : 2
-      if (card.value === 7 && card.suit === 'denari') score -= 30  // mai dare il settebello
-      score -= card.value * 0.5  // preferisci scartare basse
-    }
-    if (score > bestScore) {
-      bestScore = score
-      best = card
+      if (card.value === 7 && card.suit === 'denari') score -= 30
+      score -= card.value * 0.5
+      if (score > bestScore) {
+        bestScore = score
+        best = { card, captured: null }
+      }
     }
   }
   return best
@@ -298,19 +279,47 @@ const reducer = (state, action) => {
       if (state.phase !== 'playing' || state.turn !== 'p0') return state
       const card = state.hands.p0.find((c) => c.id === action.cardId)
       if (!card) return state
-      return { ...playCard(state, 'p0', card), phase: 'resolving' }
+
+      const options = computeTakeOptions(state.table, card)
+
+      // Più di un'opzione → richiedi scelta utente
+      if (options.length > 1) {
+        return {
+          ...state,
+          phase: 'choose_take',
+          pendingChoice: { card, options },
+        }
+      }
+      // 0 o 1 opzione → auto-applica
+      const captured = options[0] || null
+      return { ...applyTake(state, 'p0', card, captured), phase: 'resolving' }
     }
+
+    case 'CHOOSE_TAKE': {
+      if (state.phase !== 'choose_take' || !state.pendingChoice) return state
+      const { card, options } = state.pendingChoice
+      const captured = options[action.choiceIdx] || options[0]
+      return {
+        ...applyTake(state, 'p0', card, captured),
+        phase: 'resolving',
+        pendingChoice: null,
+      }
+    }
+
     case 'CPU_PLAY': {
       if (state.phase !== 'playing' || state.turn !== 'cpu') return state
-      const card = cpuPickMove(state)
-      if (!card) return state
-      return { ...playCard(state, 'cpu', card), phase: 'resolving' }
+      const move = cpuPickMove(state)
+      if (!move) return state
+      return { ...applyTake(state, 'cpu', move.card, move.captured), phase: 'resolving' }
     }
+
     case 'ADVANCE_TURN':
       if (state.phase !== 'resolving') return state
       return advance({ ...state, lastMove: null })
+
     case 'RESTART':
       return initialState()
+
     default:
       return state
   }
@@ -446,6 +455,17 @@ const Scopa = () => {
           )}
         </AnimatePresence>
 
+        {/* Choose-take overlay: appare quando il player ha più opzioni di presa */}
+        <AnimatePresence>
+          {state.phase === 'choose_take' && state.pendingChoice && (
+            <ChooseTakeOverlay
+              card={state.pendingChoice.card}
+              options={state.pendingChoice.options}
+              onChoose={(idx) => dispatch({ type: 'CHOOSE_TAKE', choiceIdx: idx })}
+            />
+          )}
+        </AnimatePresence>
+
         {/* Game over */}
         <AnimatePresence>
           {state.phase === 'game_over' && state.finalScore && (
@@ -549,6 +569,104 @@ const Scopa = () => {
         </p>
       </HelpModal>
     </div>
+  )
+}
+
+// ── ChooseTakeOverlay ──────────────────────────────────────
+// Quando il giocatore ha più opzioni di presa (es. 2 carte stesso valore sul
+// tavolo, o più combinazioni di somma), mostra un overlay con le opzioni.
+// Tap su un'opzione → dispatch CHOOSE_TAKE.
+const ChooseTakeOverlay = ({ card, options, onChoose }) => {
+  const explainOption = (opt) => {
+    const hasDenari = opt.some((c) => c.suit === 'denari')
+    const hasSettebello = opt.some((c) => c.suit === 'denari' && c.value === 7)
+    const tags = []
+    if (hasSettebello) tags.push('✨ Settebello')
+    if (hasDenari && !hasSettebello) tags.push(`💰 ${opt.filter((c) => c.suit === 'denari').length} denari`)
+    if (opt.length > 1) tags.push(`${opt.length} carte`)
+    return tags.join(' · ')
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0,0,0,0.55)',
+        backdropFilter: 'blur(4px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 90,
+        padding: 16,
+      }}
+    >
+      <motion.div
+        initial={{ scale: 0.9, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        transition={{ type: 'spring', stiffness: 320, damping: 24 }}
+        style={{
+          background: 'var(--surface)',
+          color: 'var(--text)',
+          padding: 20,
+          borderRadius: 18,
+          maxWidth: 420,
+          width: '100%',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
+          border: '1px solid var(--border)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+          <CardView card={card} size="sm" />
+          <div>
+            <div style={{ fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: 16, lineHeight: 1.2 }}>
+              Scegli cosa prendere
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--muted)' }}>
+              Più opzioni disponibili — tocca quella che preferisci.
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {options.map((opt, idx) => (
+            <motion.button
+              key={idx}
+              type="button"
+              whileHover={{ y: -2, boxShadow: '0 6px 18px rgba(0,0,0,0.15)' }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => onChoose(idx)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: '10px 12px',
+                background: 'color-mix(in srgb, var(--text) 4%, var(--surface))',
+                border: '1.5px solid var(--border-strong)',
+                borderRadius: 12,
+                cursor: 'pointer',
+                width: '100%',
+                textAlign: 'left',
+              }}
+            >
+              <div style={{ display: 'flex', gap: 4 }}>
+                {opt.map((c) => (
+                  <CardView key={c.id} card={c} size="xs" />
+                ))}
+              </div>
+              <div style={{ flex: 1, fontSize: 12, color: 'var(--muted)' }}>
+                {explainOption(opt) || `${opt.length} carta${opt.length > 1 ? 'e' : ''}`}
+              </div>
+              <span style={{ fontSize: 18 }}>→</span>
+            </motion.button>
+          ))}
+        </div>
+      </motion.div>
+    </motion.div>
   )
 }
 
