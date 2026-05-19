@@ -12,8 +12,9 @@
 //   - Mazzo + mani vuoti: fine partita.
 //   - Vincitore: chi ha il mazzetto più alto (più carte).
 
-import { useReducer, useCallback, useEffect, useMemo } from 'react'
+import { useReducer, useCallback, useEffect, useMemo, useState } from 'react'
 import { cardTableTheme } from '../_shared/cardTableTheme'
+import { HelpModal } from '../_shared/CardGameUI'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import AppHeader from '../../components/AppHeader'
@@ -200,6 +201,7 @@ const Rubamazzetto = () => {
   const navigate = useNavigate()
   const C = usePlayerAccent()
   const [state, dispatch] = useReducer(reducer, undefined, initialState)
+  const [helpOpen, setHelpOpen] = useState(false)
   const playersSession = useSession((s) => s.players)
   const localPlayerId = useSession((s) => s.localPlayerId)
   const me = useMemo(
@@ -254,6 +256,7 @@ const Rubamazzetto = () => {
       <AppHeader
         accentColor={C.accent}
         leading={<IconButton ariaLabel="Esci" onClick={handleExit}>←</IconButton>}
+        actions={<IconButton ariaLabel="Regole" onClick={() => setHelpOpen(true)}>?</IconButton>}
       />
 
       <div style={S.body}>
@@ -402,6 +405,32 @@ const Rubamazzetto = () => {
           </GameButton>
         )}
       </div>
+
+      <HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} emoji="🦹" title="Regole Rubamazzetto">
+        <p style={{ margin: '0 0 12px' }}>
+          <strong>Obiettivo:</strong> raccogliere più carte degli avversari.
+        </p>
+        <p style={{ margin: '0 0 12px' }}>
+          A turno giochi una carta dalla mano. Priorità:
+        </p>
+        <p style={{ margin: '0 0 4px', fontWeight: 700 }}>1. Ruba il mazzetto</p>
+        <p style={{ margin: '0 0 8px', color: 'var(--muted)' }}>
+          Se la tua carta ha lo stesso valore della top del mazzetto di un avversario, <strong>rubi
+          tutto il loro mazzetto</strong> e ci metti sopra la tua.
+        </p>
+        <p style={{ margin: '0 0 4px', fontWeight: 700 }}>2. Prendi dal tavolo</p>
+        <p style={{ margin: '0 0 8px', color: 'var(--muted)' }}>
+          Altrimenti, se matcha per valore una carta sul tavolo, prendi quella + la tua nel tuo
+          mazzetto.
+        </p>
+        <p style={{ margin: '0 0 12px', fontWeight: 700 }}>3. Lascia sul tavolo</p>
+        <p style={{ margin: '0 0 12px', color: 'var(--muted)' }}>
+          Nessun match → la carta finisce sul tavolo, vulnerabile al ladro.
+        </p>
+        <p style={{ margin: 0, color: 'var(--muted)', fontSize: 12 }}>
+          Mano vuota: 3 nuove carte a tutti. Fine partita quando mazzo + mani sono vuoti.
+        </p>
+      </HelpModal>
     </div>
   )
 }

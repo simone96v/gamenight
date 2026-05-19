@@ -10,8 +10,9 @@
 // Architettura: tutta la logica gioco in questo file. Fasi gestite via useReducer.
 // Lo state non passa per useSession — il gioco è 100% client-side, solo single-player.
 
-import { useReducer, useCallback, useEffect, useMemo } from 'react'
+import { useReducer, useCallback, useEffect, useMemo, useState } from 'react'
 import { cardTableTheme } from '../_shared/cardTableTheme'
+import { HelpModal } from '../_shared/CardGameUI'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import AppHeader from '../../components/AppHeader'
@@ -139,6 +140,7 @@ const SetteEMezzo = () => {
   const navigate = useNavigate()
   const C = usePlayerAccent()
   const [state, dispatch] = useReducer(reducer, undefined, initialState)
+  const [helpOpen, setHelpOpen] = useState(false)
   const players = useSession((s) => s.players)
   const localPlayerId = useSession((s) => s.localPlayerId)
   const me = useMemo(
@@ -177,6 +179,7 @@ const SetteEMezzo = () => {
       <AppHeader
         accentColor={C.accent}
         leading={<IconButton ariaLabel="Esci" onClick={handleExit}>←</IconButton>}
+        actions={<IconButton ariaLabel="Regole" onClick={() => setHelpOpen(true)}>?</IconButton>}
       />
 
       <div style={S.body}>
@@ -298,6 +301,27 @@ const SetteEMezzo = () => {
           </div>
         )}
       </div>
+
+      <HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} emoji="7️⃣" title="Regole Sette e Mezzo">
+        <p style={{ margin: '0 0 12px' }}>
+          <strong>Obiettivo:</strong> avvicinarti a 7½ senza sballare.
+        </p>
+        <p style={{ margin: '0 0 4px', fontWeight: 700 }}>Valori carte:</p>
+        <p style={{ margin: '0 0 12px', color: 'var(--muted)' }}>
+          Asso = 1 · 2-7 = valore facciale · Fante / Cavallo / Re = ½
+        </p>
+        <p style={{ margin: '0 0 12px' }}>
+          A ogni mano hai 1 carta in mano. <strong>Carta</strong> pesca una nuova carta; <strong>Sto</strong> passa al banco.
+          Se superi 7½ <strong>sballi</strong> e perdi.
+        </p>
+        <p style={{ margin: '0 0 4px', fontWeight: 700 }}>Banco:</p>
+        <p style={{ margin: '0 0 12px', color: 'var(--muted)' }}>
+          Pesca finché ha un totale inferiore al tuo. Al pareggio il banco vince (regola classica).
+        </p>
+        <p style={{ margin: 0, color: 'var(--muted)', fontSize: 12 }}>
+          7½ "reale" (con sole 2 carte): vittoria immediata, il banco non gioca.
+        </p>
+      </HelpModal>
     </div>
   )
 }

@@ -18,8 +18,9 @@
 //     4) Primiera: somma valori primiera carta più alta per seme
 //     5) Scope: +1 per ogni scopa fatta
 
-import { useReducer, useCallback, useEffect, useMemo } from 'react'
+import { useReducer, useCallback, useEffect, useMemo, useState } from 'react'
 import { cardTableTheme } from '../_shared/cardTableTheme'
+import { HelpModal } from '../_shared/CardGameUI'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import AppHeader from '../../components/AppHeader'
@@ -321,6 +322,7 @@ const Scopa = () => {
   const navigate = useNavigate()
   const C = usePlayerAccent()
   const [state, dispatch] = useReducer(reducer, undefined, initialState)
+  const [helpOpen, setHelpOpen] = useState(false)
   const playersSession = useSession((s) => s.players)
   const localPlayerId = useSession((s) => s.localPlayerId)
   const me = useMemo(
@@ -385,6 +387,7 @@ const Scopa = () => {
       <AppHeader
         accentColor={C.accent}
         leading={<IconButton ariaLabel="Esci" onClick={handleExit}>←</IconButton>}
+        actions={<IconButton ariaLabel="Regole" onClick={() => setHelpOpen(true)}>?</IconButton>}
       />
 
       <div style={S.body}>
@@ -517,6 +520,34 @@ const Scopa = () => {
           </p>
         )}
       </div>
+
+      <HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} emoji="🧹" title="Regole Scopa">
+        <p style={{ margin: '0 0 12px' }}>
+          <strong>Obiettivo:</strong> raccogliere più carte e fare il punteggio più alto.
+        </p>
+        <p style={{ margin: '0 0 12px' }}>
+          A ogni turno giochi una carta. Se matcha (per valore singolo o per somma di una
+          combinazione del tavolo) <strong>prendi</strong> quelle carte + la tua nel tuo mazzetto.
+          Niente match → carta sul tavolo.
+        </p>
+        <p style={{ margin: '0 0 4px', fontWeight: 700 }}>Scopa:</p>
+        <p style={{ margin: '0 0 12px', color: 'var(--muted)' }}>
+          Quando svuoti il tavolo con una presa, hai fatto <strong>scopa</strong>: +1 punto
+          (eccetto l'ultima giocata della partita).
+        </p>
+        <p style={{ margin: '0 0 4px', fontWeight: 700 }}>Punti finali:</p>
+        <p style={{ margin: '0 0 12px', color: 'var(--muted)' }}>
+          1. <strong>Carte</strong> — più carte (+1 pt)<br/>
+          2. <strong>Denari</strong> — più carte di denari (+1 pt)<br/>
+          3. <strong>Settebello</strong> — il 7 di denari (+1 pt)<br/>
+          4. <strong>Primiera</strong> — somma valori primiera (Asso=16, 2=12, 3=13, 4=14, 5=15, 6=18, 7=21, figure=10) (+1 pt)<br/>
+          5. <strong>Scope</strong> — 1 pt per ogni scopa
+        </p>
+        <p style={{ margin: 0, color: 'var(--muted)', fontSize: 12 }}>
+          Massimo possibile: 4 punti base + scope. Le carte residue sul tavolo a fine partita
+          vanno all'ultimo che ha preso.
+        </p>
+      </HelpModal>
     </div>
   )
 }

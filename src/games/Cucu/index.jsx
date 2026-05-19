@@ -11,8 +11,9 @@
 //
 // AI CPU: scambia se carta ≤ 4, altrimenti tiene. Heuristica semplice ma plausibile.
 
-import { useReducer, useCallback, useEffect, useMemo } from 'react'
+import { useReducer, useCallback, useEffect, useMemo, useState } from 'react'
 import { cardTableTheme } from '../_shared/cardTableTheme'
+import { HelpModal } from '../_shared/CardGameUI'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import AppHeader from '../../components/AppHeader'
@@ -252,6 +253,7 @@ const Cucu = () => {
   const navigate = useNavigate()
   const C = usePlayerAccent()
   const [state, dispatch] = useReducer(reducer, undefined, initialState)
+  const [helpOpen, setHelpOpen] = useState(false)
   const players = useSession((s) => s.players)
   const localPlayerId = useSession((s) => s.localPlayerId)
   const me = useMemo(
@@ -324,6 +326,7 @@ const Cucu = () => {
       <AppHeader
         accentColor={C.accent}
         leading={<IconButton ariaLabel="Esci" onClick={handleExit}>←</IconButton>}
+        actions={<IconButton ariaLabel="Regole" onClick={() => setHelpOpen(true)}>?</IconButton>}
       />
 
       <div style={S.body}>
@@ -467,6 +470,28 @@ const Cucu = () => {
           </GameButton>
         )}
       </div>
+
+      <HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} emoji="🐦" title="Regole Cucù">
+        <p style={{ margin: '0 0 12px' }}>
+          <strong>Obiettivo:</strong> non finire mai col valore di carta più basso al reveal.
+        </p>
+        <p style={{ margin: '0 0 12px' }}>
+          Hai <strong>3 vite</strong>. Ogni round ricevi una carta. Al tuo turno: <strong>Tieni</strong> la
+          carta o <strong>Scambia</strong> col vicino di sinistra.
+        </p>
+        <p style={{ margin: '0 0 4px', fontWeight: 700 }}>Regole speciali:</p>
+        <p style={{ margin: '0 0 12px', color: 'var(--muted)' }}>
+          · Se il vicino ha un <strong>Re</strong> (10), lo sventola e blocca lo scambio.<br/>
+          · L'ultimo della rotazione può <strong>pescare dal mazzo</strong> invece che scambiare col vicino.
+        </p>
+        <p style={{ margin: '0 0 12px' }}>
+          Al reveal, chi ha la carta più bassa <strong>perde una vita</strong>. Pareggio = tutti i più
+          bassi perdono.
+        </p>
+        <p style={{ margin: 0, color: 'var(--muted)', fontSize: 12 }}>
+          Sopravvivi più a lungo dei 3 bot per vincere la partita.
+        </p>
+      </HelpModal>
     </div>
   )
 }
