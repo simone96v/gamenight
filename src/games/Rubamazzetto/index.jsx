@@ -19,6 +19,7 @@ import { useNavigate } from 'react-router-dom'
 import AppHeader from '../../components/AppHeader'
 import IconButton from '../../components/ui/IconButton'
 import MiniBlob from '../../components/MiniBlob'
+import SoloEndScreen from '../../components/SoloEndScreen'
 import GameButton from '../_shared/GameButton'
 import CardView from '../../lib/cards/CardView'
 import { createDeck, shuffle, draw } from '../../lib/cards/italianDeck'
@@ -225,6 +226,28 @@ const Rubamazzetto = () => {
 
   const handleRestart = useCallback(() => dispatch({ type: 'RESTART' }), [])
   const handleExit = useCallback(() => navigate('/solo/games', { replace: true }), [navigate])
+
+  // Fine partita → SoloEndScreen
+  if (state.phase === 'game_over') {
+    const myCount = state.counts?.find((x) => x.player.id === 'p0')?.count ?? 0
+    const oppCounts = state.counts?.filter((x) => x.player.id !== 'p0') ?? []
+    const won = state.winner?.isHuman
+    return (
+      <SoloEndScreen
+        gameEmoji="🦹"
+        gameName="Rubamazzetto"
+        player={me}
+        primaryValue={myCount}
+        primaryLabel="carte raccolte"
+        stats={[
+          { label: 'esito', value: won ? '🏆 Vittoria' : '😬 Sconfitta' },
+          ...oppCounts.map((x) => ({ label: x.player.name, value: x.count })),
+        ]}
+        onReplay={handleRestart}
+        onChangeGame={handleExit}
+      />
+    )
+  }
 
   return (
     <div style={S.container}>

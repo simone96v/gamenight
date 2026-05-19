@@ -23,6 +23,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import AppHeader from '../../components/AppHeader'
 import IconButton from '../../components/ui/IconButton'
+import SoloEndScreen from '../../components/SoloEndScreen'
 import GameButton from '../_shared/GameButton'
 import MiniBlob from '../../components/MiniBlob'
 import CardView from '../../lib/cards/CardView'
@@ -273,6 +274,27 @@ const BriscolaSolo = () => {
   const myPoints = state.captures.p0.reduce((s, c) => s + cardPoints(c), 0)
   const cpuPoints = state.captures.cpu.reduce((s, c) => s + cardPoints(c), 0)
   const cpuColor = pickColor(2)
+
+  // Fine partita → SoloEndScreen
+  if (state.phase === 'game_over') {
+    const won = state.winner === 'p0'
+    const tied = state.winner === 'tie'
+    return (
+      <SoloEndScreen
+        gameEmoji="🃏"
+        gameName="Briscola"
+        player={me}
+        primaryValue={state.finalScore?.p0 ?? myPoints}
+        primaryLabel="punti"
+        stats={[
+          { label: 'esito', value: tied ? '🤝 Pareggio' : won ? '🏆 Vittoria' : '😬 Sconfitta' },
+          { label: 'CPU', value: state.finalScore?.cpu ?? cpuPoints },
+        ]}
+        onReplay={handleRestart}
+        onChangeGame={handleExit}
+      />
+    )
+  }
 
   return (
     <div style={S.container}>

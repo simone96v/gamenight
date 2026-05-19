@@ -24,6 +24,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import AppHeader from '../../components/AppHeader'
 import IconButton from '../../components/ui/IconButton'
+import SoloEndScreen from '../../components/SoloEndScreen'
 import GameButton from '../_shared/GameButton'
 import MiniBlob from '../../components/MiniBlob'
 import CardView from '../../lib/cards/CardView'
@@ -347,6 +348,37 @@ const Scopa = () => {
 
   const cpuColor = pickColor(2)
   const isMyTurn = state.turn === 'p0' && state.phase === 'playing'
+
+  // Fine partita → SoloEndScreen con breakdown punteggio Scopa
+  if (state.phase === 'game_over' && state.finalScore) {
+    const won = state.finalScore.p0 > state.finalScore.cpu
+    const tied = state.finalScore.p0 === state.finalScore.cpu
+    const breakdown = state.finalScore.breakdown || []
+    // Compact 4 stat chips: esito + 3 voci principali (carte, denari, primiera)
+    const compactStats = [
+      { label: 'esito', value: tied ? '🤝 Pareggio' : won ? '🏆 Vittoria' : '😬 Sconfitta' },
+      { label: 'CPU', value: state.finalScore.cpu },
+      ...breakdown
+        .filter((r) => ['Carte', 'Denari', 'Settebello', 'Primiera', 'Scope'].includes(r[0]))
+        .slice(0, 3)
+        .map((r) => ({
+          label: r[0],
+          value: r[1] === 'p0' ? `✓ ${r[2]}` : r[1] === 'cpu' ? `${r[3]} CPU` : `${r[2]}=${r[3]}`,
+        })),
+    ]
+    return (
+      <SoloEndScreen
+        gameEmoji="🧹"
+        gameName="Scopa"
+        player={me}
+        primaryValue={state.finalScore.p0}
+        primaryLabel="punti"
+        stats={compactStats}
+        onReplay={handleRestart}
+        onChangeGame={handleExit}
+      />
+    )
+  }
 
   return (
     <div style={S.container}>

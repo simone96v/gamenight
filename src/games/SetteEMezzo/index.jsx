@@ -288,9 +288,14 @@ const SetteEMezzo = () => {
           </div>
         )}
         {state.phase === 'result' && (
-          <GameButton variant="primary" accent={C.accent} icon="🔁" hotkey="Space" onClick={handleNewHand}>
-            Nuova mano
-          </GameButton>
+          <div style={S.ctaRow}>
+            <GameButton variant="secondary" onClick={handleExit}>
+              Cambia gioco
+            </GameButton>
+            <GameButton variant="primary" accent={C.accent} icon="🔁" hotkey="Space" onClick={handleNewHand}>
+              Nuova mano
+            </GameButton>
+          </div>
         )}
       </div>
     </div>

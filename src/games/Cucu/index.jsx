@@ -18,6 +18,7 @@ import { useNavigate } from 'react-router-dom'
 import AppHeader from '../../components/AppHeader'
 import IconButton from '../../components/ui/IconButton'
 import MiniBlob from '../../components/MiniBlob'
+import SoloEndScreen from '../../components/SoloEndScreen'
 import GameButton from '../_shared/GameButton'
 import CardView from '../../lib/cards/CardView'
 import { createDeck, shuffle, draw } from '../../lib/cards/italianDeck'
@@ -297,6 +298,26 @@ const Cucu = () => {
 
   // Ordina opponents così l'umano è sempre in basso, gli altri in alto.
   const opponents = state.players.filter((p) => p.id !== 'p0')
+
+  // Fine partita → schermata SoloEndScreen come i quiz games
+  if (state.phase === 'game_over') {
+    const won = !!state.winner?.isHuman
+    return (
+      <SoloEndScreen
+        gameEmoji="🐦"
+        gameName="Cucù"
+        player={me}
+        primaryValue={state.roundNum}
+        primaryLabel="round giocati"
+        stats={[
+          { label: 'esito', value: won ? '🏆 Vittoria' : '😬 Sconfitta' },
+          { label: 'vite restanti', value: state.players[0].lives },
+        ]}
+        onReplay={handleRestart}
+        onChangeGame={handleExit}
+      />
+    )
+  }
 
   return (
     <div style={S.container}>

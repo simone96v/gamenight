@@ -19,7 +19,7 @@ import GameButton from '../_shared/GameButton'
 import MiniBlob from '../../components/MiniBlob'
 import CardView from '../../lib/cards/CardView'
 import { useSession } from '../../stores/useSession'
-import { rpcUpdateGameState, rpcPlayerUpdate } from '../../lib/room'
+import { rpcUpdateGameState, rpcPlayerUpdate, pushRoom } from '../../lib/room'
 import { usePlayerAccent } from '../../hooks/usePlayerAccent'
 import {
   initialState as makeInitialState,
@@ -121,6 +121,26 @@ const BriscolaOnline = () => {
   }, [isHost, pA, pB, roomCode, localPlayerId])
 
   const handleExit = useCallback(() => navigate('/lobby', { replace: true }), [navigate])
+
+  // "Cambia gioco" online: solo host → pusha phase 'game_voting' che riporta
+  // tutti su /games per rivotare. Pattern identico a Trivia.handleChangeGame.
+  const handleChangeGame = useCallback(async () => {
+    if (!isHost) return
+    const s = useSession.getState()
+    const resetPlayers = (s.players || []).map((p) => ({ ...p, score: 0 }))
+    await pushRoom(roomCode, 'game_voting', {
+      players: resetPlayers,
+      currentIdx: 0,
+      round: 0,
+      activeGame: null,
+      selectedCategory: s.gameState?.selectedCategory ?? null,
+      categoryVotes: s.gameState?.categoryVotes ?? {},
+      selectedGameCategory: s.gameState?.selectedGameCategory ?? null,
+      gameCategoryVotes: {},
+      gameVotes: {},
+      selectedGame: null,
+    })
+  }, [isHost, roomCode])
 
   // ── Loading / waiting screens ─────────────────────────────────────
   if (!pA || !pB) {
@@ -276,9 +296,14 @@ const BriscolaOnline = () => {
       <div style={S.footer}>
         {briState.phase === 'game_over' ? (
           isHost ? (
-            <GameButton variant="primary" accent={C.accent} icon="⚔️" onClick={handleRestart}>
-              Rivincita
-            </GameButton>
+            <div style={S.ctaRow}>
+              <GameButton variant="secondary" onClick={handleChangeGame}>
+                Cambia gioco
+              </GameButton>
+              <GameButton variant="primary" accent={C.accent} icon="⚔️" onClick={handleRestart}>
+                Rivincita
+              </GameButton>
+            </div>
           ) : (
             <p style={S.footerHint}>In attesa che {pA.name} avvii una rivincita...</p>
           )
@@ -424,6 +449,10 @@ const S = {
     fontWeight: 600,
     color: 'var(--muted)',
     textAlign: 'center',
+  },
+  ctaRow: {
+    display: 'flex',
+    gap: 10,
   },
 }
 
