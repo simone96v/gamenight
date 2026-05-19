@@ -2,7 +2,7 @@ import { useEffect, useRef, useImperativeHandle, forwardRef } from 'react'
 import { GAME_WIDTH, GAME_HEIGHT } from '../engine/physics'
 import { GameEngine } from '../engine/GameEngine'
 
-const FlappyBlobGame = forwardRef(({ seed, blobColor, onScoreUpdate, onDeath }, ref) => {
+const FlappyBlobGame = forwardRef(({ seed, blobColor, onScoreUpdate, onDeath, onStart }, ref) => {
   const canvasRef = useRef(null)
   const engineRef = useRef(null)
 
@@ -21,7 +21,7 @@ const FlappyBlobGame = forwardRef(({ seed, blobColor, onScoreUpdate, onDeath }, 
     const ctx = canvas.getContext('2d')
     ctx.scale(dpr, dpr)
 
-    const engine = new GameEngine(canvas, seed, blobColor, onScoreUpdate, onDeath)
+    const engine = new GameEngine(canvas, seed, blobColor, onScoreUpdate, onDeath, onStart)
     engineRef.current = engine
     engine.start()
 

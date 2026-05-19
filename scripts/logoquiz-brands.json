@@ -1,0 +1,67 @@
+{
+  "$schema": "Input curato per scripts/build-logoquiz-deck.mjs. Ogni record richiede slug + brand + cluster + wikidata QID. aliases[] opzionale (v2 risposta libera). tiers default = ['easy','medium','hard']. commonsFileOverride bypassa P154 quando punta a logo errato (wordmark al posto di glyph, presenza slogan, ecc.).",
+  "version": 3,
+  "brands": [
+    { "slug": "apple",            "brand": "Apple",          "aliases": ["apple inc"],            "cluster": "tech",       "wikidata": "Q312" },
+    { "slug": "microsoft",        "brand": "Microsoft",      "aliases": [],                       "cluster": "tech",       "wikidata": "Q2283" },
+    { "slug": "google",           "brand": "Google",         "aliases": [],                       "cluster": "tech",       "wikidata": "Q95" },
+    { "slug": "netflix",          "brand": "Netflix",        "aliases": [],                       "cluster": "tech",       "wikidata": "Q907311" },
+    { "slug": "spotify",          "brand": "Spotify",        "aliases": [],                       "cluster": "tech",       "wikidata": "Q689141" },
+    { "slug": "samsung",          "brand": "Samsung",        "aliases": [],                       "cluster": "tech",       "wikidata": "Q20718" },
+    { "slug": "sony",             "brand": "Sony",           "aliases": [],                       "cluster": "tech",       "wikidata": "Q41187" },
+
+    { "slug": "coca-cola",        "brand": "Coca-Cola",      "aliases": ["coca cola", "coke"],    "cluster": "beverage",   "wikidata": "Q2813" },
+    { "slug": "red-bull",         "brand": "Red Bull",       "aliases": ["redbull"],              "cluster": "beverage",   "wikidata": "Q160746" },
+
+    { "slug": "mcdonalds",        "brand": "McDonald's",     "aliases": ["mcdonalds", "mac"],     "cluster": "fastfood",   "wikidata": "Q38076", "commonsFileOverride": "McDonald's_Golden_Arches.svg" },
+    { "slug": "kfc",              "brand": "KFC",            "aliases": ["kentucky fried chicken"], "cluster": "fastfood", "wikidata": "Q524757" },
+    { "slug": "subway",           "brand": "Subway",         "aliases": [],                       "cluster": "fastfood",   "wikidata": "Q244457" },
+    { "slug": "starbucks",        "brand": "Starbucks",      "aliases": [],                       "cluster": "fastfood",   "wikidata": "Q37158" },
+
+    { "slug": "ferrari",          "brand": "Ferrari",        "aliases": [],                       "cluster": "automotive", "wikidata": "Q27586" },
+    { "slug": "bmw",              "brand": "BMW",            "aliases": [],                       "cluster": "automotive", "wikidata": "Q26678" },
+    { "slug": "toyota",           "brand": "Toyota",         "aliases": [],                       "cluster": "automotive", "wikidata": "Q53268" },
+    { "slug": "mercedes",         "brand": "Mercedes-Benz",  "aliases": ["mercedes"],             "cluster": "automotive", "wikidata": "Q36008" },
+    { "slug": "volkswagen",       "brand": "Volkswagen",     "aliases": ["vw"],                   "cluster": "automotive", "wikidata": "Q246" },
+    { "slug": "fiat",             "brand": "Fiat",           "aliases": [],                       "cluster": "automotive", "wikidata": "Q27597" },
+
+    { "slug": "nike",             "brand": "Nike",           "aliases": [],                       "cluster": "fashion",    "wikidata": "Q483915" },
+    { "slug": "adidas",           "brand": "Adidas",         "aliases": [],                       "cluster": "fashion",    "wikidata": "Q3895" },
+    { "slug": "prada",            "brand": "Prada",          "aliases": [],                       "cluster": "fashion",    "wikidata": "Q193136" },
+    { "slug": "zara",             "brand": "Zara",           "aliases": [],                       "cluster": "fashion",    "wikidata": "Q147662" },
+    { "slug": "h-and-m",          "brand": "H&M",            "aliases": ["hm"],                   "cluster": "fashion",    "wikidata": "Q188326" },
+    { "slug": "puma",             "brand": "Puma",           "aliases": [],                       "cluster": "fashion",    "wikidata": "Q157064" },
+    { "slug": "lacoste",          "brand": "Lacoste",        "aliases": [],                       "cluster": "fashion",    "wikidata": "Q309031" },
+
+    { "slug": "instagram",        "brand": "Instagram",      "aliases": ["ig", "insta"],          "cluster": "social_app", "wikidata": "Q209330", "commonsFileOverride": "Instagram_logo_2022.svg", "tiers": ["easy","medium"] },
+    { "slug": "whatsapp",         "brand": "WhatsApp",       "aliases": [],                       "cluster": "social_app", "wikidata": "Q1049349", "commonsFileOverride": "WhatsApp.svg" },
+    { "slug": "discord",          "brand": "Discord",        "aliases": [],                       "cluster": "social_app", "wikidata": "Q21154948", "commonsFileOverride": "Discord Color Text Logo (2015-2021).svg" },
+    { "slug": "telegram",         "brand": "Telegram",       "aliases": [],                       "cluster": "social_app", "wikidata": "Q3697442", "commonsFileOverride": "Telegram_2019_Logo.svg" },
+    { "slug": "twitch",           "brand": "Twitch",         "aliases": [],                       "cluster": "social_app", "wikidata": "Q21070718", "commonsFileOverride": "Twitch logo.svg" },
+
+    { "slug": "juventus",         "brand": "Juventus",       "aliases": ["juve"],                 "cluster": "sport_club", "wikidata": "Q1422" },
+    { "slug": "inter",            "brand": "Inter",          "aliases": ["fc internazionale"],    "cluster": "sport_club", "wikidata": "Q631" },
+    { "slug": "milan",            "brand": "Milan",          "aliases": ["ac milan"],             "cluster": "sport_club", "wikidata": "Q1543" },
+    { "slug": "barcelona",        "brand": "FC Barcelona",   "aliases": ["barça", "barca"],       "cluster": "sport_club", "wikidata": "Q7156" },
+    { "slug": "uefa",             "brand": "UEFA",           "aliases": [],                       "cluster": "sport_club", "wikidata": "Q7172" },
+
+    { "slug": "disney",           "brand": "Disney",         "aliases": ["walt disney"],          "cluster": "media_tv",   "wikidata": "Q7414" },
+    { "slug": "bbc",              "brand": "BBC",            "aliases": [],                       "cluster": "media_tv",   "wikidata": "Q9531" },
+    { "slug": "mtv",              "brand": "MTV",            "aliases": [],                       "cluster": "media_tv",   "wikidata": "Q43359" },
+    { "slug": "hbo",              "brand": "HBO",            "aliases": [],                       "cluster": "media_tv",   "wikidata": "Q5891", "commonsFileOverride": "HBO_logo.svg" },
+    { "slug": "rai",              "brand": "RAI",            "aliases": [],                       "cluster": "media_tv",   "wikidata": "Q39939", "commonsFileOverride": "Logo of RAI (2016).svg" },
+
+    { "slug": "nintendo",         "brand": "Nintendo",       "aliases": [],                       "cluster": "gaming",     "wikidata": "Q8093" },
+    { "slug": "steam",            "brand": "Steam",          "aliases": [],                       "cluster": "gaming",     "wikidata": "Q337535" },
+    { "slug": "minecraft",        "brand": "Minecraft",      "aliases": [],                       "cluster": "gaming",     "wikidata": "Q49740" },
+    { "slug": "electronic-arts",  "brand": "EA",             "aliases": ["electronic arts"],      "cluster": "gaming",     "wikidata": "Q173941" },
+    { "slug": "playstation",      "brand": "PlayStation",    "aliases": ["ps"],                   "cluster": "gaming",     "wikidata": "Q1701", "commonsFileOverride": "PlayStation_logo.svg" },
+    { "slug": "xbox",             "brand": "Xbox",           "aliases": [],                       "cluster": "gaming",     "wikidata": "Q210064", "commonsFileOverride": "Xbox_one_logo.svg" },
+
+    { "slug": "amazon",           "brand": "Amazon",         "aliases": ["amazon.com"],           "cluster": "retail",     "wikidata": "Q3884" },
+    { "slug": "ebay",             "brand": "eBay",           "aliases": [],                       "cluster": "retail",     "wikidata": "Q58024" },
+    { "slug": "lidl",             "brand": "Lidl",           "aliases": [],                       "cluster": "retail",     "wikidata": "Q151954" },
+    { "slug": "decathlon",        "brand": "Decathlon",      "aliases": [],                       "cluster": "retail",     "wikidata": "Q509349" },
+    { "slug": "ikea",             "brand": "IKEA",           "aliases": [],                       "cluster": "retail",     "wikidata": "Q47221", "commonsFileOverride": "Ikea_logo.svg" }
+  ]
+}

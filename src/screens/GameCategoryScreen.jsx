@@ -98,7 +98,7 @@ const GameCategoryScreen = () => {
             transition={{ duration: 0.2 }}
             style={{ textAlign: 'center', flexShrink: 0 }}
           >
-            <GradientTitle as="h1" size="xl">Scegli la categoria</GradientTitle>
+            <GradientTitle as="h1" size="md">Scegli la categoria</GradientTitle>
             <p style={subtitle}>
               {!canControl
                 ? 'Aspetta che il boss scelga... 👑'

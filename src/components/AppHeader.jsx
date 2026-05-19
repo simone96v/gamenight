@@ -4,6 +4,7 @@ import { useSession } from '../stores/useSession'
 import { closeRoom } from '../lib/room'
 import MiniBlob, { useMiniExpr } from './MiniBlob'
 import ConnectionBadge from './ConnectionBadge'
+import MenuButton from './MenuButton'
 import { ConnectionContext } from '../contexts/connection'
 
 const AppHeader = ({ actions = null, leading = null }) => {
@@ -68,7 +69,8 @@ const AppHeader = ({ actions = null, leading = null }) => {
 
       <div style={{ ...slotStyle, marginLeft: 'auto' }}>
         {showBadge && <ConnectionBadge status={connStatus} />}
-        {actions || <div style={{ width: showBadge ? 'auto' : 36 }} />}
+        {actions}
+        <MenuButton />
       </div>
     </header>
   )

@@ -7,16 +7,34 @@ import MiniBlob from '../../../components/MiniBlob'
 import { BLOB_GRADIENTS } from '../../../utils/colors'
 import { usePlayerAccent } from '../../../hooks/usePlayerAccent'
 
-const HalfZone = ({ side, gameRef, disabled }) => {
+const ArrowIcon = ({ side }) => (
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path
+      d={side < 0 ? 'M15 5L8 12L15 19' : 'M9 5L16 12L9 19'}
+      stroke="currentColor"
+      strokeWidth="2.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+)
+
+const HalfZone = ({ side, gameRef, disabled, accentColor }) => {
+  const [pressed, setPressed] = useState(false)
+
   const onStart = useCallback((e) => {
     e.preventDefault()
     if (disabled) return
+    setPressed(true)
     gameRef.current?.getEngine()?.input?.setExternalDirection(side)
   }, [side, disabled, gameRef])
+
   const onEnd = useCallback((e) => {
     e.preventDefault()
+    setPressed(false)
     gameRef.current?.getEngine()?.input?.clearExternalDirection()
   }, [gameRef])
+
   return (
     <div
       onTouchStart={onStart}
@@ -38,19 +56,38 @@ const HalfZone = ({ side, gameRef, disabled }) => {
         display: 'flex',
         alignItems: 'flex-end',
         justifyContent: side < 0 ? 'flex-start' : 'flex-end',
-        padding: 'clamp(16px, 3dvh, 28px) clamp(20px, 5vw, 32px)',
+        padding: 'clamp(14px, 2.5dvh, 24px) clamp(16px, 4vw, 26px)',
         cursor: 'pointer',
       }}
     >
-      <span style={{
-        fontSize: 'clamp(22px, 4dvh, 32px)',
-        fontWeight: 900,
-        color: 'rgba(0,0,0,0.13)',
-        pointerEvents: 'none',
-        userSelect: 'none',
-      }}>
-        {side < 0 ? '←' : '→'}
-      </span>
+      <div
+        style={{
+          width: 'clamp(64px, 14vw, 84px)',
+          height: 'clamp(64px, 14vw, 84px)',
+          borderRadius: 22,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: pressed
+            ? `${accentColor}55`
+            : 'rgba(0,0,0,0.18)',
+          backdropFilter: 'blur(6px)',
+          WebkitBackdropFilter: 'blur(6px)',
+          border: pressed
+            ? `1.5px solid ${accentColor}aa`
+            : '1.5px solid rgba(255,255,255,0.12)',
+          boxShadow: pressed
+            ? `0 0 14px ${accentColor}55`
+            : '0 4px 12px rgba(0,0,0,0.18)',
+          color: pressed ? '#fff' : 'rgba(255,255,255,0.7)',
+          transform: pressed ? 'scale(0.94)' : 'scale(1)',
+          transition: 'transform 0.08s ease, background 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease, color 0.12s ease',
+          opacity: disabled ? 0.3 : 0.55,
+          pointerEvents: 'none',
+        }}
+      >
+        <ArrowIcon side={side} />
+      </div>
     </div>
   )
 }
@@ -165,8 +202,8 @@ const CatchBlobPlaying = ({
           )}
         </div>
 
-        <HalfZone side={-1} gameRef={gameRef} disabled={ctrlDisabled} />
-        <HalfZone side={1}  gameRef={gameRef} disabled={ctrlDisabled} />
+        <HalfZone side={-1} gameRef={gameRef} disabled={ctrlDisabled} accentColor={accentLight} />
+        <HalfZone side={1}  gameRef={gameRef} disabled={ctrlDisabled} accentColor={accentLight} />
 
         {waveBanner && (
           <div key={waveBanner.key} style={S.waveBanner}>

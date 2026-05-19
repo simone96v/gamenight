@@ -4,7 +4,7 @@ export const GAME_HEIGHT = 700
 export const BASKET = {
   WIDTH: 86,
   HEIGHT: 38,
-  Y: GAME_HEIGHT - 70,         // top edge of basket opening
+  Y: GAME_HEIGHT - 130,        // top edge of basket opening (raised so player's thumb on controls doesn't cover the basket)
   MOVE_SPEED: 620,
   MOVE_ACCEL: 22,
   MOVE_FRICTION: 0.82,

@@ -17,8 +17,9 @@ export const PIPE = {
   GAP_MIN: 145,
   GAP_MAX: 175,
   GAP_DECAY: 0.04, // per-pipe gap reduction toward GAP_MIN as difficulty ramps
-  SPACING_START: 230,
-  SPACING_MIN: 190,
+  SPACING_START: 250,
+  SPACING_MIN: 215,
+  MAX_GAP_DELTA: 165, // px max vertical change of gap center between consecutive pipes
   SPEED_START: 175, // px/s
   SPEED_MAX: 260,
   SPEED_RAMP_PER_PIPE: 1.4, // px/s gained per pipe passed

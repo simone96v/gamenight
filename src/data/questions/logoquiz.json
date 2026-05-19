@@ -1,0 +1,1028 @@
+[
+  {
+    "id": "lgq_001",
+    "brand": "Apple",
+    "aliases": [
+      "apple inc"
+    ],
+    "cluster": "tech",
+    "wikidata": "Q312",
+    "logo": {
+      "file": "/logoquiz/apple.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/apple.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Apple logo black.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:41.744Z"
+    }
+  },
+  {
+    "id": "lgq_002",
+    "brand": "Microsoft",
+    "aliases": [],
+    "cluster": "tech",
+    "wikidata": "Q2283",
+    "logo": {
+      "file": "/logoquiz/microsoft.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/microsoft.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Microsoft logo (2012).svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:42.333Z"
+    }
+  },
+  {
+    "id": "lgq_003",
+    "brand": "Google",
+    "aliases": [],
+    "cluster": "tech",
+    "wikidata": "Q95",
+    "logo": {
+      "file": "/logoquiz/google.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/google.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Google 2015 logo.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:42.668Z"
+    }
+  },
+  {
+    "id": "lgq_004",
+    "brand": "Netflix",
+    "aliases": [],
+    "cluster": "tech",
+    "wikidata": "Q907311",
+    "logo": {
+      "file": "/logoquiz/netflix.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/netflix.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Netflix 2015 logo.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:43.113Z"
+    }
+  },
+  {
+    "id": "lgq_005",
+    "brand": "Spotify",
+    "aliases": [],
+    "cluster": "tech",
+    "wikidata": "Q689141",
+    "logo": {
+      "file": "/logoquiz/spotify.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/spotify.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:2024 Spotify Logo.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:43.362Z"
+    }
+  },
+  {
+    "id": "lgq_006",
+    "brand": "Samsung",
+    "aliases": [],
+    "cluster": "tech",
+    "wikidata": "Q20718",
+    "logo": {
+      "file": "/logoquiz/samsung.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/samsung.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Samsung wordmark.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:43.950Z"
+    }
+  },
+  {
+    "id": "lgq_007",
+    "brand": "Sony",
+    "aliases": [],
+    "cluster": "tech",
+    "wikidata": "Q41187",
+    "logo": {
+      "file": "/logoquiz/sony.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/sony.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Sony Group logo.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:44.403Z"
+    }
+  },
+  {
+    "id": "lgq_008",
+    "brand": "Coca-Cola",
+    "aliases": [
+      "coca cola",
+      "coke"
+    ],
+    "cluster": "beverage",
+    "wikidata": "Q2813",
+    "logo": {
+      "file": "/logoquiz/coca-cola.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/coca-cola.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Coca-Cola logo.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:44.639Z"
+    }
+  },
+  {
+    "id": "lgq_009",
+    "brand": "Red Bull",
+    "aliases": [
+      "redbull"
+    ],
+    "cluster": "beverage",
+    "wikidata": "Q160746",
+    "logo": {
+      "file": "/logoquiz/red-bull.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/red-bull.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Nestlé textlogo.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:45.103Z"
+    }
+  },
+  {
+    "id": "lgq_010",
+    "brand": "McDonald's",
+    "aliases": [
+      "mcdonalds",
+      "mac"
+    ],
+    "cluster": "fastfood",
+    "wikidata": "Q38076",
+    "logo": {
+      "file": "/logoquiz/mcdonalds.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/mcdonalds.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:McDonald's_Golden_Arches.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:45.287Z"
+    }
+  },
+  {
+    "id": "lgq_011",
+    "brand": "KFC",
+    "aliases": [
+      "kentucky fried chicken"
+    ],
+    "cluster": "fastfood",
+    "wikidata": "Q524757",
+    "logo": {
+      "file": "/logoquiz/kfc.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/kfc.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:KFC logo wordmark.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:45.519Z"
+    }
+  },
+  {
+    "id": "lgq_012",
+    "brand": "Subway",
+    "aliases": [],
+    "cluster": "fastfood",
+    "wikidata": "Q244457",
+    "logo": {
+      "file": "/logoquiz/subway.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/subway.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Subway 2016 logo.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:45.894Z"
+    }
+  },
+  {
+    "id": "lgq_013",
+    "brand": "Starbucks",
+    "aliases": [],
+    "cluster": "fastfood",
+    "wikidata": "Q37158",
+    "logo": {
+      "file": "/logoquiz/starbucks.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/starbucks.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Starbucks coffee wordmark.png",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:46.512Z"
+    }
+  },
+  {
+    "id": "lgq_014",
+    "brand": "Ferrari",
+    "aliases": [],
+    "cluster": "automotive",
+    "wikidata": "Q27586",
+    "logo": {
+      "file": "/logoquiz/ferrari.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/ferrari.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Ferrari wordmark.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:47.228Z"
+    }
+  },
+  {
+    "id": "lgq_015",
+    "brand": "BMW",
+    "aliases": [],
+    "cluster": "automotive",
+    "wikidata": "Q26678",
+    "logo": {
+      "file": "/logoquiz/bmw.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/bmw.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Logo BMW Group 2021.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:47.963Z"
+    }
+  },
+  {
+    "id": "lgq_016",
+    "brand": "Toyota",
+    "aliases": [],
+    "cluster": "automotive",
+    "wikidata": "Q53268",
+    "logo": {
+      "file": "/logoquiz/toyota.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/toyota.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Toyota.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:48.330Z"
+    }
+  },
+  {
+    "id": "lgq_017",
+    "brand": "Mercedes-Benz",
+    "aliases": [
+      "mercedes"
+    ],
+    "cluster": "automotive",
+    "wikidata": "Q36008",
+    "logo": {
+      "file": "/logoquiz/mercedes.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/mercedes.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Mercedes-Benz Logo 2010.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:48.558Z"
+    }
+  },
+  {
+    "id": "lgq_018",
+    "brand": "Volkswagen",
+    "aliases": [
+      "vw"
+    ],
+    "cluster": "automotive",
+    "wikidata": "Q246",
+    "logo": {
+      "file": "/logoquiz/volkswagen.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/volkswagen.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Volkswagen logo 2019.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:48.911Z"
+    }
+  },
+  {
+    "id": "lgq_019",
+    "brand": "Fiat",
+    "aliases": [],
+    "cluster": "automotive",
+    "wikidata": "Q27597",
+    "logo": {
+      "file": "/logoquiz/fiat.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/fiat.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:FIAT logo coloured.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:49.276Z"
+    }
+  },
+  {
+    "id": "lgq_020",
+    "brand": "Nike",
+    "aliases": [],
+    "cluster": "fashion",
+    "wikidata": "Q483915",
+    "logo": {
+      "file": "/logoquiz/nike.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/nike.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Logo NIKE.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:49.504Z"
+    }
+  },
+  {
+    "id": "lgq_021",
+    "brand": "Adidas",
+    "aliases": [],
+    "cluster": "fashion",
+    "wikidata": "Q3895",
+    "logo": {
+      "file": "/logoquiz/adidas.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/adidas.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Adidas 2022 logo.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:49.960Z"
+    }
+  },
+  {
+    "id": "lgq_022",
+    "brand": "Prada",
+    "aliases": [],
+    "cluster": "fashion",
+    "wikidata": "Q193136",
+    "logo": {
+      "file": "/logoquiz/prada.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/prada.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Prada-Logo.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:50.504Z"
+    }
+  },
+  {
+    "id": "lgq_023",
+    "brand": "Zara",
+    "aliases": [],
+    "cluster": "fashion",
+    "wikidata": "Q147662",
+    "logo": {
+      "file": "/logoquiz/zara.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/zara.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Zara Logo.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:50.745Z"
+    }
+  },
+  {
+    "id": "lgq_024",
+    "brand": "H&M",
+    "aliases": [
+      "hm"
+    ],
+    "cluster": "fashion",
+    "wikidata": "Q188326",
+    "logo": {
+      "file": "/logoquiz/h-and-m.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/h-and-m.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:H&M-Logo.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:51.222Z"
+    }
+  },
+  {
+    "id": "lgq_025",
+    "brand": "Puma",
+    "aliases": [],
+    "cluster": "fashion",
+    "wikidata": "Q157064",
+    "logo": {
+      "file": "/logoquiz/puma.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/puma.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Puma-logo-(text).svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:51.568Z"
+    }
+  },
+  {
+    "id": "lgq_026",
+    "brand": "Lacoste",
+    "aliases": [],
+    "cluster": "fashion",
+    "wikidata": "Q309031",
+    "logo": {
+      "file": "/logoquiz/lacoste.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/lacoste.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Lacoste wordmark 1984.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:51.925Z"
+    }
+  },
+  {
+    "id": "lgq_027",
+    "brand": "Instagram",
+    "aliases": [
+      "ig",
+      "insta"
+    ],
+    "cluster": "social_app",
+    "wikidata": "Q209330",
+    "logo": {
+      "file": "/logoquiz/instagram.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": null
+    },
+    "source": {
+      "commonsFile": "File:Instagram_logo_2022.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:52.123Z"
+    }
+  },
+  {
+    "id": "lgq_028",
+    "brand": "WhatsApp",
+    "aliases": [],
+    "cluster": "social_app",
+    "wikidata": "Q1049349",
+    "logo": {
+      "file": "/logoquiz/whatsapp.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/whatsapp.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:WhatsApp.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:52.330Z"
+    }
+  },
+  {
+    "id": "lgq_029",
+    "brand": "Discord",
+    "aliases": [],
+    "cluster": "social_app",
+    "wikidata": "Q21154948",
+    "logo": {
+      "file": "/logoquiz/discord.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/discord.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Discord Color Text Logo (2015-2021).svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:53.601Z"
+    }
+  },
+  {
+    "id": "lgq_030",
+    "brand": "Telegram",
+    "aliases": [],
+    "cluster": "social_app",
+    "wikidata": "Q3697442",
+    "logo": {
+      "file": "/logoquiz/telegram.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/telegram.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Telegram_2019_Logo.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:53.797Z"
+    }
+  },
+  {
+    "id": "lgq_031",
+    "brand": "Twitch",
+    "aliases": [],
+    "cluster": "social_app",
+    "wikidata": "Q21070718",
+    "logo": {
+      "file": "/logoquiz/twitch.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/twitch.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Twitch logo.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:54.506Z"
+    }
+  },
+  {
+    "id": "lgq_032",
+    "brand": "Juventus",
+    "aliases": [
+      "juve"
+    ],
+    "cluster": "sport_club",
+    "wikidata": "Q1422",
+    "logo": {
+      "file": "/logoquiz/juventus.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/juventus.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Juventus FC - logo black (Italy, 2020).svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:54.858Z"
+    }
+  },
+  {
+    "id": "lgq_033",
+    "brand": "Inter",
+    "aliases": [
+      "fc internazionale"
+    ],
+    "cluster": "sport_club",
+    "wikidata": "Q631",
+    "logo": {
+      "file": "/logoquiz/inter.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/inter.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:FC Internazionale Milano 2021.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:55.313Z"
+    }
+  },
+  {
+    "id": "lgq_034",
+    "brand": "Milan",
+    "aliases": [
+      "ac milan"
+    ],
+    "cluster": "sport_club",
+    "wikidata": "Q1543",
+    "logo": {
+      "file": "/logoquiz/milan.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/milan.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Logo of AC Milan.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:55.549Z"
+    }
+  },
+  {
+    "id": "lgq_035",
+    "brand": "FC Barcelona",
+    "aliases": [
+      "barça",
+      "barca"
+    ],
+    "cluster": "sport_club",
+    "wikidata": "Q7156",
+    "logo": {
+      "file": "/logoquiz/barcelona.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/barcelona.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:034 Ciutat Esportiva Joan Gamper, Futbol Club Barcelona (Sant Joan Despí) (cropped).jpg",
+      "license": "CC BY-SA 4.0",
+      "fetched_at": "2026-05-18T17:54:56.045Z"
+    }
+  },
+  {
+    "id": "lgq_036",
+    "brand": "UEFA",
+    "aliases": [],
+    "cluster": "sport_club",
+    "wikidata": "Q7172",
+    "logo": {
+      "file": "/logoquiz/uefa.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/uefa.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Emblem of the Arab League.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:56.598Z"
+    }
+  },
+  {
+    "id": "lgq_037",
+    "brand": "Disney",
+    "aliases": [
+      "walt disney"
+    ],
+    "cluster": "media_tv",
+    "wikidata": "Q7414",
+    "logo": {
+      "file": "/logoquiz/disney.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/disney.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:The Walt Disney Company Logo.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:57.095Z"
+    }
+  },
+  {
+    "id": "lgq_038",
+    "brand": "BBC",
+    "aliases": [],
+    "cluster": "media_tv",
+    "wikidata": "Q9531",
+    "logo": {
+      "file": "/logoquiz/bbc.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/bbc.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:BBC Logo 2021.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:57.460Z"
+    }
+  },
+  {
+    "id": "lgq_039",
+    "brand": "MTV",
+    "aliases": [],
+    "cluster": "media_tv",
+    "wikidata": "Q43359",
+    "logo": {
+      "file": "/logoquiz/mtv.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/mtv.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:MTV 2021 (brand version).svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:57.715Z"
+    }
+  },
+  {
+    "id": "lgq_040",
+    "brand": "HBO",
+    "aliases": [],
+    "cluster": "media_tv",
+    "wikidata": "Q5891",
+    "logo": {
+      "file": "/logoquiz/hbo.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/hbo.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:HBO_logo.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:57.915Z"
+    }
+  },
+  {
+    "id": "lgq_041",
+    "brand": "RAI",
+    "aliases": [],
+    "cluster": "media_tv",
+    "wikidata": "Q39939",
+    "logo": {
+      "file": "/logoquiz/rai.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/rai.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Logo of RAI (2016).svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:58.720Z"
+    }
+  },
+  {
+    "id": "lgq_042",
+    "brand": "Nintendo",
+    "aliases": [],
+    "cluster": "gaming",
+    "wikidata": "Q8093",
+    "logo": {
+      "file": "/logoquiz/nintendo.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/nintendo.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Nintendo.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:59.139Z"
+    }
+  },
+  {
+    "id": "lgq_043",
+    "brand": "Steam",
+    "aliases": [],
+    "cluster": "gaming",
+    "wikidata": "Q337535",
+    "logo": {
+      "file": "/logoquiz/steam.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/steam.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Steam 2016 logo black.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:59.374Z"
+    }
+  },
+  {
+    "id": "lgq_044",
+    "brand": "Minecraft",
+    "aliases": [],
+    "cluster": "gaming",
+    "wikidata": "Q49740",
+    "logo": {
+      "file": "/logoquiz/minecraft.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/minecraft.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Minecraft Logo-en.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:54:59.912Z"
+    }
+  },
+  {
+    "id": "lgq_045",
+    "brand": "EA",
+    "aliases": [
+      "electronic arts"
+    ],
+    "cluster": "gaming",
+    "wikidata": "Q173941",
+    "logo": {
+      "file": "/logoquiz/electronic-arts.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/electronic-arts.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Electronic Arts 2020.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:55:00.394Z"
+    }
+  },
+  {
+    "id": "lgq_046",
+    "brand": "PlayStation",
+    "aliases": [
+      "ps"
+    ],
+    "cluster": "gaming",
+    "wikidata": "Q1701",
+    "logo": {
+      "file": "/logoquiz/playstation.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/playstation.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:PlayStation_logo.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:55:00.594Z"
+    }
+  },
+  {
+    "id": "lgq_047",
+    "brand": "Xbox",
+    "aliases": [],
+    "cluster": "gaming",
+    "wikidata": "Q210064",
+    "logo": {
+      "file": "/logoquiz/xbox.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/xbox.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Xbox_one_logo.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:55:00.782Z"
+    }
+  },
+  {
+    "id": "lgq_048",
+    "brand": "Amazon",
+    "aliases": [
+      "amazon.com"
+    ],
+    "cluster": "retail",
+    "wikidata": "Q3884",
+    "logo": {
+      "file": "/logoquiz/amazon.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/amazon.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Amazon 2024.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:55:01.393Z"
+    }
+  },
+  {
+    "id": "lgq_049",
+    "brand": "eBay",
+    "aliases": [],
+    "cluster": "retail",
+    "wikidata": "Q58024",
+    "logo": {
+      "file": "/logoquiz/ebay.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/ebay.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:EBay logo.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:55:02.052Z"
+    }
+  },
+  {
+    "id": "lgq_050",
+    "brand": "Lidl",
+    "aliases": [],
+    "cluster": "retail",
+    "wikidata": "Q151954",
+    "logo": {
+      "file": "/logoquiz/lidl.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/lidl.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Lidl-Logo.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:55:02.394Z"
+    }
+  },
+  {
+    "id": "lgq_051",
+    "brand": "Decathlon",
+    "aliases": [],
+    "cluster": "retail",
+    "wikidata": "Q509349",
+    "logo": {
+      "file": "/logoquiz/decathlon.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/decathlon.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Decathlon - logo (France, 2024).svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:55:03.136Z"
+    }
+  },
+  {
+    "id": "lgq_052",
+    "brand": "IKEA",
+    "aliases": [],
+    "cluster": "retail",
+    "wikidata": "Q47221",
+    "logo": {
+      "file": "/logoquiz/ikea.webp",
+      "width": 400,
+      "height": 400,
+      "format": "webp",
+      "monochromeFile": "/logoquiz/ikea.mono.webp"
+    },
+    "source": {
+      "commonsFile": "File:Ikea_logo.svg",
+      "license": "Public domain",
+      "fetched_at": "2026-05-18T17:55:03.342Z"
+    }
+  }
+]

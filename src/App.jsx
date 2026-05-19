@@ -11,6 +11,7 @@ import ErrorBoundary from './components/ErrorBoundary'
 import HomeScreen from './screens/HomeScreen'
 import InstallPrompt from './components/InstallPrompt'
 import ConnectionModal from './components/ConnectionModal'
+import GlobalMenu from './components/GlobalMenu'
 
 const ModeScreen = lazy(() => import('./screens/ModeScreen'))
 const CreatePartyScreen = lazy(() => import('./screens/CreatePartyScreen'))
@@ -95,6 +96,7 @@ function App() {
     <ErrorBoundary>
       <ConnectionContext.Provider value={status}>
         <InstallPrompt />
+        <GlobalMenu />
         <Suspense>
           <Routes>
             <Route path="/" element={<HomeScreen />} />

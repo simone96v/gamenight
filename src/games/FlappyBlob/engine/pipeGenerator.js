@@ -11,14 +11,27 @@ import { GAME_WIDTH, GAME_HEIGHT, PIPE, GROUND, clamp } from './physics'
  *   index      — sequential index (for difficulty ramp)
  */
 
-function makePipe(rng, index, prevX) {
+function makePipe(rng, index, prevX, prevGapY) {
   const decay = Math.min(0.8, index * PIPE.GAP_DECAY)
   const gapRange = PIPE.GAP_MAX - PIPE.GAP_MIN
   const gapH = PIPE.GAP_MAX - decay * gapRange
 
   const minCenter = PIPE.MARGIN_TOP + gapH / 2
   const maxCenter = GAME_HEIGHT - GROUND.HEIGHT - PIPE.MARGIN_BOTTOM - gapH / 2
-  const gapY = minCenter + rng() * Math.max(0, maxCenter - minCenter)
+
+  // Clamp vertical delta from previous pipe so transitions stay physically passable.
+  let rangeLo = minCenter
+  let rangeHi = maxCenter
+  if (typeof prevGapY === 'number') {
+    rangeLo = Math.max(minCenter, prevGapY - PIPE.MAX_GAP_DELTA)
+    rangeHi = Math.min(maxCenter, prevGapY + PIPE.MAX_GAP_DELTA)
+    if (rangeHi < rangeLo) {
+      const mid = (rangeLo + rangeHi) / 2
+      rangeLo = mid
+      rangeHi = mid
+    }
+  }
+  const gapY = rangeLo + rng() * Math.max(0, rangeHi - rangeLo)
 
   const spacingDecay = Math.min(1, index * 0.05)
   const spacing = PIPE.SPACING_START - spacingDecay * (PIPE.SPACING_START - PIPE.SPACING_MIN)
@@ -36,22 +49,27 @@ function makePipe(rng, index, prevX) {
 export function generatePipes(rng, count, firstX = GAME_WIDTH + 60) {
   const pipes = []
   let prevX = firstX - PIPE.SPACING_START
+  let prevGapY
   for (let i = 0; i < count; i++) {
-    const p = makePipe(rng, i, prevX)
+    const p = makePipe(rng, i, prevX, prevGapY)
     pipes.push(p)
     prevX = p.x
+    prevGapY = p.gapY
   }
   return pipes
 }
 
 export function extendPipes(rng, pipes, count) {
   if (!pipes.length) return generatePipes(rng, count)
-  let prevX = pipes[pipes.length - 1].x
-  let startIdx = pipes[pipes.length - 1].index + 1
+  const last = pipes[pipes.length - 1]
+  let prevX = last.x
+  let prevGapY = last.gapY
+  let startIdx = last.index + 1
   for (let i = 0; i < count; i++) {
-    const p = makePipe(rng, startIdx + i, prevX)
+    const p = makePipe(rng, startIdx + i, prevX, prevGapY)
     pipes.push(p)
     prevX = p.x
+    prevGapY = p.gapY
   }
   return pipes
 }

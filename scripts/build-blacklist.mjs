@@ -61,7 +61,7 @@ const ITALIAN_EXTRAS = [
   // ---- Bestemmie composte ----
   'porcodio','porkodio','porcadio','porkadio',
   'diocane','diokane','dioporco','dioporko',
-  'diobestia','dioboia','diomerda','diocaro','diosch','diofulmine','diobono','dioschifoso',
+  'diobestia','dioboia','diomerda','diocaro','diosch','diofulmine','diobono','dioschifoso','dioblob',
   'madonnaporca','madonnatroia','madonnaputtana','madonnaboia','madonnabocchina',
   'porcamadonna','porkamadonna','porcomadonna',
   'cristoporco','porcocristo','gesuporco','porcogesu','gesucristoporco',
@@ -86,6 +86,7 @@ const ITALIAN_EXTRAS = [
   'gasthejew','gasthejews','asoap','holocaustnever','shoahnotreal',
   // ---- Fascismo / nazismo ----
   'mussolini','ilduce','boiachimolla','eiaeiaalala',
+  // ---- Fascismo: titoli corti (bypass MIN_LEN, vedi SHORT_CRITICAL) ----
   'hitler','fuhrer','fuehrer','adolfhitler','adolph',
   'nazista','nazisti','nazifascista','naziskin','nazifash',
   'siegheil','sieghail','heilhitler','seighail','heil88',
@@ -97,6 +98,13 @@ const ITALIAN_EXTRAS = [
   'frocio','frocia','froci','frociaccio','frociaccia','frociodimerda',
   'ricchione','rikkione','ricchioni','rikkioni',
   'culattone','culattoni','kulattone','kulattoni',
+]
+
+// Termini critici corti che bypassano la soglia MIN_LEN (≥5). Usare con
+// parsimonia: ogni voce qui è match-substring su qualsiasi nome normalizzato.
+const SHORT_CRITICAL = [
+  'dux',   // titolo fascista (Mussolini)
+  'duce',  // titolo fascista
 ]
 
 async function fetchLang(lang) {
@@ -134,6 +142,16 @@ async function main() {
     }
   }
   stats.italian_extras = extraAdded
+
+  // SHORT_CRITICAL ignora MIN_LEN: termini volutamente corti ma offensivi.
+  let shortAdded = 0
+  for (const term of SHORT_CRITICAL) {
+    const norm = normalize(term)
+    if (norm.length === 0 || MANUAL_EXCLUSIONS.has(norm) || all.has(norm)) continue
+    all.add(norm)
+    shortAdded++
+  }
+  stats.short_critical = shortAdded
 
   const sorted = Array.from(all).sort()
   const body = `[\n  ${sorted.map((t) => JSON.stringify(t)).join(',\n  ')}\n]`

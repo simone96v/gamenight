@@ -7,6 +7,7 @@ import GradientTitle from '../components/ui/GradientTitle'
 import OptionCard from '../components/ui/OptionCard'
 import ErrorBanner from '../components/ErrorBanner'
 import Blob from '../components/Blob'
+import MenuButton from '../components/MenuButton'
 import TapShockwaves from '../components/TapShockwaves'
 import { useBlobGaze } from '../hooks/useBlob'
 import { useTapShockwave } from '../hooks/useTapShockwave'
@@ -188,6 +189,11 @@ const HomeScreen = () => {
     >
       <ErrorBanner />
 
+      {/* Mini-barra superiore: solo hamburger a destra (il logo è nell'hero). */}
+      <div style={S.topBar}>
+        <MenuButton />
+      </div>
+
       <div
         className="screen-body"
         style={{
@@ -324,6 +330,15 @@ const HomeScreen = () => {
 }
 
 const S = {
+  topBar: {
+    flexShrink: 0,
+    display: 'flex',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    padding: 'clamp(8px, 1.5dvh, 12px) clamp(12px, 3vw, 20px) 0',
+    position: 'relative',
+    zIndex: 4,
+  },
   bubble: {
     position: 'absolute',
     bottom: '88%',

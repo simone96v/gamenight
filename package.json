@@ -11,7 +11,8 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
-    "icons": "node scripts/generate-icons.mjs"
+    "icons": "node scripts/generate-icons.mjs",
+    "build:logoquiz": "node scripts/build-logoquiz-deck.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.4",

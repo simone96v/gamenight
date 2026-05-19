@@ -7,6 +7,11 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
+const getSystemTheme = () => {
+  if (typeof window === 'undefined' || !window.matchMedia) return 'light'
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+}
+
 export const useSettings = create(
   persist(
     (set, get) => ({
@@ -17,8 +22,8 @@ export const useSettings = create(
       numQuestions: 10,
       timerDuration: 15,
 
-      // Tema: 'light' | 'dark'
-      theme: 'light',
+      // Tema: 'light' | 'dark' — default = preferenza OS al primo avvio
+      theme: getSystemTheme(),
 
       // Modalità Trivia "session": 3 round con categorie estratte via wheel.
       // questionsPerRound = quante domande per round (settabile in lobby).
@@ -46,6 +51,15 @@ export const useSettings = create(
       confirmAge: () => set({ ageConfirmed: true }),
       resetAgeConfirmation: () => set({ ageConfirmed: false }),
     }),
-    { name: 'gn:settings', version: 3 },
+    {
+      name: 'gn:settings',
+      version: 4,
+      migrate: (state, version) => {
+        if (version < 4 && state) {
+          return { ...state, theme: getSystemTheme() }
+        }
+        return state
+      },
+    },
   ),
 )

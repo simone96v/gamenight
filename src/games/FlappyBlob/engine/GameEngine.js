@@ -8,13 +8,14 @@ import { BLOB_GRADIENTS } from '../../../utils/colors'
 const PAPER_BG = '#F8F6F0'
 
 export class GameEngine {
-  constructor(canvas, seed, blobColor, onScoreUpdate, onDeath) {
+  constructor(canvas, seed, blobColor, onScoreUpdate, onDeath, onStart) {
     this.canvas = canvas
     this.ctx = canvas.getContext('2d')
     this.seed = seed | 0
     this.blobColor = blobColor || '#F59E0B'
     this.onScoreUpdate = onScoreUpdate
     this.onDeath = onDeath
+    this.onStart = onStart
 
     this.blobGrad = BLOB_GRADIENTS[this.blobColor] || [this.blobColor, this.blobColor, this.blobColor]
 
@@ -60,7 +61,10 @@ export class GameEngine {
 
   _handleFlap() {
     if (this.isDead) return
-    if (!this.started) this.started = true
+    if (!this.started) {
+      this.started = true
+      this.onStart?.()
+    }
     this.blob.vy = PHYSICS.FLAP_VELOCITY
     this.flapSquash = 1
     this._spawnFlapPuff()
@@ -283,10 +287,6 @@ export class GameEngine {
       ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT)
     }
 
-    if (!this.started && !this.isDead) {
-      this._drawStartHint(ctx)
-    }
-
     ctx.restore()
   }
 
@@ -377,20 +377,6 @@ export class GameEngine {
       ctx.restore()
     }
     ctx.globalAlpha = 1
-  }
-
-  _drawStartHint(ctx) {
-    const pulse = 0.7 + 0.3 * Math.sin(this.elapsed * 3)
-    ctx.save()
-    ctx.globalAlpha = pulse
-    ctx.fillStyle = 'rgba(31,41,55,0.85)'
-    ctx.font = 'bold 22px "Baloo 2", system-ui, sans-serif'
-    ctx.textAlign = 'center'
-    ctx.fillText('Tap per volare!', GAME_WIDTH / 2, GAME_HEIGHT * 0.7)
-    ctx.font = '600 14px Inter, system-ui, sans-serif'
-    ctx.fillStyle = 'rgba(31,41,55,0.65)'
-    ctx.fillText('(o premi Spazio)', GAME_WIDTH / 2, GAME_HEIGHT * 0.7 + 22)
-    ctx.restore()
   }
 
   // ── BLOB DRAWING ────────────────────────────────────────
