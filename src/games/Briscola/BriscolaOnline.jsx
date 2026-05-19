@@ -415,10 +415,8 @@ const S = {
     flexDirection: 'column',
     gap: 8,
     padding: 'clamp(10px, 1.8dvh, 16px) clamp(16px, 4vw, 24px) clamp(14px, 2.5dvh, 20px)',
-    background: 'rgba(0,0,0,0.30)',
-    borderTop: '1px solid rgba(255,255,255,0.10)',
-    backdropFilter: 'blur(8px)',
-    WebkitBackdropFilter: 'blur(8px)',
+    background: 'var(--surface)',
+    borderTop: '1px solid var(--border)',
   },
   footerHint: {
     margin: 0,

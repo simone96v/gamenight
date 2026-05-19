@@ -26,22 +26,22 @@ const buildPrimary = (accent) => {
   }
 }
 
+// Secondary/ghost usano le CSS vars del design system → si adattano automaticamente
+// a light/dark mode (coerenti con i bottoni dei quiz games).
 const SECONDARY = {
-  background: 'rgba(255,255,255,0.10)',
-  color: '#F3F4F6',
-  border: '1px solid rgba(255,255,255,0.20)',
-  boxShadow: '0 2px 10px rgba(0,0,0,0.20), inset 0 1px 0 rgba(255,255,255,0.10)',
-  hoverGlow: '0 6px 18px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.15)',
-  backdropFilter: 'blur(6px)',
-  WebkitBackdropFilter: 'blur(6px)',
+  background: 'var(--surface)',
+  color: 'var(--text)',
+  border: '1.5px solid var(--border-strong)',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+  hoverGlow: '0 6px 18px rgba(0,0,0,0.10)',
 }
 
 const GHOST = {
   background: 'transparent',
-  color: 'rgba(255,255,255,0.85)',
-  border: '1px solid rgba(255,255,255,0.12)',
+  color: 'var(--muted)',
+  border: '1px solid var(--border)',
   boxShadow: 'none',
-  hoverGlow: '0 4px 14px rgba(0,0,0,0.15)',
+  hoverGlow: '0 4px 14px rgba(0,0,0,0.04)',
 }
 
 const GameButton = ({
@@ -109,6 +109,9 @@ const GameButton = ({
   )
 }
 
+// Kbd badge: tonalità auto-bilanciate per primary (su gradient scuro) vs
+// secondary (su surface chiaro/scuro). Usa currentColor + alpha per ereditare
+// il colore del bottone genitore.
 const KbdHint = ({ children }) => (
   <span
     aria-hidden="true"
@@ -121,9 +124,10 @@ const KbdHint = ({ children }) => (
       fontFamily: '"SF Mono", "JetBrains Mono", "Courier New", monospace',
       fontSize: 11,
       fontWeight: 700,
-      color: 'rgba(255,255,255,0.92)',
-      background: 'rgba(0,0,0,0.30)',
-      border: '1px solid rgba(255,255,255,0.18)',
+      color: 'currentColor',
+      opacity: 0.92,
+      background: 'color-mix(in srgb, currentColor 14%, transparent)',
+      border: '1px solid color-mix(in srgb, currentColor 24%, transparent)',
       letterSpacing: '0.04em',
       flexShrink: 0,
     }}
